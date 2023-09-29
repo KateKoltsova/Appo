@@ -39,6 +39,15 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePhoneNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @property int $role_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments
+ * @property-read int|null $appointments_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Price> $prices
+ * @property-read int|null $prices_count
+ * @property-read \App\Models\Role $role
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Schedule> $schedules
+ * @property-read int|null $schedules_count
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereRoleId($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable

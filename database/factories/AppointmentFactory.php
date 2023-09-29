@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Price;
+use App\Models\Role;
+use App\Models\Schedule;
+use App\Models\Service;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -23,6 +23,6 @@ class RegisterController extends Controller
         ]);
         $role = Role::client()->first();
         $role->users()->create($params);
-        return response()->json(['data' => ['Successfully Created']], 201);
+        return response()->json(['message' => 'Successfully Created'], 201);
     }
 }

@@ -17,9 +17,22 @@ use Illuminate\Support\Facades\Route;
 //    return $request->user();
 //});
 
-Route::post('login', \App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
+Route::group(['prefix' => '/oauth'], function () {
+    Route::post('login', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'token'])->name('oauth.login');
+    Route::post('refresh', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'refresh'])->name('oauth.refresh');
+});
+
+Route::group(['prefix' => '/password'], function () {
+    Route::post('forgot', [\App\Http\Controllers\Api\Auth\ResetPasswordController::class, 'forgot'])->name('password.forgot');
+    Route::post('reset', [\App\Http\Controllers\Api\Auth\ResetPasswordController::class, 'reset'])->name('password.reset');
+});
+
 Route::post('register', \App\Http\Controllers\Api\Auth\RegisterController::class)->name('register');
 
-Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
+//Routes for Sanctum Auth
+//Route::post('login', \App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
+//Route::post('refresh', [\App\Http\Controllers\Api\Auth\LoginController::class, 'refresh'])->name('refresh');
+
+Route::middleware('auth:api')->prefix('v1')->group(function () {
     require base_path('routes/api/api_v1.php');
 });

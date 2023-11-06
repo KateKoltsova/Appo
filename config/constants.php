@@ -4,6 +4,7 @@ return [
         'roles' => [
             'master' => 'master',
             'client' => 'client',
+            'admin' =>'admin',
         ],
         'services' => [
             ['category' => 'Lashes',

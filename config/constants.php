@@ -36,6 +36,9 @@ return [
                     'Brow coloring',
                     'Brow modeling',
                     'Brow lamination (coloring include)',
+                    'Brow permanent',
+                    'Brow permanent correction',
+                    'Brow permanent refresh'
                 ]
             ],
         ],

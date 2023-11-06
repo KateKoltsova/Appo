@@ -22,6 +22,11 @@ Route::group(['prefix' => '/oauth'], function () {
     Route::post('refresh', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'refresh'])->name('oauth.refresh');
 });
 
+Route::group(['prefix' => '/password'], function () {
+    Route::post('forgot', [\App\Http\Controllers\Api\Auth\ResetPasswordController::class, 'forgot'])->name('password.forgot');
+    Route::post('reset', [\App\Http\Controllers\Api\Auth\ResetPasswordController::class, 'reset'])->name('password.reset');
+});
+
 Route::post('register', \App\Http\Controllers\Api\Auth\RegisterController::class)->name('register');
 
 //Routes for Sanctum Auth

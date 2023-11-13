@@ -11,19 +11,19 @@
     "tags": [
         {
             "name": "auth",
-            "description": "Authentication and authorization (worked)"
+            "description": "Authentication and authorization (работает)"
         },
         {
             "name": "user profile",
-            "description": "CRUD operations with users (worked)"
+            "description": "CRUD operations with users (работает)"
         },
         {
             "name": "prices",
-            "description": "CRUD operations with prices (in progress)"
+            "description": "CRUD operations with prices (в процессе)"
         },
         {
             "name": "services",
-            "description": "CRUD operations with services (only services list)"
+            "description": "CRUD operations with services (пока только получение списка услуг)"
         }
     ],
     "paths": {
@@ -168,7 +168,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK (временно отдаю токен, мне нужен для теста)",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "data": {
+                                        "token": "32d6ba5550aba3b8e4516f8e374629044bb7f6995350ecdc53f9ca078a636ebe"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "UNPROCESSABLE CONTENT",
@@ -281,7 +290,7 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "example": "1111-01-01T00:00:00.000Z"
+                            "example": "1111-01-01"
                         }
                     },
                     {
@@ -386,6 +395,16 @@
                 ],
                 "summary": "Find user by ID",
                 "description": "Returns a specified user by ID",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "id",
@@ -395,6 +414,15 @@
                         "schema": {
                             "type": "integer",
                             "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
                         }
                     }
                 ],
@@ -427,6 +455,16 @@
                 ],
                 "summary": "Update user",
                 "description": "Update specified user profile data",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "id",
@@ -487,6 +525,15 @@
                             "type": "string",
                             "example": "email@email.com"
                         }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
                     }
                 ],
                 "responses": {
@@ -521,6 +568,16 @@
                 ],
                 "summary": "Delete user",
                 "description": "Logout and soft deleted user",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "id",
@@ -530,6 +587,15 @@
                         "schema": {
                             "type": "string",
                             "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
                         }
                     }
                 ],
@@ -784,10 +850,6 @@
                         "type": "integer",
                         "example": 15
                     },
-                    "role_id": {
-                        "type": "integer",
-                        "example": 2
-                    },
                     "firstname": {
                         "type": "string",
                         "example": "FirstName"
@@ -939,6 +1001,15 @@
                         ]
                     }
                 }
+            }
+        },
+        "securitySchemes": {
+            "access_token": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "http(\"bearer\")",
+                "name": "authorization",
+                "in": "header"
             }
         }
     }

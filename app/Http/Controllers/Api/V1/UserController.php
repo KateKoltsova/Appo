@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -59,7 +61,13 @@ class UserController extends Controller
         $user = User::where('id', $id)
             ->with('role')
             ->first();
-        return response()->json(['data' => $user]);
+        if (!empty($user)) {
+            $userResource = new UserResource($user);
+            return response()->json(['data' => $userResource]);
+        } else {
+            return response()->json(['message' => 'No data'],404);
+
+        }
     }
 
     /**
@@ -73,16 +81,10 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UserUpdateRequest $request, string $id)
     {
         if (auth()->user()->id == $id) {
-            $params = $request->validate([
-                'firstname' => ['string', 'alpha', 'max:50'],
-                'lastname' => ['string', 'alpha', 'max:50'],
-                'birthdate' => ['nullable', 'date'],
-                'email' => ['string', 'email', 'max:255', Rule::unique('users')->ignore($id)],
-                'phone_number' => ['string', 'min:13', 'max:13', 'regex:/^\+380[0-9]{9}$/', Rule::unique('users')->ignore($id)],
-            ]);
+            $params = $request->validated();
             User::findOrFail($id)->update($params);
             return $this->show($id);
         } else {

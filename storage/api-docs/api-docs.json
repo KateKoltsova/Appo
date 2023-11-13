@@ -11,19 +11,19 @@
     "tags": [
         {
             "name": "auth",
-            "description": "Authentication and authorization"
+            "description": "Authentication and authorization (worked)"
         },
         {
             "name": "user profile",
-            "description": "CRUD operations with users"
+            "description": "CRUD operations with users (worked)"
         },
         {
             "name": "prices",
-            "description": "CRUD operations with prices"
+            "description": "CRUD operations with prices (in progress)"
         },
         {
             "name": "services",
-            "description": "CRUD operations with services"
+            "description": "CRUD operations with services (only services list)"
         }
     ],
     "paths": {

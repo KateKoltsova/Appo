@@ -17,6 +17,12 @@ class AuthServiceProvider extends ServiceProvider
         //
     ];
 
+    protected $scopes = [
+        'master' => 'Can CRUD: own profile, prices, schedules, appointments, R: services, other profiles, prices, schedules, appointments',
+        'client' => 'Can CRUD: own profile, appointments, R: services, other prices, schedules, appointments',
+        'admin' => 'Can CRUD: all'
+    ];
+
     /**
      * Register any authentication / authorization services.
      */
@@ -26,5 +32,7 @@ class AuthServiceProvider extends ServiceProvider
 
         Passport::tokensExpireIn(config('passport.tokens_lifetime.access_token'));
         Passport::refreshTokensExpireIn(config('passport.tokens_lifetime.refresh_token'));
+
+        Passport::tokensCan($this->scopes);
     }
 }

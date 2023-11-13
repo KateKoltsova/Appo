@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\Contracts\AuthTokenGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -59,7 +60,11 @@ class OAuthController extends Controller
         $token_header_json = base64_decode($token_parts[1]);
         $token_header_array = json_decode($token_header_json, true);
         $token_id = $token_header_array['jti'];
-        $user_id = Token::find($token_id)->user->id;
+        $token = Token::find($token_id);
+        $user = $token->user;
+        $user_id = $user->id;
+        $role = $user->role->toArray();
+        $token->update(['scopes' => [$role['role']]]);
         $data['data']['id'] = $user_id;
         return $data;
     }

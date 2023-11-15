@@ -32,6 +32,12 @@ class Price extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'master_id',
+        'service_id',
+        'price'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

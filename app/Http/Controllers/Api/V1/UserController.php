@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Laravel\Passport\RefreshToken;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,23 +18,18 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = explode('?', $request->getRequestUri());
-        if (isset($query[1])) {
-            $query = explode('&', $query[1]);
-            foreach ($query as $value) {
-                $value = explode('filter[role]=', $value);
-                $filters[] = $value[1];
-            }
-            $users = User::with('role')
-                ->whereHas('role', function ($query) use ($filters) {
-                    $query->whereIn('role', $filters);
-                })
-                ->get();
+        $roles = $request->input('filter.role') ?? ['master'];
+        $users = User::with('role')
+            ->whereHas('role', function ($query) use ($roles) {
+                $query->whereIn('role', $roles);
+            })
+            ->get();
+        if (!empty($users)) {
+            $userCollection = new UserCollection($users);
+            return response()->json(['data' => $userCollection]);
         } else {
-            $users = User::with('role')
-                ->get();
+            return response()->json(['message' => 'No data'], 404);
         }
-        return response()->json(['data' => $users]);
     }
 
     /**
@@ -65,7 +60,7 @@ class UserController extends Controller
             $userResource = new UserResource($user);
             return response()->json(['data' => $userResource]);
         } else {
-            return response()->json(['message' => 'No data'],404);
+            return response()->json(['message' => 'No data'], 404);
 
         }
     }
@@ -83,13 +78,9 @@ class UserController extends Controller
      */
     public function update(UserUpdateRequest $request, string $id)
     {
-        if (auth()->user()->id == $id) {
-            $params = $request->validated();
-            User::findOrFail($id)->update($params);
-            return $this->show($id);
-        } else {
-            return response()->json(['message' => 'You don\'t have permissions to make this action'], Response::HTTP_FORBIDDEN);
-        }
+        $params = $request->validated();
+        User::findOrFail($id)->update($params);
+        return $this->show($id);
     }
 
     /**
@@ -97,17 +88,12 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        if (auth()->user()->id == $id) {
-            $user = User::findOrFail($id);
-            $accessTokens = $user->tokens->each->revoke();
-            foreach ($accessTokens as $accessToken) {
-                RefreshToken::firstWhere('access_token_id', $accessToken->id)->revoke();
-            }
-            $user->delete();
-            return response()->json(['message' => 'User successfully deleted']);
-        } else {
-            return response()->json(['message' => 'You don\'t have permissions to make this action'], Response::HTTP_FORBIDDEN);
+        $user = User::findOrFail($id);
+        $accessTokens = $user->tokens->each->revoke();
+        foreach ($accessTokens as $accessToken) {
+            RefreshToken::firstWhere('access_token_id', $accessToken->id)->revoke();
         }
-
+        $user->delete();
+        return response()->json(['message' => 'User successfully deleted']);
     }
 }

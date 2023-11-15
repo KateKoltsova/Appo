@@ -11,24 +11,15 @@ class ServiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $query = explode('?',$request->getRequestUri());
-        if (isset($query[1])){
-            $query = explode('&',$query[1]);
-            foreach ($query as $value){
-                $value = explode('category=', $value);
-                $filters[] = $value[1];
-            }
-            $services = Service::whereIN('category',$filters)->get();
-        } else {
-            $services = Service::all();
-        }
-        $services = $services->toArray();
-        foreach ($services as $service) {
-            $response[$service['category']][] = $service['title'];
-        }
-        return response()->json(['data' => $response]);
+        $services = Service::get(['id', 'title', 'category']);
+        $categories = $services->pluck('category')->unique();
+        return response()->json(['data' => [
+            'categories' => array_values($categories->toArray()),
+            'services' => $services->toArray()
+            ]
+        ]);
     }
 
     /**

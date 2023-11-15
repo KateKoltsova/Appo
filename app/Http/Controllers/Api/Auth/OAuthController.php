@@ -8,6 +8,7 @@ use App\Services\Contracts\AuthTokenGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use Laravel\Passport\RefreshToken;
 use Laravel\Passport\Token;
 
 class OAuthController extends Controller
@@ -55,17 +56,42 @@ class OAuthController extends Controller
     private function getUserId($response)
     {
         $data['data'] = $response->json();
-        $access_token = $data['data']['access_token'];
-        $token_parts = explode('.', $access_token);
-        $token_header_json = base64_decode($token_parts[1]);
-        $token_header_array = json_decode($token_header_json, true);
-        $token_id = $token_header_array['jti'];
-        $token = Token::find($token_id);
+        $accessToken = $data['data']['access_token'];
+        $tokenId = $this->getTokenId($accessToken);
+        $token = Token::find($tokenId);
         $user = $token->user;
-        $user_id = $user->id;
+        $userId = $user->id;
         $role = $user->role->toArray();
         $token->update(['scopes' => [$role['role']]]);
-        $data['data']['id'] = $user_id;
+        $data['data']['id'] = $userId;
         return $data;
     }
+
+    public function logout(Request $request)
+    {
+        $accessToken = explode('Bearer ', $request->header('Authorization'));
+        $tokenId = $this->getTokenId($accessToken[1]);
+        Token::find($tokenId)->revoke();
+        RefreshToken::firstWhere('access_token_id', $tokenId)->revoke();
+        return response()->json(['message' => 'User successfully logout']);
+    }
+
+    public function logoutAll()
+    {
+        $user = auth()->user();
+        $accessTokens = $user->tokens->each->revoke();
+        foreach ($accessTokens as $accessToken) {
+            RefreshToken::firstWhere('access_token_id', $accessToken->id)->revoke();
+        }
+        return response()->json(['message' => 'User successfully logout from all devices']);
+    }
+
+    private function getTokenId($accessToken)
+    {
+        $tokenParts = explode('.', $accessToken);
+        $tokenHeaderJson = base64_decode($tokenParts[1]);
+        $tokenHeaderArray = json_decode($tokenHeaderJson, true);
+        return $tokenHeaderArray['jti'];
+    }
+
 }

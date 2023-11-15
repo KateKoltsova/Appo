@@ -20,6 +20,10 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => '/oauth'], function () {
     Route::post('login', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'token'])->name('oauth.login');
     Route::post('refresh', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'refresh'])->name('oauth.refresh');
+    Route::delete('logout', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'logout'])->name('oauth.logout')
+    ->middleware(['auth:api']);
+    Route::delete('logout/all', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'logoutAll'])->name('oauth.logoutAll')
+    ->middleware(['auth:api']);
 });
 
 Route::group(['prefix' => '/password'], function () {

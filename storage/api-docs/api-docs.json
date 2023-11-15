@@ -202,6 +202,90 @@
                 }
             }
         },
+        "/oauth/logout": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user",
+                "description": "Logout user",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User successfully logout"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/logout/all": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user from all devices",
+                "description": "Logout user from all devices",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User successfully logout from all devices"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/password/reset": {
             "post": {
                 "tags": [

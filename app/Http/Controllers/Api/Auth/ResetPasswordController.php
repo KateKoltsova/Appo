@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Http\Request;
@@ -14,7 +17,7 @@ class ResetPasswordController extends Controller
     {
     }
 
-    public function forgot(Request $request)
+    public function forgot(ForgotPasswordRequest $request)
     {
         $user = $this->passwordBroker->getUser($request->only('email'));
         if (is_null($user)) {
@@ -31,13 +34,20 @@ class ResetPasswordController extends Controller
         return response()->json(['data' => ['token' => $token]]);
     }
 
-    public function reset(Request $request)
+    public function reset(ResetPasswordRequest $request)
     {
+        if (!($user = Password::getUser($request->only('email')))) {
+            return response()->json(['message' => 'Invalid user'], 422);
+        }
+        if (!Password::tokenExists($user, $request->token)) {
+            return response()->json(['message' => 'Invalid user'], 422);
+        }
         $reset_password_status = Password::reset(
             $request->only('email', 'token', 'password'),
             function ($user, $password) {
                 $user->password = $password;
                 $user->save();
+
             }
         );
 

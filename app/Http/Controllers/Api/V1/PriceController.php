@@ -26,7 +26,7 @@ class PriceController extends Controller
                 $query->whereIn('category', $categories);
             })
             ->get();
-        if (!empty($prices)) {
+        if (!empty($prices->toArray())) {
             $priceCollection = new PriceCollection($prices);
             return response()->json(['data' => $priceCollection]);
         } else {
@@ -98,7 +98,6 @@ class PriceController extends Controller
         } else {
             return response()->json(['message' => 'No data'], 404);
         }
-
     }
 
     /**

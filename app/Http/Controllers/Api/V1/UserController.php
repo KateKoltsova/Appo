@@ -24,7 +24,7 @@ class UserController extends Controller
                 $query->whereIn('role', $roles);
             })
             ->get();
-        if (!empty($users)) {
+        if (!empty($users->toArray())) {
             $userCollection = new UserCollection($users);
             return response()->json(['data' => $userCollection]);
         } else {

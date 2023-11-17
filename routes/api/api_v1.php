@@ -17,6 +17,13 @@ Route::resource('users/{user}/prices', \App\Http\Controllers\Api\V1\PriceControl
     ->only('store', 'update', 'destroy')
     ->middleware(['auth:api', 'owner']);
 
+Route::resource('users/{user}/schedules', \App\Http\Controllers\Api\V1\ScheduleController::class)
+    ->only('index', 'show')
+    ->middleware(['auth:api']);
+Route::resource('users/{user}/schedules', \App\Http\Controllers\Api\V1\ScheduleController::class)
+    ->only('store', 'update', 'destroy')
+    ->middleware(['auth:api', 'owner']);
+
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index')
     ->middleware(['auth:api']);

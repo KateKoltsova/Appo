@@ -32,6 +32,10 @@
             "description": "CRUD operations with prices (работает)"
         },
         {
+            "name": "user schedules",
+            "description": "CRUD operations with schedules (работает)"
+        },
+        {
             "name": "services",
             "description": "CRUD operations with services (в процессе, пока только получение списка услуг)"
         }
@@ -458,7 +462,7 @@
                 "description": "Send request to get full list of users",
                 "parameters": [
                     {
-                        "name": "filter[role]",
+                        "name": "filter[role][]",
                         "in": "query",
                         "description": "User role for filtration",
                         "required": false,
@@ -746,6 +750,16 @@
                         "schema": {
                             "$ref": "#/components/securitySchemes/access_token"
                         }
+                    },
+                    {
+                        "name": "filter[category][]",
+                        "in": "query",
+                        "description": "Category filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Nails"
+                        }
                     }
                 ],
                 "responses": {
@@ -826,7 +840,7 @@
                         "content": {
                             "application/json": {
                                 "example": {
-                                    "message": "No query results"
+                                    "message": "No data"
                                 }
                             }
                         }
@@ -967,6 +981,283 @@
                             "application/json": {
                                 "example": {
                                     "message": "Price successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/schedules": {
+            "get": {
+                "tags": [
+                    "user schedules"
+                ],
+                "summary": "Get list of schedules specified master",
+                "description": "Send request to get full list of schedules specified master",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    },
+                    {
+                        "name": "filter[date][]",
+                        "in": "query",
+                        "description": "Date filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2023-01-01"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Schedules"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/schedules/{schedule}": {
+            "get": {
+                "tags": [
+                    "user schedules"
+                ],
+                "summary": "Find schedules by ID",
+                "description": "Returns a specified master schedule by ID",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "schedule",
+                        "in": "path",
+                        "description": "schedule id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Schedules"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "No data"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "user schedules"
+                ],
+                "summary": "Update schedule",
+                "description": "Update specified master schedule",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "scheduleId",
+                        "in": "path",
+                        "description": "Schedule ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "The schedule date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2023-01-01"
+                        }
+                    },
+                    {
+                        "name": "time",
+                        "in": "query",
+                        "description": "The schedule time",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "12:43"
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Schedules"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user schedules"
+                ],
+                "summary": "Delete user specified schedule",
+                "description": "Deleted user specified schedule",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "schedule",
+                        "in": "path",
+                        "description": "schedule ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Schedule successfully deleted"
                                 }
                             }
                         }
@@ -1140,14 +1431,6 @@
             "Schedules": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "master_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
                     "date": {
                         "type": "string",
                         "example": "1111-01-01"
@@ -1158,43 +1441,54 @@
                     },
                     "status": {
                         "type": "string",
-                        "example": "available",
+                        "example": "unavailable",
                         "enum": [
                             "available",
                             "unavailable"
                         ]
+                    },
+                    "appointment": {
+                        "$ref": "#/components/schemas/Appointments"
                     }
                 }
             },
             "Appointments": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
+                    "firstname": {
+                        "type": "string",
+                        "example": "Firstname"
                     },
-                    "schedule_id": {
-                        "type": "integer",
-                        "example": 1
+                    "lastname": {
+                        "type": "string",
+                        "example": "Lastname"
                     },
-                    "client_id": {
-                        "type": "integer",
-                        "example": 2
+                    "email": {
+                        "type": "string",
+                        "example": "email@email.com"
                     },
-                    "price_id": {
-                        "type": "integer",
-                        "example": 1
+                    "phone_number": {
+                        "type": "string",
+                        "example": "+380112223344"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Brows coloring"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Brows"
                     },
                     "sum": {
                         "type": "integer",
                         "example": 250
                     },
-                    "pay": {
+                    "payment": {
                         "type": "string",
-                        "example": "fullpay",
+                        "example": "full",
                         "enum": [
                             "prepay",
-                            "fullpay"
+                            "full"
                         ]
                     }
                 }

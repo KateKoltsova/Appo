@@ -121,7 +121,7 @@ class ScheduleController extends Controller
     public function update(ScheduleUpdateRequest $request, string $user, string $schedule)
     {
         $params = $request->validated();
-        $scheduleInstance = Schedule::where('master_id', $user)->where('id', $schedule);
+        $scheduleInstance = Schedule::where('id', $schedule);
         if ($scheduleInstance) {
             $scheduleInstance->update($params);
             return $this->show($user, $schedule);
@@ -135,7 +135,7 @@ class ScheduleController extends Controller
      */
     public function destroy(string $user, string $schedule)
     {
-        $scheduleInstance = Schedule::where('master_id', $user)->where('id', $schedule)->first();
+        $scheduleInstance = Schedule::where('id', $schedule)->first();
         if (!$scheduleInstance) {
             return response()->json(['message' => 'No data'], 404);
         }

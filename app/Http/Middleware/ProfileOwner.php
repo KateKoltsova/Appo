@@ -15,7 +15,8 @@ class ProfileOwner
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->user()->id != $request->route('user')) {
+        if ((auth()->user()->id != $request->route('user'))
+            || (!empty($request->master_id) && auth()->user()->id != $request->master_id)) {
             return response()->json(['message' => 'You don\'t have permissions to make this action'], Response::HTTP_FORBIDDEN);
         }
         return $next($request);

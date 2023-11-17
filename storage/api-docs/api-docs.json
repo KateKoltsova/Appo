@@ -1,0 +1,1213 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Swagger docs for Appo Beauty API",
+        "description": "This is a Appo Beauty Server based on the OpenAPI 3.0 specification. \n\nSome useful links:\n- [The API repository](https://github.com/KateKoltsova/Appo)\n- [The API server](https://appobeauty-6ecbc596ee8d.herokuapp.com/api)",
+        "contact": {
+            "email": "kate.koltsova.work@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://appobeauty-6ecbc596ee8d.herokuapp.com/api",
+            "description": "Production API server"
+        },
+        {
+            "url": "https://appobeauty-6ecbc596ee8d.herokuapp.com",
+            "description": "Web Interface"
+        }
+    ],
+    "tags": [
+        {
+            "name": "auth",
+            "description": "Authentication and authorization (работает)"
+        },
+        {
+            "name": "user profile",
+            "description": "CRUD operations with users (работает)"
+        },
+        {
+            "name": "user prices",
+            "description": "CRUD operations with prices (работает)"
+        },
+        {
+            "name": "services",
+            "description": "CRUD operations with services (в процессе, пока только получение списка услуг)"
+        }
+    ],
+    "paths": {
+        "/oauth/login": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get user token for log in",
+                "description": "After user fill form, you may send request with user data to this route for getting access token and use that with next requests",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "The user email for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "email@email.com"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "The password for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 11111111
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "token_type": "Bearer",
+                                    "expires_in": 2592000,
+                                    "accesss_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",
+                                    "refresh_token": "def5020018d3951b50069ff0d3203e95c882",
+                                    "id": 15
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "These credentials do not match our records",
+                                    "errors": {
+                                        "email": "These credentials do not match our records"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/refresh": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh user token",
+                "description": "You may send refresh token to this route for get new pair access-refresh tokens, when access token is expired or another reason to update access token",
+                "parameters": [
+                    {
+                        "name": "refresh token",
+                        "in": "query",
+                        "description": "The refresh token for get new access token",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "def50200df1406341509569112d62de1438c"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "token_type": "Bearer",
+                                    "expires_in": 2592000,
+                                    "accesss_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",
+                                    "refresh_token": "def5020018d3951b50069ff0d3203e95c882",
+                                    "id": 15
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "invalid_request,",
+                                    "error_description": "The refresh token is invalid",
+                                    "hint": "Cannot decrypt the refresh token",
+                                    "message": "The refresh token is invalid"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/password/forgot": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Send to user email link for change password",
+                "description": "When you send request to this route, the user with receives an email with a link to change the password, the URL that you specify in the request is used to generating the link",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "The email needed change password",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "email@email.com"
+                        }
+                    },
+                    {
+                        "name": "url",
+                        "in": "query",
+                        "description": "URL to use for creating link for change password mail",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "https://url.com/password/reset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK (временно отдаю токен, мне нужен для теста)",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "data": {
+                                        "token": "32d6ba5550aba3b8e4516f8e374629044bb7f6995350ecdc53f9ca078a636ebe"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Invalid user"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/logout": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user",
+                "description": "Logout user",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User successfully logout"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/logout/all": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user from all devices",
+                "description": "Logout user from all devices",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User successfully logout from all devices"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/password/reset": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Change user password",
+                "description": "When you send request to this route, the user with receives an email with a link to change the password, the URL that you specify in the request is used to generating the link",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "User email",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "email@email.com"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "New user password",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 11111111
+                        }
+                    },
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "Token getting from email link",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "def50200df1406341509569112d62de1438c"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Password for user email@email.com successfully changed"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Invalid token"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register new user",
+                "description": "Send request with all user parameters to create new user",
+                "parameters": [
+                    {
+                        "name": "firstname",
+                        "in": "query",
+                        "description": "The user firstname for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Firstname"
+                        }
+                    },
+                    {
+                        "name": "lastname",
+                        "in": "query",
+                        "description": "The user lastname for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Lastname"
+                        }
+                    },
+                    {
+                        "name": "birthdate",
+                        "in": "query",
+                        "description": "The user birthdate for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1111-01-01"
+                        }
+                    },
+                    {
+                        "name": "phone_number",
+                        "in": "query",
+                        "description": "The user phone number for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "+380111111111"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "The user email for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "email@email.com"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "The password for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 11111111
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Successfully Created"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "The email field must be a valid email address. (and 2 more errors)",
+                                    "errors": {
+                                        "email": "The email field must be a valid email address",
+                                        "phone_number": [
+                                            "The phone number field must be at least 13 characters",
+                                            "The phone number field format is invalid"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users": {
+            "get": {
+                "tags": [
+                    "user profile"
+                ],
+                "summary": "Get list of users",
+                "description": "Send request to get full list of users",
+                "parameters": [
+                    {
+                        "name": "filter[role]",
+                        "in": "query",
+                        "description": "User role for filtration",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "master"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Users"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{id}": {
+            "get": {
+                "tags": [
+                    "user profile"
+                ],
+                "summary": "Find user by ID",
+                "description": "Returns a specified user by ID",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Users"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "No query results for model [App\\Models\\User] 16"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "user profile"
+                ],
+                "summary": "Update user",
+                "description": "Update specified user profile data",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "firstname",
+                        "in": "query",
+                        "description": "The user firstname for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Firstname"
+                        }
+                    },
+                    {
+                        "name": "lastname",
+                        "in": "query",
+                        "description": "The user lastname for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Lastname"
+                        }
+                    },
+                    {
+                        "name": "birthdate",
+                        "in": "query",
+                        "description": "The user birthdate for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1111-01-01"
+                        }
+                    },
+                    {
+                        "name": "phone_number",
+                        "in": "query",
+                        "description": "The user phone number for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "+380111111111"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "The user email for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "email@email.com"
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Users"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "The lastname field must only contain letters",
+                                    "errors": {
+                                        "lastname": "The lastname field must only contain letters"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user profile"
+                ],
+                "summary": "Delete user",
+                "description": "Logout and soft deleted user",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id that needs to be deleted",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/prices": {
+            "get": {
+                "tags": [
+                    "user prices"
+                ],
+                "summary": "Get list of prices specified master",
+                "description": "Send request to get full list of prices specified master",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Prices"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/prices/{price}": {
+            "get": {
+                "tags": [
+                    "user prices"
+                ],
+                "summary": "Find price by ID",
+                "description": "Returns a specified master price by ID",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "in": "path",
+                        "description": "Price id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Prices"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "No query results"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "user prices"
+                ],
+                "summary": "Update price",
+                "description": "Update specified master price",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "priceId",
+                        "in": "path",
+                        "description": "Price ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "in": "query",
+                        "description": "The service cost value",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 350
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Prices"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "The price field must only contain numbers"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user prices"
+                ],
+                "summary": "Delete user specified price",
+                "description": "Deleted user specified price",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "in": "path",
+                        "description": "Price ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Price successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/v1/services": {
+            "get": {
+                "tags": [
+                    "services"
+                ],
+                "summary": "Get list of services",
+                "description": "You can get full list of services",
+                "security": [
+                    {
+                        "access_token": [
+                            "create:users",
+                            "read:users",
+                            "update:users",
+                            "delete:users"
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "data": {
+                                        "categories": [
+                                            "Nails",
+                                            "Brows",
+                                            "Lashes"
+                                        ],
+                                        "services": [
+                                            {
+                                                "id": 1,
+                                                "title": "Eyelash extension classic",
+                                                "category": "Lashes"
+                                            },
+                                            {
+                                                "id": 1,
+                                                "title": "Eyelash extension 2D-3D",
+                                                "category": "Lashes"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Users": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "firstname": {
+                        "type": "string",
+                        "example": "FirstName"
+                    },
+                    "lastname": {
+                        "type": "string",
+                        "example": "LastName"
+                    },
+                    "birthdate": {
+                        "type": "string",
+                        "example": "1111-01-01"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "email@email.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "11111111"
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "example": "+380111111111"
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/Roles"
+                    }
+                }
+            },
+            "Roles": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "client",
+                        "enum": [
+                            "client",
+                            "master",
+                            "admin"
+                        ]
+                    }
+                }
+            },
+            "Services": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Brows",
+                        "enum": [
+                            "Nails",
+                            "Lashes",
+                            "Brows"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Brow coloring"
+                    }
+                }
+            },
+            "Prices": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Brows coloring"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Brows"
+                    },
+                    "price": {
+                        "type": "integer",
+                        "example": 250
+                    }
+                }
+            },
+            "Schedules": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "master_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "date": {
+                        "type": "string",
+                        "example": "1111-01-01"
+                    },
+                    "time": {
+                        "type": "string",
+                        "example": "00-00-00"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "available",
+                        "enum": [
+                            "available",
+                            "unavailable"
+                        ]
+                    }
+                }
+            },
+            "Appointments": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "schedule_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "client_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "price_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "sum": {
+                        "type": "integer",
+                        "example": 250
+                    },
+                    "pay": {
+                        "type": "string",
+                        "example": "fullpay",
+                        "enum": [
+                            "prepay",
+                            "fullpay"
+                        ]
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "access_token": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "http(\"bearer\")",
+                "name": "authorization",
+                "in": "header"
+            }
+        }
+    }
+}

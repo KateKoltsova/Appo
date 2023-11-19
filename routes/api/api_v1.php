@@ -4,20 +4,20 @@
 //});
 
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
-    ->only('index', 'show')
-    ->middleware(['auth:api']);
+    ->only('index')
+    ->middleware(['auth:api', 'scope:admin']);
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
-    ->only('update', 'destroy')
+    ->only('show', 'update', 'destroy')
     ->middleware(['auth:api', 'owner']);
 
 Route::resource('users/{user}/prices', \App\Http\Controllers\Api\V1\PriceController::class)
     ->except('create', 'edit')
-    ->middleware(['auth:api', 'owner']);
+    ->middleware(['auth:api', 'scope:master', 'owner']);
 
 Route::resource('users/{user}/schedules', \App\Http\Controllers\Api\V1\ScheduleController::class)
     ->except('create', 'edit')
-    ->middleware(['auth:api', 'owner']);
+    ->middleware(['auth:api', 'scope:master', 'owner']);
 
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index')
-    ->middleware(['auth:api']);
+    ->middleware(['auth:api', 'scope:admin']);

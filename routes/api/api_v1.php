@@ -18,6 +18,10 @@ Route::resource('users/{user}/schedules', \App\Http\Controllers\Api\V1\ScheduleC
     ->except('create', 'edit')
     ->middleware(['auth:api', 'scope:master', 'owner']);
 
+Route::resource('users/{user}/appointments', \App\Http\Controllers\Api\V1\AppointmentController::class)
+    ->only('index', 'show', 'destroy')
+    ->middleware(['auth:api', 'scope:client', 'owner']);
+
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index')
     ->middleware(['auth:api', 'scope:admin']);

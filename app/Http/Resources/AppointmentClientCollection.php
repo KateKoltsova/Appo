@@ -5,9 +5,9 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class AppointmentCollection extends ResourceCollection
+class AppointmentClientCollection extends ResourceCollection
 {
-    public $collects = AppointmentResource::class;
+    public $collects = AppointmentClientResource::class;
 
     /**
      * Transform the resource collection into an array.

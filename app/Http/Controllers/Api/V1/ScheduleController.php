@@ -10,6 +10,7 @@ use App\Http\Resources\ScheduleResource;
 use App\Models\Appointment;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ScheduleController extends Controller
 {
@@ -58,12 +59,12 @@ class ScheduleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ScheduleCreateRequest $request)
+    public function store(ScheduleCreateRequest $request, string $user)
     {
         $params = $request->validated();
         $schedule = Schedule::updateOrCreate(
             [
-                'master_id' => $params['master_id'],
+                'master_id' => $user,
                 'date' => $params['date'],
                 'time' => $params['time'],
             ],
@@ -121,7 +122,7 @@ class ScheduleController extends Controller
     public function update(ScheduleUpdateRequest $request, string $user, string $schedule)
     {
         $params = $request->validated();
-        $scheduleInstance = Schedule::where('id', $schedule);
+        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user);
         if ($scheduleInstance) {
             $scheduleInstance->update($params);
             return $this->show($user, $schedule);
@@ -135,12 +136,12 @@ class ScheduleController extends Controller
      */
     public function destroy(string $user, string $schedule)
     {
-        $scheduleInstance = Schedule::where('id', $schedule)->first();
+        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
         if (!$scheduleInstance) {
             return response()->json(['message' => 'No data'], 404);
         }
         if ($scheduleInstance->status == 'unavailable') {
-            Appointment::where('schedule_id', $scheduleInstance->id)->delete();
+            $scheduleInstance->appointment()->delete();
         }
         $scheduleInstance->delete();
         return response()->json(['message' => 'Schedule successfully deleted']);

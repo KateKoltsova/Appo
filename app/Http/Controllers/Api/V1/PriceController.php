@@ -10,6 +10,7 @@ use App\Http\Resources\PriceResource;
 use App\Models\Price;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class PriceController extends Controller
 {
@@ -45,11 +46,11 @@ class PriceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PriceCreateRequest $request)
+    public function store(PriceCreateRequest $request, string $user)
     {
         $params = $request->validated();
         $price = Price::updateOrCreate(
-            ['master_id' => $params['master_id'], 'service_id' => $params['service_id']],
+            ['master_id' => $user, 'service_id' => $params['service_id']],
             ['price' => $params['price']]
         );
         if ($price) {
@@ -105,7 +106,11 @@ class PriceController extends Controller
      */
     public function destroy(string $user, string $price)
     {
-        Price::where('master_id', $user)->where('service_id', $price)->delete();
+        $priceInstance = Price::where('master_id', $user)->where('service_id', $price)->first();
+        if (!$priceInstance) {
+            return response()->json(['message' => 'No data'], 404);
+        }
+        $priceInstance->delete();
         return response()->json(['message' => 'Price successfully deleted']);
     }
 }

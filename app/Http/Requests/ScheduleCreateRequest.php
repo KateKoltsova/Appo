@@ -23,10 +23,7 @@ class ScheduleCreateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $role = Role::master()->first();
-        $masters = $role->users()->pluck('id')->toArray();
         return [
-            'master_id' => ['required', Rule::in($masters)],
             'date' => ['required', 'date'],
             'time' => ['required', 'date_format:H:i']
         ];

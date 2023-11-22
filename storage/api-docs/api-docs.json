@@ -29,11 +29,15 @@
         },
         {
             "name": "user prices",
-            "description": "CRUD operations with prices (работает)"
+            "description": "CRUD operations with prices (only master)"
         },
         {
             "name": "user schedules",
-            "description": "CRUD operations with schedules (работает)"
+            "description": "CRUD operations with schedules (only master)"
+        },
+        {
+            "name": "user appointments",
+            "description": "RD operations with appointments (only client)"
         },
         {
             "name": "services",
@@ -41,6 +45,106 @@
         }
     ],
     "paths": {
+        "/register": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register new user",
+                "description": "Send request with all user parameters to create new user",
+                "parameters": [
+                    {
+                        "name": "firstname",
+                        "in": "query",
+                        "description": "The user firstname for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Firstname"
+                        }
+                    },
+                    {
+                        "name": "lastname",
+                        "in": "query",
+                        "description": "The user lastname for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Lastname"
+                        }
+                    },
+                    {
+                        "name": "birthdate",
+                        "in": "query",
+                        "description": "The user birthdate for login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1111-01-01"
+                        }
+                    },
+                    {
+                        "name": "phone_number",
+                        "in": "query",
+                        "description": "The user phone number for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "+380111111111"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "The user email for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "email@email.com"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "The password for login",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 11111111
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Successfully Created"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "The email field must be a valid email address. (and 2 more errors)",
+                                    "errors": {
+                                        "email": "The email field must be a valid email address",
+                                        "phone_number": [
+                                            "The phone number field must be at least 13 characters",
+                                            "The phone number field format is invalid"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/oauth/login": {
             "post": {
                 "tags": [
@@ -206,90 +310,6 @@
                 }
             }
         },
-        "/oauth/logout": {
-            "delete": {
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Logout user",
-                "description": "Logout user",
-                "security": [
-                    {
-                        "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
-                        ]
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "access_token",
-                        "in": "header",
-                        "description": "Access token",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/securitySchemes/access_token"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "example": {
-                                    "message": "User successfully logout"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/oauth/logout/all": {
-            "delete": {
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Logout user from all devices",
-                "description": "Logout user from all devices",
-                "security": [
-                    {
-                        "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
-                        ]
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "access_token",
-                        "in": "header",
-                        "description": "Access token",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/securitySchemes/access_token"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "example": {
-                                    "message": "User successfully logout from all devices"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/password/reset": {
             "post": {
                 "tags": [
@@ -353,72 +373,27 @@
                 }
             }
         },
-        "/register": {
-            "post": {
+        "/oauth/logout": {
+            "delete": {
                 "tags": [
                     "auth"
                 ],
-                "summary": "Register new user",
-                "description": "Send request with all user parameters to create new user",
+                "summary": "Logout user",
+                "description": "Logout user",
+                "security": [
+                    {
+                        "access_token": [
+                        ]
+                    }
+                ],
                 "parameters": [
                     {
-                        "name": "firstname",
-                        "in": "query",
-                        "description": "The user firstname for login",
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "example": "Firstname"
-                        }
-                    },
-                    {
-                        "name": "lastname",
-                        "in": "query",
-                        "description": "The user lastname for login",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Lastname"
-                        }
-                    },
-                    {
-                        "name": "birthdate",
-                        "in": "query",
-                        "description": "The user birthdate for login",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "1111-01-01"
-                        }
-                    },
-                    {
-                        "name": "phone_number",
-                        "in": "query",
-                        "description": "The user phone number for login",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "+380111111111"
-                        }
-                    },
-                    {
-                        "name": "email",
-                        "in": "query",
-                        "description": "The user email for login",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "email@email.com"
-                        }
-                    },
-                    {
-                        "name": "password",
-                        "in": "query",
-                        "description": "The password for login",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": 11111111
+                            "$ref": "#/components/securitySchemes/access_token"
                         }
                     }
                 ],
@@ -428,24 +403,45 @@
                         "content": {
                             "application/json": {
                                 "example": {
-                                    "message": "Successfully Created"
+                                    "message": "User successfully logout"
                                 }
                             }
                         }
-                    },
-                    "422": {
-                        "description": "UNPROCESSABLE CONTENT",
+                    }
+                }
+            }
+        },
+        "/oauth/logout/all": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user from all devices",
+                "description": "Logout user from all devices",
+                "security": [
+                    {
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "example": {
-                                    "message": "The email field must be a valid email address. (and 2 more errors)",
-                                    "errors": {
-                                        "email": "The email field must be a valid email address",
-                                        "phone_number": [
-                                            "The phone number field must be at least 13 characters",
-                                            "The phone number field format is invalid"
-                                        ]
-                                    }
+                                    "message": "User successfully logout from all devices"
                                 }
                             }
                         }
@@ -458,8 +454,17 @@
                 "tags": [
                     "user profile"
                 ],
-                "summary": "Get list of users",
+                "summary": "Get list of users (only admin)",
                 "description": "Send request to get full list of users",
+                "security": [
+                    {
+                        "role": [
+                            "admin"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "filter[role][]",
@@ -486,26 +491,25 @@
                 }
             }
         },
-        "/v1/users/{id}": {
+        "/v1/users/{user}": {
             "get": {
                 "tags": [
                     "user profile"
                 ],
-                "summary": "Find user by ID",
+                "summary": "Find user by ID (only own data, admin-all data)",
                 "description": "Returns a specified user by ID",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "user",
                         "in": "path",
                         "description": "User ID",
                         "required": true,
@@ -551,21 +555,21 @@
                 "tags": [
                     "user profile"
                 ],
-                "summary": "Update user",
+                "summary": "Update user (only own data, admin-all data)",
                 "description": "Update specified user profile data",
                 "security": [
                     {
+                        "role": [
+                            "master",
+                            "client"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "user",
                         "in": "path",
                         "description": "User ID",
                         "required": true,
@@ -664,21 +668,20 @@
                 "tags": [
                     "user profile"
                 ],
-                "summary": "Delete user",
+                "summary": "Delete user (only own data, admin-all data)",
                 "description": "Logout and soft deleted user",
                 "security": [
                     {
+                        "role": [
+                            "admin"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "user",
                         "in": "path",
                         "description": "The id that needs to be deleted",
                         "required": true,
@@ -723,11 +726,10 @@
                 "description": "Send request to get full list of prices specified master",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -785,11 +787,10 @@
                 "description": "Returns a specified master price by ID",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -855,11 +856,10 @@
                 "description": "Update specified master price",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -935,11 +935,10 @@
                 "description": "Deleted user specified price",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -1000,11 +999,10 @@
                 "description": "Send request to get full list of schedules specified master",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -1062,11 +1060,10 @@
                 "description": "Returns a specified master schedule by ID",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -1132,11 +1129,10 @@
                 "description": "Update specified master schedule",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -1212,11 +1208,10 @@
                 "description": "Deleted user specified schedule",
                 "security": [
                     {
+                        "role": [
+                            "master"
+                        ],
                         "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
                         ]
                     }
                 ],
@@ -1258,6 +1253,200 @@
                             "application/json": {
                                 "example": {
                                     "message": "Schedule successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/appointments": {
+            "get": {
+                "tags": [
+                    "user appointments"
+                ],
+                "summary": "Get list of appointments specified client",
+                "description": "Send request to get full list of appointments specified client",
+                "security": [
+                    {
+                        "role": [
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    },
+                    {
+                        "name": "filter[date][]",
+                        "in": "query",
+                        "description": "Date filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2023-01-01"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Appointments"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/appointments/{appoitment}": {
+            "get": {
+                "tags": [
+                    "user appointments"
+                ],
+                "summary": "Find appointments by ID",
+                "description": "Returns a specified client appointment by ID",
+                "security": [
+                    {
+                        "role": [
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "description": "appointment id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Appointments"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "No data"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user appointments"
+                ],
+                "summary": "Delete client specified appointment",
+                "description": "Deleted client specified appointment",
+                "security": [
+                    {
+                        "role": [
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "description": "appointment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Appointment successfully deleted"
                                 }
                             }
                         }
@@ -1363,7 +1552,13 @@
                         "example": "+380111111111"
                     },
                     "role": {
-                        "$ref": "#/components/schemas/Roles"
+                        "type": "string",
+                        "example": "master",
+                        "enum": [
+                            "master",
+                            "client",
+                            "admin"
+                        ]
                     }
                 }
             },
@@ -1431,6 +1626,10 @@
             "Schedules": {
                 "type": "object",
                 "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
                     "date": {
                         "type": "string",
                         "example": "1111-01-01"
@@ -1448,36 +1647,61 @@
                         ]
                     },
                     "appointment": {
-                        "$ref": "#/components/schemas/Appointments"
+                        "properties": {
+                            "firstname": {
+                                "type": "string",
+                                "example": "Firstname"
+                            },
+                            "lastname": {
+                                "type": "string",
+                                "example": "Lastname"
+                            },
+                            "email": {
+                                "type": "string",
+                                "example": "email@email.com"
+                            },
+                            "phone_number": {
+                                "type": "string",
+                                "example": "+380111111111"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "Brows coloring"
+                            },
+                            "category": {
+                                "type": "string",
+                                "example": "Brows"
+                            },
+                            "sum": {
+                                "type": "integer",
+                                "example": 250
+                            },
+                            "payment": {
+                                "type": "string",
+                                "example": "full",
+                                "enum": [
+                                    "prepay",
+                                    "full"
+                                ]
+                            }
+                        }
                     }
                 }
             },
             "Appointments": {
                 "type": "object",
                 "properties": {
-                    "firstname": {
-                        "type": "string",
-                        "example": "Firstname"
+                    "id": {
+                        "type": "integer",
+                        "example": 210
                     },
-                    "lastname": {
-                        "type": "string",
-                        "example": "Lastname"
+                    "schedule_id": {
+                        "type": "integer",
+                        "example": 210
                     },
-                    "email": {
-                        "type": "string",
-                        "example": "email@email.com"
-                    },
-                    "phone_number": {
-                        "type": "string",
-                        "example": "+380112223344"
-                    },
-                    "title": {
-                        "type": "string",
-                        "example": "Brows coloring"
-                    },
-                    "category": {
-                        "type": "string",
-                        "example": "Brows"
+                    "service_id": {
+                        "type": "integer",
+                        "example": 210
                     },
                     "sum": {
                         "type": "integer",
@@ -1490,6 +1714,30 @@
                             "prepay",
                             "full"
                         ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Brows coloring"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Brows"
+                    },
+                    "master_firstname": {
+                        "type": "string",
+                        "example": "Firstname"
+                    },
+                    "master_lastname": {
+                        "type": "string",
+                        "example": "Lastname"
+                    },
+                    "date": {
+                        "type": "string",
+                        "example": "1111-01-01"
+                    },
+                    "time": {
+                        "type": "string",
+                        "example": "00-00-00"
                     }
                 }
             }

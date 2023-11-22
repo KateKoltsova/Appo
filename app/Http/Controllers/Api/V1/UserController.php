@@ -18,9 +18,13 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $roles = $request->input('filter.role') ?? ['master'];
-        $users = User::with('role')
-            ->whereHas('role', function ($query) use ($roles) {
+        $roles = $request->input('filter.role');
+        $users = User::join('roles', 'users.role_id', '=', 'roles.id')
+            ->select([
+                'users.*',
+                'roles.role'
+            ])
+            ->when($roles, function ($query) use ($roles) {
                 $query->whereIn('role', $roles);
             })
             ->get();
@@ -53,8 +57,12 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::where('id', $id)
-            ->with('role')
+        $user = User::where('users.id', $id)
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->select([
+                'users.*',
+                'roles.role'
+            ])
             ->first();
         if (!empty($user)) {
             $userResource = new UserResource($user);

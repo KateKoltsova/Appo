@@ -40,7 +40,7 @@ class Price extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'master_id', 'id');
     }
 
     public function service()

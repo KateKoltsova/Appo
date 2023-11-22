@@ -17,8 +17,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
+//Auth::routes();
 
-Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'authenticate']);
+Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login.form');
+Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login');
+
+Route::get('/password/forgot', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('password.request');
+Route::post('/password/forgot', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('password.email');
+Route::get('/password/reset/{token}', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('password.reset');
+Route::post('/password/reset', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('password.update');
+
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

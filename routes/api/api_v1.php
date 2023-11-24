@@ -24,4 +24,4 @@ Route::resource('users/{user}/appointments', \App\Http\Controllers\Api\V1\Appoin
 
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index')
-    ->middleware(['auth:api', 'scope:admin']);
+    ->middleware(['auth:api', 'scope:admin,master']);

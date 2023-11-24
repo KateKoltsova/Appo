@@ -122,7 +122,7 @@ class ScheduleController extends Controller
     public function update(ScheduleUpdateRequest $request, string $user, string $schedule)
     {
         $params = $request->validated();
-        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user);
+        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
         if ($scheduleInstance) {
             $scheduleInstance->update($params);
             return $this->show($user, $schedule);
@@ -140,7 +140,7 @@ class ScheduleController extends Controller
         if (!$scheduleInstance) {
             return response()->json(['message' => 'No data'], 404);
         }
-        if ($scheduleInstance->status == 'unavailable') {
+        if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
             $scheduleInstance->appointment()->delete();
         }
         $scheduleInstance->delete();

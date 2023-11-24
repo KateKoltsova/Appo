@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Schedule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ScheduleUpdateRequest extends FormRequest
 {
@@ -22,8 +24,10 @@ class ScheduleUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => ['date'],
-            'time' => ['date_format:H:i']
+            'date' => ['required', 'date'],
+            'time' => ['required', 'date_format:H:i', Rule::unique('schedules', 'time')
+                ->where('date', $this->date)
+                ->ignore($this->schedule)]
         ];
     }
 }

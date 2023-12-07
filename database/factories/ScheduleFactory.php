@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Role;
+use DateTime;
+use DateTimeZone;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,8 +22,10 @@ class ScheduleFactory extends Factory
         $status = config('constants.db.status.available');
         $role = Role::master()->first();
         $masters = $role->users()->get();
+        $date = new DateTime('now', new DateTimeZone('Europe/Kiev'));
+        $daysInMonth = $date->format('t');
 
-        for ($day = 1; $day <= cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y')); $day++) {
+        for ($day = 1; $day <= $daysInMonth; $day += 2) {
             $dates[] = date('Y-m-') . $day;
         }
 

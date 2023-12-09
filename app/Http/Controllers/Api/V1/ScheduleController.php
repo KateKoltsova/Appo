@@ -40,12 +40,8 @@ class ScheduleController extends Controller
                 $query->whereIn('date', $date);
             })
             ->get();
-        if (!empty($schedule->toArray())) {
             $scheduleCollection = new ScheduleCollection($schedule);
             return response()->json(['data' => $scheduleCollection]);
-        } else {
-            return response()->json(['message' => 'No data'], 404);
-        }
     }
 
     /**
@@ -104,7 +100,7 @@ class ScheduleController extends Controller
             $scheduleResource = new ScheduleResource($scheduleInstance);
             return response()->json(['data' => $scheduleResource]);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Schedule not found'], 404);
         }
     }
 
@@ -127,7 +123,7 @@ class ScheduleController extends Controller
             $scheduleInstance->update($params);
             return $this->show($user, $schedule);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Schedule not found'], 404);
         }
     }
 
@@ -138,7 +134,7 @@ class ScheduleController extends Controller
     {
         $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
         if (!$scheduleInstance) {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Schedule not found'], 404);
         }
         if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
             $scheduleInstance->appointment()->delete();

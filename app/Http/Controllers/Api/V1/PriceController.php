@@ -27,12 +27,8 @@ class PriceController extends Controller
                 $query->whereIn('category', $categories);
             })
             ->get();
-        if (!empty($prices->toArray())) {
             $priceCollection = new PriceCollection($prices);
             return response()->json(['data' => $priceCollection]);
-        } else {
-            return response()->json(['message' => 'No data'], 404);
-        }
     }
 
     /**
@@ -74,7 +70,7 @@ class PriceController extends Controller
             $priceResource = new PriceResource($priceInstance);
             return response()->json(['data' => $priceResource]);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Price not found'], 404);
         }
     }
 
@@ -97,7 +93,7 @@ class PriceController extends Controller
             $priceInstance->update($params);
             return $this->show($user, $price);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Price not found'], 404);
         }
     }
 
@@ -108,7 +104,7 @@ class PriceController extends Controller
     {
         $priceInstance = Price::where('master_id', $user)->where('service_id', $price)->first();
         if (!$priceInstance) {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Price not found'], 404);
         }
         $priceInstance->delete();
         return response()->json(['message' => 'Price successfully deleted']);

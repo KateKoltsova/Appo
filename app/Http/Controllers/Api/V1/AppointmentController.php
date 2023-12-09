@@ -44,13 +44,8 @@ class AppointmentController extends Controller
 //                $query->whereIn('date', $date);
 //            })
 //            ->get();
-//        dd($appointment->toArray());
-        if (!empty($appointment->toArray())) {
             $appointmentCollection = new AppointmentClientCollection($appointment);
             return response()->json(['data' => $appointmentCollection]);
-        } else {
-            return response()->json(['message' => 'No data'], 404);
-        }
     }
 
     /**
@@ -93,7 +88,7 @@ class AppointmentController extends Controller
             $appointmentResource = new AppointmentClientResource($appointmentInstance);
             return response()->json(['data' => $appointmentResource]);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['Appointment not found'], 404);
         }
     }
 
@@ -120,7 +115,7 @@ class AppointmentController extends Controller
     {
         $appointmentInstance = Appointment::where('id', $appointment)->where('client_id', $user)->first();
         if (!$appointmentInstance) {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Appointment not found'], 404);
         }
         $appointmentInstance->schedule()->update(['status' => 'available']);
         $appointmentInstance->delete();

@@ -28,12 +28,8 @@ class UserController extends Controller
                 $query->whereIn('role', $roles);
             })
             ->get();
-        if (!empty($users->toArray())) {
             $userCollection = new UserCollection($users);
             return response()->json(['data' => $userCollection]);
-        } else {
-            return response()->json(['message' => 'No data'], 404);
-        }
     }
 
     /**
@@ -68,7 +64,7 @@ class UserController extends Controller
             $userResource = new UserResource($user);
             return response()->json(['data' => $userResource]);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'User not found'], 404);
 
         }
     }

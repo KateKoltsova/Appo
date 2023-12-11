@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleCreateRequest;
 use App\Http\Requests\ScheduleUpdateRequest;
+use App\Http\Resources\AvailableScheduleCollection;
 use App\Http\Resources\ScheduleCollection;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Appointment;
+use App\Models\Role;
 use App\Models\Schedule;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,8 +23,11 @@ class ScheduleController extends Controller
     public function index(Request $request, string $user)
     {
         $date = $request->input('filter.date');
-        $schedule = Schedule::with([
-            'appointment' => function ($query) {
+        $schedule = Schedule::select([
+            'schedules.id as schedule_id',
+            'schedules.*'
+        ])
+            ->with(['appointment' => function ($query) {
                 $query
                     ->join('users', 'appointments.client_id', '=', 'users.id')
                     ->join('services', 'appointments.service_id', '=', 'services.id')
@@ -40,8 +46,67 @@ class ScheduleController extends Controller
                 $query->whereIn('date', $date);
             })
             ->get();
-            $scheduleCollection = new ScheduleCollection($schedule);
-            return response()->json(['data' => $scheduleCollection]);
+        $scheduleCollection = new ScheduleCollection($schedule);
+        return response()->json(['data' => $scheduleCollection]);
+    }
+
+    public function getAllAvailable(Request $request)
+    {
+        $date = $request->input('filter.date');
+        $category = $request->input('filter.category');
+        $service = $request->input('filter.service_id');
+//        $role = Role::master()->first();
+        $availableSchedules = Role::master()->first()->users()
+//            ->where('users.role_id', $role->id)
+            ->select([
+                'id',
+                'firstname',
+                'lastname'
+            ])
+            ->with([
+                'schedules' => function ($query) use ($date) {
+                    $query
+                        ->where('schedules.status', config('constants.db.status.available'))
+                        ->where(function ($query) {
+                            $query
+                                ->where('schedules.blocked_until', '<', now())
+                                ->orWhereNull('schedules.blocked_until');
+                        })
+                        ->when($date, function ($query) use ($date) {
+                            $query->whereIn('date', $date);
+                        })
+                        ->select([
+                            'id as schedule_id',
+                            'master_id',
+                            'date',
+                            'time',
+                            'status',
+                        ]);
+                }
+            ])
+            ->with([
+                'prices' => function ($query) use ($service, $category) {
+                    $query
+                        ->join('services', 'prices.service_id', '=', 'services.id')
+                        ->when($service, function ($query) use ($service) {
+                            $query->whereIn('service_id', $service);
+                        })
+                        ->when($category, function ($query) use ($category) {
+                            $query->whereIn('category', $category);
+                        })
+                        ->select([
+                            'prices.id as price_id',
+                            'master_id',
+                            'service_id',
+                            'price',
+                            'category',
+                            'title'
+                        ]);
+                }
+            ])
+            ->get();
+        $availableScheduleCollection = new AvailableScheduleCollection($availableSchedules);
+        return response()->json(['data' => $availableScheduleCollection]);
     }
 
     /**
@@ -78,8 +143,11 @@ class ScheduleController extends Controller
      */
     public function show(string $user, string $schedule)
     {
-        $scheduleInstance = Schedule::with([
-            'appointment' => function ($query) {
+        $scheduleInstance = Schedule::select([
+            'schedules.id as schedule_id',
+            'schedules.*'
+        ])
+            ->with(['appointment' => function ($query) {
                 $query
                     ->join('users', 'appointments.client_id', '=', 'users.id')
                     ->join('services', 'appointments.service_id', '=', 'services.id')

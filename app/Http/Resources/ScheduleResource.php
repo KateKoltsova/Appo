@@ -16,7 +16,7 @@ class ScheduleResource extends JsonResource
     {
         if (!empty($this->appointment)) {
             $schedule = [
-                'id' => $this->id,
+                'schedule_id' => $this->schedule_id,
                 'date' => $this->date,
                 'time' => $this->time,
                 'status' => $this->status,
@@ -24,7 +24,7 @@ class ScheduleResource extends JsonResource
             ];
         } else {
             $schedule = [
-                'id' => $this->id,
+                'schedule_id' => $this->schedule_id,
                 'date' => $this->date,
                 'time' => $this->time,
                 'status' => $this->status,

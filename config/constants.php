@@ -4,7 +4,7 @@ return [
         'roles' => [
             'master' => 'master',
             'client' => 'client',
-            'admin' =>'admin',
+            'admin' => 'admin',
         ],
         'services' => [
             ['category' => 'Lashes',
@@ -51,6 +51,9 @@ return [
         'status' => [
             'available' => 'available',
             'unavailable' => 'unavailable'
+        ],
+        'blocked' => [
+            'minutes' => 15
         ]
     ]
 ];

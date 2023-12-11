@@ -117,7 +117,7 @@ class AppointmentController extends Controller
         if (!$appointmentInstance) {
             return response()->json(['message' => 'Appointment not found'], 404);
         }
-        $appointmentInstance->schedule()->update(['status' => 'available']);
+        $appointmentInstance->schedule()->update(['status' => config('constants.db.status.available')]);
         $appointmentInstance->delete();
         return response()->json(['message' => 'Appointment successfully deleted']);
     }

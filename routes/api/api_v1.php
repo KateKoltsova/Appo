@@ -17,6 +17,7 @@ Route::resource('users/{user}/prices', \App\Http\Controllers\Api\V1\PriceControl
 Route::resource('users/{user}/schedules', \App\Http\Controllers\Api\V1\ScheduleController::class)
     ->except('create', 'edit')
     ->middleware(['auth:api', 'scope:master', 'owner']);
+Route::get('schedules', [\App\Http\Controllers\Api\V1\ScheduleController::class, 'getAllAvailable'])->name('schedules.getAllAvailable');
 
 Route::resource('users/{user}/appointments', \App\Http\Controllers\Api\V1\AppointmentController::class)
     ->only('index', 'show', 'destroy')

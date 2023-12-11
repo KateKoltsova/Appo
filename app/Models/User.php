@@ -97,12 +97,12 @@ class User extends Authenticatable
 
     public function prices()
     {
-        return $this->hasMany(Price::class);
+        return $this->hasMany(Price::class, 'master_id', 'id');
     }
 
     public function schedules()
     {
-        return $this->hasMany(Schedule::class);
+        return $this->hasMany(Schedule::class, 'master_id', 'id');
     }
 
     public function appointments()

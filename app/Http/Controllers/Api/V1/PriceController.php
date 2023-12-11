@@ -20,8 +20,13 @@ class PriceController extends Controller
     public function index(Request $request, string $user)
     {
         $categories = $request->input('filter.category');
-        $prices = Service::select(['services.*', 'prices.price'])
-            ->rightJoin('prices', 'service_id', '=', 'services.id')
+        $prices = Service::select([
+            'services.id as service_id',
+            'services.*',
+            'prices.id as price_id',
+            'prices.price'
+        ])
+            ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
             ->where('master_id', $user)
             ->when($categories, function ($query) use ($categories) {
                 $query->whereIn('category', $categories);
@@ -61,8 +66,13 @@ class PriceController extends Controller
      */
     public function show(string $user, string $price)
     {
-        $priceInstance = Service::select(['services.*', 'prices.price'])
-            ->rightJoin('prices', 'service_id', '=', 'services.id')
+        $priceInstance = Service::select([
+            'services.id as service_id',
+            'services.*',
+            'prices.id as price_id',
+            'prices.price'
+        ])
+            ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
             ->where('master_id', $user)
             ->where('services.id', $price)
             ->first();

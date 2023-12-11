@@ -55,7 +55,7 @@ class PriceController extends Controller
             ['price' => $params['price']]
         );
         if ($price) {
-            return $this->show($price->master_id, $price->service_id);
+            return $this->show($price->master_id, $price->id);
         } else {
             return response()->json(['message' => 'Bad request'], 400);
         }
@@ -74,7 +74,7 @@ class PriceController extends Controller
         ])
             ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
             ->where('master_id', $user)
-            ->where('services.id', $price)
+            ->where('prices.id', $price)
             ->first();
         if (!empty($priceInstance)) {
             $priceResource = new PriceResource($priceInstance);
@@ -98,7 +98,7 @@ class PriceController extends Controller
     public function update(PriceUpdateRequest $request, string $user, string $price)
     {
         $params = $request->validated();
-        $priceInstance = Price::where('master_id', $user)->where('service_id', $price);
+        $priceInstance = Price::where('master_id', $user)->where('id', $price);
         if ($priceInstance) {
             $priceInstance->update($params);
             return $this->show($user, $price);
@@ -112,7 +112,7 @@ class PriceController extends Controller
      */
     public function destroy(string $user, string $price)
     {
-        $priceInstance = Price::where('master_id', $user)->where('service_id', $price)->first();
+        $priceInstance = Price::where('master_id', $user)->where('id', $price)->first();
         if (!$priceInstance) {
             return response()->json(['message' => 'Price not found'], 404);
         }

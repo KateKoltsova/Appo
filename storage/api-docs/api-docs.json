@@ -28,15 +28,15 @@
             "description": "CRUD operations with users (работает)"
         },
         {
-            "name": "user prices",
+            "name": "master prices",
             "description": "CRUD operations with prices (only master)"
         },
         {
-            "name": "user schedules",
+            "name": "master schedules",
             "description": "CRUD operations with schedules (only master)"
         },
         {
-            "name": "user appointments",
+            "name": "client appointments",
             "description": "RD operations with appointments (only client)"
         },
         {
@@ -179,12 +179,8 @@
                         "description": "OK",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "token_type": "Bearer",
-                                    "expires_in": 2592000,
-                                    "accesss_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",
-                                    "refresh_token": "def5020018d3951b50069ff0d3203e95c882",
-                                    "id": 15
+                                "schema": {
+                                    "$ref": "#/components/schemas/Token"
                                 }
                             }
                         }
@@ -230,11 +226,13 @@
                         "content": {
                             "application/json": {
                                 "example": {
-                                    "token_type": "Bearer",
-                                    "expires_in": 2592000,
-                                    "accesss_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",
-                                    "refresh_token": "def5020018d3951b50069ff0d3203e95c882",
-                                    "id": 15
+                                    "data": {
+                                        "token_type": "Bearer",
+                                        "expires_in": 2592000,
+                                        "accesss_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9",
+                                        "refresh_token": "def5020018d3951b50069ff0d3203e95c882",
+                                        "id": 15
+                                    }
                                 }
                             }
                         }
@@ -483,7 +481,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Users"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Users"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -534,7 +537,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Users"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                        "$ref": "#/components/schemas/Users"}
+                                    }
                                 }
                             }
                         }
@@ -644,7 +651,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Users"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Users"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -720,7 +732,7 @@
         "/v1/users/{user}/prices": {
             "get": {
                 "tags": [
-                    "user prices"
+                    "master prices"
                 ],
                 "summary": "Get list of prices specified master",
                 "description": "Send request to get full list of prices specified master",
@@ -770,7 +782,86 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Prices"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Prices"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "master prices"
+                ],
+                "summary": "Create new price specified master",
+                "description": "Send request to get full list of prices specified master",
+                "security": [
+                    {
+                        "role": [
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "service_id",
+                        "in": "query",
+                        "description": "Service ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "in": "query",
+                        "description": "Cost value",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 350
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Prices"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -781,7 +872,7 @@
         "/v1/users/{user}/prices/{price}": {
             "get": {
                 "tags": [
-                    "user prices"
+                    "master prices"
                 ],
                 "summary": "Find price by ID",
                 "description": "Returns a specified master price by ID",
@@ -831,7 +922,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Prices"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Prices"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -850,7 +946,7 @@
             },
             "patch": {
                 "tags": [
-                    "user prices"
+                    "master prices"
                 ],
                 "summary": "Update price",
                 "description": "Update specified master price",
@@ -910,7 +1006,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Prices"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Prices"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -929,7 +1030,7 @@
             },
             "delete": {
                 "tags": [
-                    "user prices"
+                    "master prices"
                 ],
                 "summary": "Delete user specified price",
                 "description": "Deleted user specified price",
@@ -993,7 +1094,7 @@
         "/v1/users/{user}/schedules": {
             "get": {
                 "tags": [
-                    "user schedules"
+                    "master schedules"
                 ],
                 "summary": "Get list of schedules specified master",
                 "description": "Send request to get full list of schedules specified master",
@@ -1043,7 +1144,86 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Schedules"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Schedules"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "master schedules"
+                ],
+                "summary": "Create schedule specified master",
+                "description": "Send request to create schedule specified master",
+                "security": [
+                    {
+                        "role": [
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Date",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "1111-11-11"
+                        }
+                    },
+                    {
+                        "name": "time",
+                        "in": "query",
+                        "description": "Time",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "11:00"
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Schedules"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1054,7 +1234,7 @@
         "/v1/users/{user}/schedules/{schedule}": {
             "get": {
                 "tags": [
-                    "user schedules"
+                    "master schedules"
                 ],
                 "summary": "Find schedules by ID",
                 "description": "Returns a specified master schedule by ID",
@@ -1104,7 +1284,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Schedules"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Schedules"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1123,7 +1308,7 @@
             },
             "patch": {
                 "tags": [
-                    "user schedules"
+                    "master schedules"
                 ],
                 "summary": "Update schedule",
                 "description": "Update specified master schedule",
@@ -1193,7 +1378,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Schedules"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Schedules"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1202,7 +1392,7 @@
             },
             "delete": {
                 "tags": [
-                    "user schedules"
+                    "master schedules"
                 ],
                 "summary": "Delete user specified schedule",
                 "description": "Deleted user specified schedule",
@@ -1266,7 +1456,7 @@
         "/v1/users/{user}/appointments": {
             "get": {
                 "tags": [
-                    "user appointments"
+                    "client appointments"
                 ],
                 "summary": "Get list of appointments specified client",
                 "description": "Send request to get full list of appointments specified client",
@@ -1316,7 +1506,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Appointments"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Appointments"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1327,7 +1522,7 @@
         "/v1/users/{user}/appointments/{appoitment}": {
             "get": {
                 "tags": [
-                    "user appointments"
+                    "client appointments"
                 ],
                 "summary": "Find appointments by ID",
                 "description": "Returns a specified client appointment by ID",
@@ -1377,7 +1572,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Appointments"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Appointments"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1396,7 +1596,7 @@
             },
             "delete": {
                 "tags": [
-                    "user appointments"
+                    "client appointments"
                 ],
                 "summary": "Delete client specified appointment",
                 "description": "Deleted client specified appointment",
@@ -1543,10 +1743,6 @@
                         "type": "string",
                         "example": "email@email.com"
                     },
-                    "password": {
-                        "type": "string",
-                        "example": "11111111"
-                    },
                     "phone_number": {
                         "type": "string",
                         "example": "+380111111111"
@@ -1626,7 +1822,7 @@
             "Schedules": {
                 "type": "object",
                 "properties": {
-                    "id": {
+                    "schedule_id": {
                         "type": "integer",
                         "example": 10
                     },
@@ -1648,6 +1844,10 @@
                     },
                     "appointment": {
                         "properties": {
+                            "appointment_id": {
+                                "type": "integer",
+                                "example": "10"
+                            },
                             "firstname": {
                                 "type": "string",
                                 "example": "Firstname"
@@ -1740,15 +1940,44 @@
                         "example": "00-00-00"
                     }
                 }
+            },
+            "Token": {
+                "properties": {
+                    "token_type": {
+                        "example": "Bearer"
+                    },
+                    "expires_in": {
+                        "example": "2592000"
+                    },
+                    "access_token": {
+                        "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9"
+                    },
+                    "refresh_token": {
+                        "example": "def5020018d3951b50069ff0d3203e95c882"
+                    },
+                    "id": {
+                        "example": 15
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
             "access_token": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "http(\"bearer\")",
+                "type": "apiKey",
                 "name": "authorization",
-                "in": "header"
+                "in": "header",
+                "flows": {
+                    "authorizationCode": {
+                        "authorizationUrl": "https://appobeauty-6ecbc596ee8d.herokuapp.com/api/oauth/login",
+                        "scopes": {
+                            "master": "master permissions",
+                            "client": "client permissions",
+                            "admin": "admin permissions"
+                        }
+                    }
+                },
+                "scheme": "bearer"
             }
         }
     }

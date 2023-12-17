@@ -37,6 +37,15 @@ class Appointment extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'schedule_id',
+        'service_id',
+        'client_id',
+        'sum',
+        'payment',
+        'paid_sum'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'client_id', 'id');

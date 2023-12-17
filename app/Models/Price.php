@@ -48,4 +48,9 @@ class Price extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
+
 }

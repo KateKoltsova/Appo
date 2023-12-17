@@ -20,6 +20,7 @@ class AppointmentClientResource extends JsonResource
             "service_id" => $this->service_id,
             'sum' => $this->sum,
             'payment' => $this->payment,
+            'paid_sum' => $this->paid_sum,
             "title" => $this->title,
             "category" => $this->category,
             "master_firstname" => $this->master_firstname,

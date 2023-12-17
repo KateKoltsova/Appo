@@ -43,10 +43,8 @@ return [
             ],
         ],
         'payment' => [
-            ['name' => 'full'],
-            ['name' => 'prepayment',
-                'value' => 100,
-            ]
+            'full' => ['full'],
+            'prepayment' => ['prepayment', 100],
         ],
         'status' => [
             'available' => 'available',
@@ -54,6 +52,9 @@ return [
         ],
         'blocked' => [
             'minutes' => 15
+        ],
+        'diff_between_services' => [
+            'minutes' => 60
         ]
     ]
 ];

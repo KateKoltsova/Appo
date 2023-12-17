@@ -24,6 +24,7 @@ class AppointmentResource extends JsonResource
             'category' => $this->category,
             'sum' => $this->sum,
             'payment' => $this->payment,
+            'paid_sum' => $this->paid_sum
         ];
     }
 }

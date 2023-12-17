@@ -2,11 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ScheduleCreateRequest extends FormRequest
+class CartAddRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +23,12 @@ class ScheduleCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => ['required', 'date'],
-            'time' => ['required', 'date_format:H:i:s']
+            'schedule_id' => ['required', 'exists:App\Models\Schedule,id', Rule::unique('carts', 'schedule_id')
+                ->where(function ($query) {
+                return $query->where('client_id', $this->user()->id);
+            })],
+            'service_id' => ['required', Rule::exists('prices', 'service_id')->where('id', $this->price_id)],
+            'price_id' => ['required', 'exists:App\Models\Price,id']
         ];
     }
 }

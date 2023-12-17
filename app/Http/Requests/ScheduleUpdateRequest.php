@@ -25,7 +25,7 @@ class ScheduleUpdateRequest extends FormRequest
     {
         return [
             'date' => ['required', 'date'],
-            'time' => ['required', 'date_format:H:i', Rule::unique('schedules', 'time')
+            'time' => ['required', 'date_format:H:i:s', Rule::unique('schedules', 'time')
                 ->where('date', $this->date)
                 ->ignore($this->schedule)]
         ];

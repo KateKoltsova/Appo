@@ -24,10 +24,9 @@ class PriceCreateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $services = Service::pluck('id')->toArray();
         return [
-            'service_id' => ['required', Rule::in($services)],
-            'price' => ['required', 'integer', 'min:1']
+            'service_id' => ['required', 'exists:App\Models\Service, id'],
+            'price' => ['required', 'integer', 'min:100']
         ];
     }
 }

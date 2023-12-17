@@ -18,7 +18,7 @@ class UserUpdateRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        if (Str::substr($this->phone_number, 0, 1) != '+') {
+        if (isset($this->phone_number) && (Str::substr($this->phone_number, 0, 1) != '+')) {
             $this->merge([
                 'phone_number' => '+' . $this->phone_number,
             ]);

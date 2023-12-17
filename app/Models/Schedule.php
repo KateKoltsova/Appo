@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\BlockService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,7 +39,9 @@ class Schedule extends Model
         'master_id',
         'date',
         'time',
-        'status'
+        'status',
+        'blocked_until',
+        'blocked_by'
     ];
 
     public function user()
@@ -54,5 +57,10 @@ class Schedule extends Model
     public function appointment()
     {
         return $this->hasOne(Appointment::class);
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(Cart::class, 'schedule_id', 'id');
     }
 }

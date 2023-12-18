@@ -40,8 +40,14 @@ class ScheduleController extends Controller
                         'appointments.*',
                     ]);
             }
-        ])
+            ])
             ->where('master_id', $user)
+            ->where(function ($query) {
+                $query
+                    ->where('date', '>', now())
+                    ->orWhere('date', '=', now()->format('Y-m-d'))
+                    ->where('time', '>', now()->format('H:i:s'));
+            })
             ->when($date, function ($query) use ($date) {
                 $query->whereIn('date', $date);
             })
@@ -55,9 +61,7 @@ class ScheduleController extends Controller
         $date = $request->input('filter.date');
         $category = $request->input('filter.category');
         $service = $request->input('filter.service_id');
-//        $role = Role::master()->first();
         $availableSchedules = Role::master()->first()->users()
-//            ->where('users.role_id', $role->id)
             ->select([
                 'id',
                 'firstname',
@@ -71,6 +75,12 @@ class ScheduleController extends Controller
                             $query
                                 ->where('schedules.blocked_until', '<', now())
                                 ->orWhereNull('schedules.blocked_until');
+                        })
+                        ->where(function ($query) {
+                            $query
+                                ->where('date', '>', now())
+                                ->orWhere('date', '=', now()->format('Y-m-d'))
+                                ->where('time', '>', now()->format('H:i:s'));
                         })
                         ->when($date, function ($query) use ($date) {
                             $query->whereIn('date', $date);
@@ -123,13 +133,13 @@ class ScheduleController extends Controller
     public function store(ScheduleCreateRequest $request, string $user)
     {
         $params = $request->validated();
-        $schedule = Schedule::updateOrCreate(
+        $schedule = Schedule::create(
             [
                 'master_id' => $user,
                 'date' => $params['date'],
                 'time' => $params['time'],
+                'status' => config('constants.db.status.available')
             ],
-            ['status' => config('constants.db.status.available')]
         );
         if ($schedule) {
             return $this->show($schedule->master_id, $schedule->id);
@@ -160,7 +170,13 @@ class ScheduleController extends Controller
                         'appointments.*',
                     ]);
             }
-        ])
+            ])
+            ->where(function ($query) {
+                $query
+                    ->where('date', '>', now())
+                    ->orWhere('date', '=', now()->format('Y-m-d'))
+                    ->where('time', '>', now()->format('H:i:s'));
+            })
             ->where('master_id', $user)
             ->where('schedules.id', $schedule)
             ->first();
@@ -205,9 +221,26 @@ class ScheduleController extends Controller
             return response()->json(['message' => 'Schedule not found'], 404);
         }
         if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
-            $scheduleInstance->appointment()->delete();
+            $scheduleInstance->appointment()->first()->delete();
         }
         $scheduleInstance->delete();
         return response()->json(['message' => 'Schedule successfully deleted']);
+    }
+
+    public function destroyAppointment(string $user, string $schedule)
+    {
+        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
+
+        if (!$scheduleInstance) {
+            return response()->json(['message' => 'Schedule not found'], 404);
+        }
+
+        if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
+            $scheduleInstance->appointment()->first()->delete();
+            $scheduleInstance->update(['status' => config('constants.db.status.available')]);
+
+        }
+
+        return response()->json(['message' => 'Appointment on this schedule successfully deleted']);
     }
 }

@@ -39,18 +39,13 @@ class AppointmentController extends Controller
             ->when($date, function ($query) use ($date) {
                 $query->whereIn('date', $date);
             })
+            ->where(function ($query) {
+                $query
+                    ->where('date', '>', now())
+                    ->orWhere('date', '=', now()->format('Y-m-d'))
+                    ->where('time', '>', now()->format('H:i:s'));
+            })
             ->get();
-//        $appointment = Appointment::with([
-//            'schedule' => function ($query) {
-//                $query->with('master');
-//            },
-//            'service'
-//        ])
-//            ->where('client_id', $user)
-//            ->when($date, function ($query) use ($date) {
-//                $query->whereIn('date', $date);
-//            })
-//            ->get();
         $appointmentCollection = new AppointmentClientCollection($appointment);
         return response()->json(['data' => $appointmentCollection]);
     }
@@ -84,7 +79,10 @@ class AppointmentController extends Controller
                 (!is_null($cartItemSchedule->blocked_by)
                     && $cartItemSchedule->blocked_by != $userId
                     && !is_null($cartItemSchedule->blocked_until)
-                    && ($cartItemSchedule->blocked_until >= now()))) {
+                    && ($cartItemSchedule->blocked_until >= now())) ||
+                ($cartItemSchedule->date < now()->format('Y-m-d') ||
+                    ($cartItemSchedule->date == now()->format('Y-m-d')
+                        && $cartItemSchedule->time <= now()->format('H:i:s')))) {
                 return response()->json(['message' => 'Some schedules in cart already unavailable'], 400);
             }
 
@@ -96,9 +94,18 @@ class AppointmentController extends Controller
             if (!is_null($otherCartsItems)) {
                 foreach ($otherCartsItems as $otherCartItem) {
                     $otherCartItemSchedule = $otherCartItem->schedule()->first();
-                    if ($otherCartItemSchedule->status === config('constants.db.status.unavailable')) {
+
+                    if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
+                        (!is_null($otherCartItemSchedule->blocked_by)
+                            && $otherCartItemSchedule->blocked_by != $userId
+                            && !is_null($otherCartItemSchedule->blocked_until)
+                            && ($otherCartItemSchedule->blocked_until >= now())) ||
+                        ($otherCartItemSchedule->date < now()->format('Y-m-d') ||
+                            ($otherCartItemSchedule->date == now()->format('Y-m-d')
+                                && $otherCartItemSchedule->time <= now()->format('H:i:s')))) {
                         continue;
                     }
+
                     $timeCartItem = new DateTime($cartItemSchedule->time);
                     $timeOtherCartItem = new DateTime($otherCartItemSchedule->time);
                     $diff = $timeOtherCartItem->diff($timeCartItem);
@@ -176,12 +183,18 @@ class AppointmentController extends Controller
             ->join('users as masters', 'schedules.master_id', '=', 'masters.id')
             ->where('appointments.client_id', '=', $user)
             ->where('appointments.id', '=', $appointment)
+            ->where(function ($query) {
+                $query
+                    ->where('date', '>', now())
+                    ->orWhere('date', '=', now()->format('Y-m-d'))
+                    ->where('time', '>', now()->format('H:i:s'));
+            })
             ->first();
         if (!empty($appointmentInstance)) {
             $appointmentResource = new AppointmentClientResource($appointmentInstance);
             return response()->json(['data' => $appointmentResource]);
         } else {
-            return response()->json(['Appointment not found'], 404);
+            return response()->json(['message' => 'Appointment not found'], 404);
         }
     }
 
@@ -207,10 +220,12 @@ class AppointmentController extends Controller
     public function destroy(string $user, string $appointment)
     {
         $appointmentInstance = Appointment::where('id', $appointment)->where('client_id', $user)->first();
+
         if (!$appointmentInstance) {
             return response()->json(['message' => 'Appointment not found'], 404);
         }
-        $appointmentInstance->schedule()->update(['status' => config('constants.db.status.available')]);
+
+        $appointmentInstance->schedule()->first()->update(['status' => config('constants.db.status.available')]);
         $appointmentInstance->delete();
         return response()->json(['message' => 'Appointment successfully deleted']);
     }

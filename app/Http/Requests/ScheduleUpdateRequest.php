@@ -24,10 +24,18 @@ class ScheduleUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => ['required', 'date'],
-            'time' => ['required', 'date_format:H:i:s', Rule::unique('schedules', 'time')
-                ->where('date', $this->date)
-                ->ignore($this->schedule)]
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'time' => ['required', 'date_format:H:i:s', function ($attribute, $value, $fail) {
+                if ($this->date == now()->format('Y-m-d')) {
+                    if ($value <= now()->format('H:i:s')) {
+                        $fail("The time field must be after now");
+                    }
+                }
+            },
+                Rule::unique('schedules', 'time')
+                    ->where('master_id', $this->user()->id)
+                    ->where('date', $this->date)
+                    ->ignore($this->schedule)]
         ];
     }
 }

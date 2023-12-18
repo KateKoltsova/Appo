@@ -63,34 +63,42 @@ class CartController extends Controller
         $params = $request->validated();
         $params['client_id'] = $user;
         $schedule = Schedule::findOrFail($params['schedule_id']);
-
         if ($schedule->status === config('constants.db.status.unavailable') ||
             (!is_null($schedule->blocked_by)
                 && $schedule->blocked_by != $user
                 && !is_null($schedule->blocked_until)
-                && ($schedule->blocked_until >= now()))) {
+                && ($schedule->blocked_until >= now())) ||
+            ($schedule->date < now()->format('Y-m-d') ||
+                ($schedule->date == now()->format('Y-m-d')
+                    && $schedule->time <= now()->format('H:i:s')))) {
             return response()->json(['message' => 'Schedule already unavailable'], 400);
         }
 
         $inCart = Cart::where('client_id', $user)->pluck('schedule_id')->toArray();
-        $schedules = Schedule::whereIn('id', $inCart)->get();
+        $otherSchedules = Schedule::whereIn('id', $inCart)->get();
 
-        foreach ($schedules->toArray() as $item) {
-
-            if ($item['status'] === config('constants.db.status.unavailable')) {
+        foreach ($otherSchedules->toArray() as $otherSchedule) {
+            if ($otherSchedule['status'] === config('constants.db.status.unavailable') ||
+                (!is_null($otherSchedule['blocked_by'])
+                    && $otherSchedule['blocked_by'] != $user
+                    && !is_null($otherSchedule['blocked_until'])
+                    && ($otherSchedule['blocked_until'] >= now())) ||
+                ($otherSchedule['date'] < now()->format('Y-m-d') ||
+                    ($otherSchedule['date'] == now()->format('Y-m-d')
+                        && $otherSchedule['time'] <= now()->format('H:i:s')))) {
                 continue;
             }
 
-            $timeInCart = new DateTime($item['time']);
+            $timeInCart = new DateTime($otherSchedule['time']);
             $timeAdding = new DateTime($schedule->time);
             $diff = $timeInCart->diff($timeAdding);
             $diffMinutes = $diff->i + $diff->h * 60;
 
-            if (($item['date'] === $schedule->date) && ($diffMinutes === 0)) {
+            if (($otherSchedule['date'] === $schedule->date) && ($diffMinutes === 0)) {
                 return response()->json(['message' => 'You already have the same date-time in the cart'], 400);
             }
 
-            if (($item['date'] === $schedule->date) && ($diffMinutes < config('constants.db.diff_between_services.minutes'))) {
+            if (($otherSchedule['date'] === $schedule->date) && ($diffMinutes < config('constants.db.diff_between_services.minutes'))) {
                 return response()->json(['message' => 'Selected time too close to items in cart'], 400);
             }
         }
@@ -165,7 +173,10 @@ class CartController extends Controller
                     (!is_null($cartItemSchedule->blocked_by)
                         && $cartItemSchedule->blocked_by != $user
                         && !is_null($cartItemSchedule->blocked_until)
-                        && ($cartItemSchedule->blocked_until >= now()))) {
+                        && ($cartItemSchedule->blocked_until >= now())) ||
+                    ($cartItemSchedule->date < now()->format('Y-m-d') ||
+                        ($cartItemSchedule->date == now()->format('Y-m-d')
+                            && $cartItemSchedule->time <= now()->format('H:i:s')))) {
                     return response()->json(['message' => 'Some schedules in cart already unavailable'], 400);
                 }
                 BlockService::block(config('constants.db.blocked.minutes'), $user, $cartItemSchedule);

@@ -33,7 +33,10 @@ class CartResource extends JsonResource
             (!is_null($this->blocked_by)
                 && $this->blocked_by != $this->user()->first()->id
                 && !is_null($this->blocked_until)
-                && ($this->blocked_until >= now()))) {
+                && ($this->blocked_until >= now())) ||
+            ($this->date < now()->format('Y-m-d') ||
+                ($this->date == now()->format('Y-m-d')
+                    && $this->time <= now()->format('H:i:s')))) {
             $cart['message'] = 'Schedule already unavailable';
         }
 

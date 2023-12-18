@@ -25,6 +25,9 @@ Route::resource('users/{user}/appointments', \App\Http\Controllers\Api\V1\Appoin
     ->only('index', 'store', 'show', 'destroy')
     ->middleware(['auth:api', 'scope:client,master', 'owner']);
 
+Route::delete('users/{user}/schedules/{schedule}/appointment', [\App\Http\Controllers\Api\V1\ScheduleController::class, 'destroyAppointment'])->name('schedules.destroyAppointment')
+->middleware(['auth:api', 'scope:master', 'owner']);
+
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index');
 

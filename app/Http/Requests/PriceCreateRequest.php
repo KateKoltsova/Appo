@@ -25,7 +25,7 @@ class PriceCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'service_id' => ['required', 'exists:App\Models\Service, id'],
+            'service_id' => ['required', 'exists:App\Models\Service,id'],
             'price' => ['required', 'integer', 'min:100']
         ];
     }

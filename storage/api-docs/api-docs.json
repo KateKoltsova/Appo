@@ -6,6 +6,7 @@
         "contact": {
             "email": "kate.koltsova.work@gmail.com"
         },
+        "x-copyright": "(C) Kateryna Koltsova 2023. All rights reserved.",
         "version": "1.0.0"
     },
     "servers": [
@@ -20,35 +21,39 @@
     ],
     "tags": [
         {
-            "name": "auth",
-            "description": "Authentication and authorization (работает)"
+            "name": "Auth",
+            "description": "Authentication and authorization"
         },
         {
-            "name": "user profile",
-            "description": "CRUD operations with users (работает)"
+            "name": "Profile",
+            "description": "CRUD operations with users"
         },
         {
-            "name": "master prices",
-            "description": "CRUD operations with prices (only master)"
+            "name": "Prices",
+            "description": "CRUD operations with prices"
         },
         {
-            "name": "master schedules",
-            "description": "CRUD operations with schedules (only master)"
+            "name": "Schedules",
+            "description": "CRUD operations with schedules"
         },
         {
-            "name": "client appointments",
-            "description": "RD operations with appointments (only client)"
+            "name": "Appointments",
+            "description": "RD operations with appointments"
         },
         {
-            "name": "services",
-            "description": "CRUD operations with services (в процессе, пока только получение списка услуг)"
+            "name": "Services",
+            "description": "CRUD operations with services"
+        },
+        {
+            "name": "Carts",
+            "description": "Cart functionality"
         }
     ],
     "paths": {
         "/register": {
             "post": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Register new user",
                 "description": "Send request with all user parameters to create new user",
@@ -148,7 +153,7 @@
         "/oauth/login": {
             "post": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Get user token for log in",
                 "description": "After user fill form, you may send request with user data to this route for getting access token and use that with next requests",
@@ -204,7 +209,7 @@
         "/oauth/refresh": {
             "post": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Refresh user token",
                 "description": "You may send refresh token to this route for get new pair access-refresh tokens, when access token is expired or another reason to update access token",
@@ -256,7 +261,7 @@
         "/password/forgot": {
             "post": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Send to user email link for change password",
                 "description": "When you send request to this route, the user with receives an email with a link to change the password, the URL that you specify in the request is used to generating the link",
@@ -311,7 +316,7 @@
         "/password/reset": {
             "post": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Change user password",
                 "description": "When you send request to this route, the user with receives an email with a link to change the password, the URL that you specify in the request is used to generating the link",
@@ -374,7 +379,7 @@
         "/oauth/logout": {
             "delete": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Logout user",
                 "description": "Logout user",
@@ -412,7 +417,7 @@
         "/oauth/logout/all": {
             "delete": {
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Logout user from all devices",
                 "description": "Logout user from all devices",
@@ -450,7 +455,7 @@
         "/v1/users": {
             "get": {
                 "tags": [
-                    "user profile"
+                    "Profile"
                 ],
                 "summary": "Get list of users (only admin)",
                 "description": "Send request to get full list of users",
@@ -497,7 +502,7 @@
         "/v1/users/{user}": {
             "get": {
                 "tags": [
-                    "user profile"
+                    "Profile"
                 ],
                 "summary": "Find user by ID (only own data, admin-all data)",
                 "description": "Returns a specified user by ID",
@@ -540,7 +545,8 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                        "$ref": "#/components/schemas/Users"}
+                                            "$ref": "#/components/schemas/Users"
+                                        }
                                     }
                                 }
                             }
@@ -560,7 +566,7 @@
             },
             "patch": {
                 "tags": [
-                    "user profile"
+                    "Profile"
                 ],
                 "summary": "Update user (only own data, admin-all data)",
                 "description": "Update specified user profile data",
@@ -678,7 +684,7 @@
             },
             "delete": {
                 "tags": [
-                    "user profile"
+                    "Profile"
                 ],
                 "summary": "Delete user (only own data, admin-all data)",
                 "description": "Logout and soft deleted user",
@@ -732,9 +738,9 @@
         "/v1/users/{user}/prices": {
             "get": {
                 "tags": [
-                    "master prices"
+                    "Prices"
                 ],
-                "summary": "Get list of prices specified master",
+                "summary": "Get list of prices specified master (only master)",
                 "description": "Send request to get full list of prices specified master",
                 "security": [
                     {
@@ -785,7 +791,11 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Prices"
+                                            "properties": {
+                                                "0": {
+                                                    "$ref": "#/components/schemas/Prices"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -796,9 +806,9 @@
             },
             "post": {
                 "tags": [
-                    "master prices"
+                    "Prices"
                 ],
-                "summary": "Create new price specified master",
+                "summary": "Create new price specified master (only master)",
                 "description": "Send request to get full list of prices specified master",
                 "security": [
                     {
@@ -872,9 +882,9 @@
         "/v1/users/{user}/prices/{price}": {
             "get": {
                 "tags": [
-                    "master prices"
+                    "Prices"
                 ],
-                "summary": "Find price by ID",
+                "summary": "Find price by ID (only master)",
                 "description": "Returns a specified master price by ID",
                 "security": [
                     {
@@ -946,9 +956,9 @@
             },
             "patch": {
                 "tags": [
-                    "master prices"
+                    "Prices"
                 ],
-                "summary": "Update price",
+                "summary": "Update price (only master)",
                 "description": "Update specified master price",
                 "security": [
                     {
@@ -1030,9 +1040,9 @@
             },
             "delete": {
                 "tags": [
-                    "master prices"
+                    "Prices"
                 ],
-                "summary": "Delete user specified price",
+                "summary": "Delete user specified price (only master)",
                 "description": "Deleted user specified price",
                 "security": [
                     {
@@ -1094,9 +1104,9 @@
         "/v1/users/{user}/schedules": {
             "get": {
                 "tags": [
-                    "master schedules"
+                    "Schedules"
                 ],
-                "summary": "Get list of schedules specified master",
+                "summary": "Get list of schedules specified master (only master)",
                 "description": "Send request to get full list of schedules specified master",
                 "security": [
                     {
@@ -1158,9 +1168,9 @@
             },
             "post": {
                 "tags": [
-                    "master schedules"
+                    "Schedules"
                 ],
-                "summary": "Create schedule specified master",
+                "summary": "Create schedule specified master (only master)",
                 "description": "Send request to create schedule specified master",
                 "security": [
                     {
@@ -1234,9 +1244,9 @@
         "/v1/users/{user}/schedules/{schedule}": {
             "get": {
                 "tags": [
-                    "master schedules"
+                    "Schedules"
                 ],
-                "summary": "Find schedules by ID",
+                "summary": "Find schedules by ID (only master)",
                 "description": "Returns a specified master schedule by ID",
                 "security": [
                     {
@@ -1308,9 +1318,9 @@
             },
             "patch": {
                 "tags": [
-                    "master schedules"
+                    "Schedules"
                 ],
-                "summary": "Update schedule",
+                "summary": "Update schedule (only master)",
                 "description": "Update specified master schedule",
                 "security": [
                     {
@@ -1392,9 +1402,9 @@
             },
             "delete": {
                 "tags": [
-                    "master schedules"
+                    "Schedules"
                 ],
-                "summary": "Delete user specified schedule",
+                "summary": "Delete user specified schedule (only master)",
                 "description": "Deleted user specified schedule",
                 "security": [
                     {
@@ -1456,9 +1466,9 @@
         "/v1/users/{user}/appointments": {
             "get": {
                 "tags": [
-                    "client appointments"
+                    "Appointments"
                 ],
-                "summary": "Get list of appointments specified client",
+                "summary": "Get list of appointments specified client (only client)",
                 "description": "Send request to get full list of appointments specified client",
                 "security": [
                     {
@@ -1517,14 +1527,97 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "tags": [
+                    "Appointments"
+                ],
+                "summary": "Store list of appointments from cart specified user (only auth users)",
+                "description": "Send request to store list of appointments from cart specified user",
+                "security": [
+                    {
+                        "role": [
+                            "client,master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    },
+                    {
+                        "name": "payment",
+                        "in": "query",
+                        "description": "Way to pay",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "full",
+                            "enum": [
+                                "full",
+                                "prepayment"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "example": "Appointment successfully store"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "example": "Bad request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/v1/users/{user}/appointments/{appoitment}": {
             "get": {
                 "tags": [
-                    "client appointments"
+                    "Appointments"
                 ],
-                "summary": "Find appointments by ID",
+                "summary": "Find appointments by ID (only client)",
                 "description": "Returns a specified client appointment by ID",
                 "security": [
                     {
@@ -1596,9 +1689,9 @@
             },
             "delete": {
                 "tags": [
-                    "client appointments"
+                    "Appointments"
                 ],
-                "summary": "Delete client specified appointment",
+                "summary": "Delete client specified appointment (only client)",
                 "description": "Deleted client specified appointment",
                 "security": [
                     {
@@ -1660,9 +1753,9 @@
         "/v1/services": {
             "get": {
                 "tags": [
-                    "services"
+                    "Services"
                 ],
-                "summary": "Get list of services",
+                "summary": "Get list of services (only admin, master)",
                 "description": "You can get full list of services",
                 "security": [
                     {
@@ -1709,6 +1802,464 @@
                                                 "category": "Lashes"
                                             }
                                         ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/carts": {
+            "get": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Get list of cart items specified user (only auth)",
+                "description": "Send request to get full list of cart items specified user",
+                "security": [
+                    {
+                        "role": [
+                            "client",
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "properties": {
+                                                        "0": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        },
+                                                        "1": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        },
+                                                        "...": {},
+                                                        "n": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        }
+                                                    }
+                                                },
+                                                "totalSum": {
+                                                    "type": "integer",
+                                                    "example": 780
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Add item to the cart specified user (only auth)",
+                "description": "Send request to add item to the cart items specified user",
+                "security": [
+                    {
+                        "role": [
+                            "client",
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "schedule_id",
+                        "in": "query",
+                        "description": "schedule_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "service_id",
+                        "in": "query",
+                        "description": "service_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "price_id",
+                        "in": "query",
+                        "description": "price_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "properties": {
+                                                        "0": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        },
+                                                        "1": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        },
+                                                        "...": {},
+                                                        "n": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        }
+                                                    }
+                                                },
+                                                "totalSum": {
+                                                    "type": "integer",
+                                                    "example": 780
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You already have the same date-time in the cart"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/carts/{cart}": {
+            "delete": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Delete cart item specified user (only auth)",
+                "description": "Deleted cart item specified user cart item",
+                "security": [
+                    {
+                        "role": [
+                            "client",
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "cart",
+                        "in": "path",
+                        "description": "cart ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Cart item successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/checkout": {
+            "get": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Checkout carts specified user (only auth)",
+                "description": "Send request to block cart items by specified user and chose way to pay",
+                "security": [
+                    {
+                        "role": [
+                            "client",
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "items": {
+                                                    "$ref": "#/components/schemas/Carts"
+                                                },
+                                                "totalSum": {
+                                                    "properties": {
+                                                        "full": {
+                                                            "type": "integer",
+                                                            "example": 780
+                                                        },
+                                                        "prepayment": {
+                                                            "type": "integer",
+                                                            "example": 200
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/schedules": {
+            "get": {
+                "tags": [
+                    "Schedules"
+                ],
+                "summary": "Get list of available schedules (all users)",
+                "description": "Send request to get full list of available schedules",
+                "security": [
+                    {
+                        "role": [
+                            "master,client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "filter[date][]",
+                        "in": "query",
+                        "description": "Date filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2023-01-01"
+                        }
+                    },
+                    {
+                        "name": "filter[service_id][]",
+                        "in": "query",
+                        "description": "Service filter",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "filter[category][]",
+                        "in": "query",
+                        "description": "Category filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Nails"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "0": {
+                                                    "properties": {
+                                                        "master_id": {
+                                                            "example": 1
+                                                        },
+                                                        "master_firstname": {
+                                                            "example": "Firstname"
+                                                        },
+                                                        "master_lastname": {
+                                                            "example": "Lastname"
+                                                        },
+                                                        "schedules": {
+                                                            "properties": {
+                                                                "0": {
+                                                                    "properties": {
+                                                                        "schedule_id": {
+                                                                            "example": 1
+                                                                        },
+                                                                        "date": {
+                                                                            "example": "2023-11-11"
+                                                                        },
+                                                                        "time": {
+                                                                            "example": "11:11:11"
+                                                                        },
+                                                                        "status": {
+                                                                            "example": "available"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "prices": {
+                                                            "properties": {
+                                                                "0": {
+                                                                    "properties": {
+                                                                        "service_id": {
+                                                                            "example": 1
+                                                                        },
+                                                                        "price_id": {
+                                                                            "example": 1
+                                                                        },
+                                                                        "title": {
+                                                                            "example": "Eyelash extension classic"
+                                                                        },
+                                                                        "category": {
+                                                                            "example": "Lashes"
+                                                                        },
+                                                                        "price": {
+                                                                            "example": 740
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1938,6 +2489,59 @@
                     "time": {
                         "type": "string",
                         "example": "00-00-00"
+                    }
+                }
+            },
+            "Carts": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 210
+                    },
+                    "schedule_id": {
+                        "type": "integer",
+                        "example": 210
+                    },
+                    "service_id": {
+                        "type": "integer",
+                        "example": 210
+                    },
+                    "price_id": {
+                        "type": "integer",
+                        "example": 210
+                    },
+                    "price": {
+                        "type": "integer",
+                        "example": 250
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Brows coloring"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Brows"
+                    },
+                    "master_firstname": {
+                        "type": "string",
+                        "example": "Firstname"
+                    },
+                    "master_lastname": {
+                        "type": "string",
+                        "example": "Lastname"
+                    },
+                    "date": {
+                        "type": "string",
+                        "example": "1111-01-01"
+                    },
+                    "time": {
+                        "type": "string",
+                        "example": "00-00-00"
+                    },
+                    "message?": {
+                        "type": "string",
+                        "example": "Schedule already unavailable"
                     }
                 }
             },

@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\CartAddRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Schedule;
+use App\Models\User;
 use App\Services\BlockService;
+use App\Services\LiqpayService;
 use App\Services\TotalSumService;
 use DateTime;
 use Exception;
@@ -187,5 +191,31 @@ class CartController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Bad request'], 400);
         }
+    }
+
+    public function getPayButton(OrderCreateRequest $request, string $user)
+    {
+        $params = $request->validated();
+        $user = User::findOrFail($user);
+        $carts = Cart::where('client_id', $user->id)
+            ->select([
+                'carts.*',
+                'prices.price'
+            ])
+            ->join('prices', 'carts.price_id', '=', 'prices.id')
+            ->get();
+        $totalSum = TotalSumService::totalSum($carts, $params['payment']);
+        $orderParams = [
+            'user_id' => $user->id,
+            'total' => $totalSum,
+            'payment_status' => null
+        ];
+        $order = Order::create($orderParams);
+        $expired_at = $carts->first()->schedule()->first()->blocked_until;
+        $resultUrl = $params['result_url'];
+        $paidParams['payment'] = $params['payment'];
+        $paidParams['html_button'] = LiqpayService::getHtml($totalSum, $order->id, $expired_at, $resultUrl);
+        $paidParams['order_id'] = $order->id;
+        return $paidParams;
     }
 }

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('users', 'id');
-            $table->foreignId('schedule_id')->constrained('schedules', 'id');
-            $table->foreignId('service_id')->constrained('services', 'id');
-            $table->foreignId('price_id')->constrained('prices', 'id');
+            $table->foreignId('client_id')->constrained('users', 'id')->cascadeOnDelete();
+            $table->foreignId('schedule_id')->constrained('schedules', 'id')->cascadeOnDelete();
+            $table->foreignId('service_id')->constrained('services', 'id')->cascadeOnDelete();
+            $table->foreignId('price_id')->constrained('prices', 'id')->cascadeOnDelete();
             $table->unique(['schedule_id', 'client_id']);
             $table->timestamps();
         });

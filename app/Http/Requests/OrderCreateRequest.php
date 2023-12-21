@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class AppointmentCreateRequest extends FormRequest
+class OrderCreateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -32,7 +32,7 @@ class AppointmentCreateRequest extends FormRequest
         }, $paymentConfig);
         return [
             'payment' => ['required', Rule::in($payments)],
-            'order_id' => ['required', 'exists:App\Models\Order,id']
+            'result_url' => ['required']
         ];
     }
 }

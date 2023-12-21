@@ -2,14 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Role;
-use App\Models\Schedule;
-use App\Models\Service;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class AppointmentCreateRequest extends FormRequest
+class PaidStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,13 +21,9 @@ class AppointmentCreateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $paymentConfig = config('constants.db.payment');
-        $payments = array_map(function ($value) {
-            return $value[0];
-        }, $paymentConfig);
         return [
-            'payment' => ['required', Rule::in($payments)],
-            'order_id' => ['required', 'exists:App\Models\Order,id']
+            'data' => ['required'],
+            'signature' => ['required']
         ];
     }
 }

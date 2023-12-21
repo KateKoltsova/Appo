@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
+use App\Models\Order;
+use App\Models\User;
+use App\Services\LiqpayService;
+use App\Services\TotalSumService;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -23,6 +28,47 @@ class HomeController extends Controller
      */
     public function index(Request $request)
     {
-        return view('home');
+//        $user = User::findOrFail(1);
+//        $orderParams = [
+//            'user_id' => $user->id,
+//            'total' => 100,
+//            'payment_status' => null
+//        ];
+//        $order = Order::create($orderParams);
+//        $html = LiqpayService::getHtml(100, 53);
+//        return view('pay', compact('html'));
+        $user = User::findOrFail(1);
+        $carts = Cart::where('client_id', 1)
+            ->select([
+                'carts.*',
+                'prices.price'
+            ])
+            ->join('prices', 'carts.price_id', '=', 'prices.id')
+            ->get();
+        $totalSum = TotalSumService::totalSum($carts, 'full');
+        $orderParams = [
+            'user_id' => $user->id,
+            'total' => $totalSum,
+            'payment_status' => null
+        ];
+        $order = Order::create($orderParams);
+        $expired_at = $carts->first()->schedule()->first()->blocked_until;
+        $resultUrl = env('APP_URL');
+        $paidParams['payment'] = 'full';
+        $paidParams['html_button'] = LiqpayService::getHtml($totalSum, $order->id, $expired_at, $resultUrl);
+        $paidParams['order_id'] = $order->id;
+//        return $paidParams;
+        return view('pay', compact('paidParams'));
+
+    }
+
+
+    public function status(Request $request)
+    {
+        $status = LiqpayService::getResponse(72);
+        $order = Order::where('id', 72)->where('user_id', 1)->first();
+        $order->update(['payment_status' => $status->status]);
+        $orderNew = Order::whereId(72)->first();
+        return $orderNew;
     }
 }

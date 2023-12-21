@@ -29,3 +29,4 @@ Route::post('/password/reset', [\App\Http\Controllers\Auth\LoginController::clas
 
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home/status', [App\Http\Controllers\HomeController::class, 'status'])->name('status');

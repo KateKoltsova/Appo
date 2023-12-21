@@ -7,14 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'client_id',
         'schedule_id',
         'service_id',
         'price_id',
     ];
-
-    use HasFactory;
 
     public function user()
     {

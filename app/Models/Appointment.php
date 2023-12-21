@@ -43,7 +43,8 @@ class Appointment extends Model
         'client_id',
         'sum',
         'payment',
-        'paid_sum'
+        'paid_sum',
+        'order_id'
     ];
 
     public function user()
@@ -59,5 +60,10 @@ class Appointment extends Model
     public function schedule()
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'id');
     }
 }

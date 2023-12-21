@@ -37,3 +37,8 @@ Route::resource('users/{user}/carts', \App\Http\Controllers\Api\V1\CartControlle
 
 Route::get('users/{user}/checkout', [\App\Http\Controllers\Api\V1\CartController::class, 'checkout'])->name('cart.checkout')
     ->middleware(['auth:api', 'owner']);
+
+Route::get('users/{user}/button', [\App\Http\Controllers\Api\V1\CartController::class, 'getPayButton'])->name('cart.getPayButton')
+    ->middleware(['auth:api', 'owner']);
+
+Route::post('status', [\App\Http\Controllers\Api\V1\PayController::class, 'paidStatus'])->name('pay.paidStatus');

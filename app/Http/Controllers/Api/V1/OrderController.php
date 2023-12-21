@@ -3,54 +3,26 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AppointmentCreateRequest;
 use App\Http\Requests\OrderCreateRequest;
-use App\Http\Resources\AppointmentClientCollection;
-use App\Http\Resources\AppointmentClientResource;
 use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\BlockService;
-use App\Services\LiqpayService;
+use App\Services\TotalSumService;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class AppointmentController extends Controller
+class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, string $user)
+    public function index()
     {
-        $date = $request->input('filter.date');
-        $appointment = Appointment::select([
-            'appointments.*',
-            'services.title',
-            'services.category',
-            'masters.firstname as master_firstname',
-            'masters.lastname as master_lastname',
-            'schedules.date',
-            'schedules.time',
-        ])
-            ->join('schedules', 'appointments.schedule_id', '=', 'schedules.id')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->join('users as masters', 'schedules.master_id', '=', 'masters.id')
-            ->where('appointments.client_id', '=', $user)
-            ->when($date, function ($query) use ($date) {
-                $query->whereIn('date', $date);
-            })
-            ->where(function ($query) {
-                $query
-                    ->where('date', '>', now())
-                    ->orWhere('date', '=', now()->format('Y-m-d'))
-                    ->where('time', '>', now()->format('H:i:s'));
-            })
-            ->get();
-        $appointmentCollection = new AppointmentClientCollection($appointment);
-        return response()->json(['data' => $appointmentCollection]);
+        //
     }
 
     /**
@@ -64,12 +36,11 @@ class AppointmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(AppointmentCreateRequest $request, string $userId)
+    public function store(OrderCreateRequest $request, string $userId)
     {
         $params = $request->validated();
         $user = User::findOrFail($userId);
         $carts = Cart::where('client_id', $user->id)->get();
-
         if (empty($carts->toArray())) {
             return response()->json(['message' => 'Cart is empty'], 404);
         }
@@ -80,7 +51,7 @@ class AppointmentController extends Controller
 
             if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
                 (!is_null($cartItemSchedule->blocked_by)
-                    && $cartItemSchedule->blocked_by != $userId
+                    && $cartItemSchedule->blocked_by != $user->id
                     && !is_null($cartItemSchedule->blocked_until)
                     && ($cartItemSchedule->blocked_until >= now())) ||
                 ($cartItemSchedule->date < now()->format('Y-m-d') ||
@@ -100,7 +71,7 @@ class AppointmentController extends Controller
 
                     if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
                         (!is_null($otherCartItemSchedule->blocked_by)
-                            && $otherCartItemSchedule->blocked_by != $userId
+                            && $otherCartItemSchedule->blocked_by != $user->id
                             && !is_null($otherCartItemSchedule->blocked_until)
                             && ($otherCartItemSchedule->blocked_until >= now())) ||
                         ($otherCartItemSchedule->date < now()->format('Y-m-d') ||
@@ -128,27 +99,21 @@ class AppointmentController extends Controller
                 return response()->json(['message' => 'This master does not provide such a service'], 400);
             }
         }
-
+        $totalSum = TotalSumService::totalSum($carts, $params['payment']);
+        $orderParams = [
+            'user_id' => $user->id,
+            'total' => $totalSum,
+            'payment_status' => null
+        ];
+        dd($orderParams);
+        $order = Order::create($orderParams);
         try {
             DB::beginTransaction();
 
-            $order = Order::where('id', $params['order_id'])->where('user_id', $userId)->first();
-//            $status = $order->status;
-
-//            if ($status->status != 'success') {
-//                throw new Exception('Wait successful payment');
-//            }
-
-            $status = LiqpayService::getResponse($params['order_id']);
-            $order->update(['payment_status' => $status->status]);
-
-            if ($status->status != 'success') {
-                throw new Exception('Wait successful payment');
-            }
+            $paymentConfig = config('constants.db.payment');
 
             foreach ($carts as $cartItem) {
                 $params['sum'] = $cartItem->price()->first()->price;
-                $paymentConfig = config('constants.db.payment');
 
                 if (isset($paymentConfig[$params['payment']][1])) {
                     $params['paid_sum'] = $paymentConfig[$params['payment']][1];
@@ -156,7 +121,7 @@ class AppointmentController extends Controller
                     $params['paid_sum'] = $params['sum'];
                 }
 
-                $params['client_id'] = $userId;
+                $params['client_id'] = $user->id;
                 $appointment = [
                     'schedule_id' => $cartItem->schedule_id,
                     'service_id' => $cartItem->service_id,
@@ -173,7 +138,7 @@ class AppointmentController extends Controller
             foreach ($schedules as $schedule) {
                 $schedule->update(['status' => config('constants.db.status.unavailable')]);
                 BlockService::unblock($schedule);
-                Cart::where('schedule_id', $schedule->id)->where('client_id', $userId)->first()->delete();
+                Cart::where('schedule_id', $schedule->id)->where('client_id', $user->id)->first()->delete();
             }
             DB::commit();
             return response()->json(['message' => 'Appointment successfully store']);
@@ -186,35 +151,9 @@ class AppointmentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $user, string $appointment)
+    public function show(string $id)
     {
-        $appointmentInstance = Appointment::select([
-            'appointments.*',
-            'services.title',
-            'services.category',
-            'masters.firstname as master_firstname',
-            'masters.lastname as master_lastname',
-            'schedules.date',
-            'schedules.time',
-        ])
-            ->join('schedules', 'appointments.schedule_id', '=', 'schedules.id')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->join('users as masters', 'schedules.master_id', '=', 'masters.id')
-            ->where('appointments.client_id', '=', $user)
-            ->where('appointments.id', '=', $appointment)
-            ->where(function ($query) {
-                $query
-                    ->where('date', '>', now())
-                    ->orWhere('date', '=', now()->format('Y-m-d'))
-                    ->where('time', '>', now()->format('H:i:s'));
-            })
-            ->first();
-        if (!empty($appointmentInstance)) {
-            $appointmentResource = new AppointmentClientResource($appointmentInstance);
-            return response()->json(['data' => $appointmentResource]);
-        } else {
-            return response()->json(['message' => 'Appointment not found'], 404);
-        }
+        //
     }
 
     /**
@@ -236,16 +175,8 @@ class AppointmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $user, string $appointment)
+    public function destroy(string $id)
     {
-        $appointmentInstance = Appointment::where('id', $appointment)->where('client_id', $user)->first();
-
-        if (!$appointmentInstance) {
-            return response()->json(['message' => 'Appointment not found'], 404);
-        }
-
-        $appointmentInstance->schedule()->first()->update(['status' => config('constants.db.status.available')]);
-        $appointmentInstance->delete();
-        return response()->json(['message' => 'Appointment successfully deleted']);
+        //
     }
 }

@@ -2,21 +2,24 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Eloquent\Collection;
-
 class TotalSumService
 {
     static function totalSum($cartList, string $param = 'full')
     {
         $totalSum = 0;
         $cartCount = 0;
+        $paymentConfig = config('constants.db.payment');
+
         foreach ($cartList as $cart) {
             $schedule = $cart->schedule()->first();
             if ($cart->status === config('constants.db.status.unavailable') ||
                 (!is_null($schedule->blocked_by)
                     && $schedule->blocked_by != $cart->user()->first()->id
                     && !is_null($schedule->blocked_until)
-                    && ($schedule->blocked_until >= now()))) {
+                    && ($schedule->blocked_until >= now())) ||
+                ($schedule->date < now()->format('Y-m-d') ||
+                    ($schedule->date == now()->format('Y-m-d')
+                        && $schedule->time <= now()->format('H:i:s')))) {
                 continue;
             } else {
                 $totalSum += $cart->price;
@@ -26,6 +29,11 @@ class TotalSumService
         switch ($param) {
             case 'full':
             {
+                return $totalSum;
+            }
+            case 'prepayment':
+            {
+                $totalSum = $paymentConfig['prepayment'][1] * $cartCount;
                 return $totalSum;
             }
             case 'payment':
@@ -41,6 +49,5 @@ class TotalSumService
                 return $params;
             }
         }
-
     }
 }

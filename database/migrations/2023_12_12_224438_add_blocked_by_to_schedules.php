@@ -16,7 +16,7 @@ return new class extends Migration
                 ->after('blocked_until')
                 ->nullable()
                 ->constrained('users', 'id')
-                ->cascadeOnDelete();
+                ->nullOnDelete();
         });
     }
 

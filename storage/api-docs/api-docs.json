@@ -2255,6 +2255,17 @@
                                                                     }
                                                                 }
                                                             }
+                                                        },
+                                                        "categories": {
+                                                            "properties": {
+                                                                "0": {
+                                                                    "example": [
+                                                                        "Nails",
+                                                                        "Lashes",
+                                                                        "Brows"
+                                                                    ]
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }

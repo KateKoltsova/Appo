@@ -22,7 +22,7 @@ Route::resource('users/{user}/schedules', \App\Http\Controllers\Api\V1\ScheduleC
 Route::get('schedules', [\App\Http\Controllers\Api\V1\ScheduleController::class, 'getAllAvailable'])->name('schedules.getAllAvailable');
 
 Route::resource('users/{user}/appointments', \App\Http\Controllers\Api\V1\AppointmentController::class)
-    ->only('index', 'store', 'show', 'destroy')
+    ->only('index', 'show', 'destroy')
     ->middleware(['auth:api', 'scope:client,master', 'owner']);
 
 Route::delete('users/{user}/schedules/{schedule}/appointment', [\App\Http\Controllers\Api\V1\ScheduleController::class, 'destroyAppointment'])->name('schedules.destroyAppointment')
@@ -41,4 +41,5 @@ Route::get('users/{user}/checkout', [\App\Http\Controllers\Api\V1\CartController
 Route::get('users/{user}/button', [\App\Http\Controllers\Api\V1\CartController::class, 'getPayButton'])->name('cart.getPayButton')
     ->middleware(['auth:api', 'owner']);
 
-Route::post('status', [\App\Http\Controllers\Api\V1\PayController::class, 'paidStatus'])->name('pay.paidStatus');
+//Route::post('status', [\App\Http\Controllers\Api\V1\PayController::class, 'paidStatus'])->name('pay.paidStatus');
+Route::post('appointment', [\App\Http\Controllers\Api\V1\AppointmentController::class, 'store'])->name('appointment.store');

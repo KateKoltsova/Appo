@@ -64,10 +64,24 @@ class AppointmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(AppointmentCreateRequest $request, string $userId)
+    public function store(Request $request)
     {
-        $params = $request->validated();
-        $user = User::findOrFail($userId);
+        $data = $request->input('data');
+        $signature = $request->input('signature');
+
+        $privateKey = env('LIQPAY_TEST_PRIVATE_KEY');
+        $expectedSignature = base64_encode(sha1($privateKey . $data . $privateKey, true));
+
+        if ($signature !== $expectedSignature) {
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
+
+        $decodedData = json_decode(base64_decode($data), true);
+
+        $order = Order::where('id', $decodedData['order_id'])->first();
+        $order->update(['payment_status' => $decodedData['status']]);
+
+        $user = $order->user()->first();
         $carts = Cart::where('client_id', $user->id)->get();
 
         if (empty($carts->toArray())) {
@@ -80,7 +94,7 @@ class AppointmentController extends Controller
 
             if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
                 (!is_null($cartItemSchedule->blocked_by)
-                    && $cartItemSchedule->blocked_by != $userId
+                    && $cartItemSchedule->blocked_by != $user->id
                     && !is_null($cartItemSchedule->blocked_until)
                     && ($cartItemSchedule->blocked_until >= now())) ||
                 ($cartItemSchedule->date < now()->format('Y-m-d') ||
@@ -100,7 +114,7 @@ class AppointmentController extends Controller
 
                     if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
                         (!is_null($otherCartItemSchedule->blocked_by)
-                            && $otherCartItemSchedule->blocked_by != $userId
+                            && $otherCartItemSchedule->blocked_by != $user->id
                             && !is_null($otherCartItemSchedule->blocked_until)
                             && ($otherCartItemSchedule->blocked_until >= now())) ||
                         ($otherCartItemSchedule->date < now()->format('Y-m-d') ||
@@ -132,20 +146,20 @@ class AppointmentController extends Controller
         try {
             DB::beginTransaction();
 
-            $order = Order::where('id', $params['order_id'])->where('user_id', $userId)->first();
+//            $order = Order::where('id', $order->id)->where('user_id', $user->id)->first();
 //            $status = $order->status;
 
 //            if ($status->status != 'success') {
 //                throw new Exception('Wait successful payment');
 //            }
 
-            $status = LiqpayService::getResponse($params['order_id']);
-            $order->update(['payment_status' => $status->status]);
+//            $status = LiqpayService::getResponse($params['order_id']);
+//            $order->update(['payment_status' => $status->status]);
 
-            if ($status->status != 'success') {
-                throw new Exception('Wait successful payment');
-            }
-
+//            if ($status->status != 'success') {
+//                throw new Exception('Wait successful payment');
+//            }
+            $params['payment'] = $order->payment;
             foreach ($carts as $cartItem) {
                 $params['sum'] = $cartItem->price()->first()->price;
                 $paymentConfig = config('constants.db.payment');
@@ -156,7 +170,7 @@ class AppointmentController extends Controller
                     $params['paid_sum'] = $params['sum'];
                 }
 
-                $params['client_id'] = $userId;
+                $params['client_id'] = $user->id;
                 $appointment = [
                     'schedule_id' => $cartItem->schedule_id,
                     'service_id' => $cartItem->service_id,
@@ -173,13 +187,14 @@ class AppointmentController extends Controller
             foreach ($schedules as $schedule) {
                 $schedule->update(['status' => config('constants.db.status.unavailable')]);
                 BlockService::unblock($schedule);
-                Cart::where('schedule_id', $schedule->id)->where('client_id', $userId)->first()->delete();
+                Cart::where('schedule_id', $schedule->id)->where('client_id', $user->id)->first()->delete();
             }
             DB::commit();
             return response()->json(['message' => 'Appointment successfully store']);
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Bad request'], 400);
+            $order->update(['status' => $e->getMessage()]);
+            return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 

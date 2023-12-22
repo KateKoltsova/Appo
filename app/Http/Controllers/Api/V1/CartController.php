@@ -208,10 +208,16 @@ class CartController extends Controller
         $orderParams = [
             'user_id' => $user->id,
             'total' => $totalSum,
+            'payment' => $params['payment'],
             'payment_status' => null
         ];
         $order = Order::create($orderParams);
         $expired_at = $carts->first()->schedule()->first()->blocked_until;
+
+        if (is_null($expired_at)) {
+            return response()->json(['message' => 'You must checkout first'], 400);
+        }
+
         $resultUrl = $params['result_url'];
         $paidParams['payment'] = $params['payment'];
         $paidParams['html_button'] = LiqpayService::getHtml($totalSum, $order->id, $expired_at, $resultUrl);

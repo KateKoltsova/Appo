@@ -19,7 +19,7 @@ class LiqpayService
             'currency' => 'UAH',
             'description' => 'Pay for beauty services',
             'order_id' => $orderId,
-            'server_url' => env('APP_URL').'api/v1/status',
+            'server_url' => env('APP_URL') . 'api/v1/appointment',
             'result_url' => $resultUrl,
             'expired_date' => $expired_at
         ));
@@ -30,12 +30,12 @@ class LiqpayService
     {
         $public_key = env('LIQPAY_TEST_PUBLIC_KEY');
         $private_key = env('LIQPAY_TEST_PRIVATE_KEY');
-            $liqpay = new LiqPay($public_key, $private_key);
-            $res = $liqpay->api("request", array(
-                'action'        => 'status',
-                'version'       => '3',
-                'order_id'      => $orderId
-            ));
-            return $res;
+        $liqpay = new LiqPay($public_key, $private_key);
+        $res = $liqpay->api("request", array(
+            'action' => 'status',
+            'version' => '3',
+            'order_id' => $orderId
+        ));
+        return $res;
     }
 }

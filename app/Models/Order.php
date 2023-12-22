@@ -12,13 +12,15 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'total',
+        'payment',
         'payment_status',
+        'description'
     ];
 
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'client_id', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function appointments()

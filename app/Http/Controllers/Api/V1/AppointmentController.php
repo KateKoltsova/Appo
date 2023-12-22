@@ -66,102 +66,117 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->input('data');
-        $signature = $request->input('signature');
+        try {
+            $data = $request->input('data');
+            $signature = $request->input('signature');
 
-        $privateKey = env('LIQPAY_TEST_PRIVATE_KEY');
-        $expectedSignature = base64_encode(sha1($privateKey . $data . $privateKey, true));
+            $privateKey = env('LIQPAY_TEST_PRIVATE_KEY');
+            $expectedSignature = base64_encode(sha1($privateKey . $data . $privateKey, true));
 
-        if ($signature !== $expectedSignature) {
-            return response()->json(['error' => 'Invalid signature'], 400);
-        }
-
-        $decodedData = json_decode(base64_decode($data), true);
-
-        $order = Order::where('id', $decodedData['order_id'])->first();
-        $order->update(['payment_status' => $decodedData['status']]);
-
-        $user = $order->user()->first();
-        $carts = Cart::where('client_id', $user->id)->get();
-
-        if (empty($carts->toArray())) {
-            return response()->json(['message' => 'Cart is empty'], 404);
-        }
-
-        $otherCarts = clone $carts;
-        foreach ($carts as $key => $cartItem) {
-            $cartItemSchedule = $cartItem->schedule()->first();
-
-            if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
-                (!is_null($cartItemSchedule->blocked_by)
-                    && $cartItemSchedule->blocked_by != $user->id
-                    && !is_null($cartItemSchedule->blocked_until)
-                    && ($cartItemSchedule->blocked_until >= now())) ||
-                ($cartItemSchedule->date < now()->format('Y-m-d') ||
-                    ($cartItemSchedule->date == now()->format('Y-m-d')
-                        && $cartItemSchedule->time <= now()->format('H:i:s')))) {
-                return response()->json(['message' => 'Some schedules in cart already unavailable'], 400);
+            if ($signature !== $expectedSignature) {
+                throw new Exception('Invalid signature');
             }
 
-            if (is_null($cartItemSchedule->blocked_by)) {
-                return response()->json(['message' => 'You must checkout first'], 400);
+            $decodedData = json_decode(base64_decode($data), true);
+
+            $order = Order::where('id', $decodedData['order_id'])->first();
+
+            if ($decodedData['amount'] != $order->total) {
+                throw new Exception('Invalid amount');
             }
 
-            $otherCartsItems = $otherCarts->forget($key);
-            if (!is_null($otherCartsItems)) {
-                foreach ($otherCartsItems as $otherCartItem) {
-                    $otherCartItemSchedule = $otherCartItem->schedule()->first();
+            $order->update(['payment_status' => $decodedData['status']]);
 
-                    if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
-                        (!is_null($otherCartItemSchedule->blocked_by)
-                            && $otherCartItemSchedule->blocked_by != $user->id
-                            && !is_null($otherCartItemSchedule->blocked_until)
-                            && ($otherCartItemSchedule->blocked_until >= now())) ||
-                        ($otherCartItemSchedule->date < now()->format('Y-m-d') ||
-                            ($otherCartItemSchedule->date == now()->format('Y-m-d')
-                                && $otherCartItemSchedule->time <= now()->format('H:i:s')))) {
-                        continue;
-                    }
 
-                    $timeCartItem = new DateTime($cartItemSchedule->time);
-                    $timeOtherCartItem = new DateTime($otherCartItemSchedule->time);
-                    $diff = $timeOtherCartItem->diff($timeCartItem);
-                    $diffMinutes = $diff->i + $diff->h * 60;
+            if ($order->payment_status != 'success') {
+                $message = 'Payment status is ' . $order->payment_status;
+                throw new Exception($message);
+            }
 
-                    if ($otherCartItemSchedule->date === $cartItemSchedule->date) {
-                        if ($diffMinutes === 0) {
-                            return response()->json(['message' => 'You already have the same date-time in the cart'], 400);
-                        } elseif ($diffMinutes < config('constants.db.diff_between_services.minutes')) {
-                            return response()->json(['message' => 'Selected time too close to items in cart'], 400);
+            $user = $order->user()->first();
+
+            if (is_null($user)) {
+                $message = 'User not found';
+                throw new Exception($message);
+            }
+
+            $carts = Cart::where('client_id', $user->id)->get();
+
+            if (is_null($carts)) {
+                throw new Exception('Carts not found');
+            }
+
+            if (empty($carts->toArray())) {
+                throw new Exception('Cart is empty');
+            }
+
+            $otherCarts = clone $carts;
+            foreach ($carts as $key => $cartItem) {
+                $cartItemSchedule = $cartItem->schedule()->first();
+
+                if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
+                    (!is_null($cartItemSchedule->blocked_by)
+                        && $cartItemSchedule->blocked_by != $user->id
+                        && !is_null($cartItemSchedule->blocked_until)
+                        && ($cartItemSchedule->blocked_until >= now())) ||
+                    ($cartItemSchedule->date < now()->format('Y-m-d') ||
+                        ($cartItemSchedule->date == now()->format('Y-m-d')
+                            && $cartItemSchedule->time <= now()->format('H:i:s')))) {
+                    throw new Exception('Some schedules in cart already unavailable');
+                }
+
+                if (is_null($cartItemSchedule->blocked_by)) {
+                    throw new Exception('You must checkout first');
+                }
+
+                $otherCartsItems = $otherCarts->forget($key);
+                if (!is_null($otherCartsItems)) {
+                    foreach ($otherCartsItems as $otherCartItem) {
+                        $otherCartItemSchedule = $otherCartItem->schedule()->first();
+
+                        if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
+                            (!is_null($otherCartItemSchedule->blocked_by)
+                                && $otherCartItemSchedule->blocked_by != $user->id
+                                && !is_null($otherCartItemSchedule->blocked_until)
+                                && ($otherCartItemSchedule->blocked_until >= now())) ||
+                            ($otherCartItemSchedule->date < now()->format('Y-m-d') ||
+                                ($otherCartItemSchedule->date == now()->format('Y-m-d')
+                                    && $otherCartItemSchedule->time <= now()->format('H:i:s')))) {
+                            continue;
+                        }
+
+                        $timeCartItem = new DateTime($cartItemSchedule->time);
+                        $timeOtherCartItem = new DateTime($otherCartItemSchedule->time);
+                        $diff = $timeOtherCartItem->diff($timeCartItem);
+                        $diffMinutes = $diff->i + $diff->h * 60;
+
+                        if ($otherCartItemSchedule->date === $cartItemSchedule->date) {
+                            if ($diffMinutes === 0) {
+                                throw new Exception('You already have the same date-time in the cart');
+                            } elseif ($diffMinutes < config('constants.db.diff_between_services.minutes')) {
+                                throw new Exception('Selected time too close to items in cart');
+
+                            }
                         }
                     }
                 }
+
+                if (!$cartItemSchedule->master()->first()->prices()->whereId($cartItem->price_id)->first()) {
+                    throw new Exception('This master does not provide such a service');
+                }
             }
 
-            if (!$cartItemSchedule->master()->first()->prices()->whereId($cartItem->price_id)->first()) {
-                return response()->json(['message' => 'This master does not provide such a service'], 400);
-            }
-        }
-
-        try {
             DB::beginTransaction();
 
-//            $order = Order::where('id', $order->id)->where('user_id', $user->id)->first();
-//            $status = $order->status;
-
-//            if ($status->status != 'success') {
-//                throw new Exception('Wait successful payment');
-//            }
-
-//            $status = LiqpayService::getResponse($params['order_id']);
-//            $order->update(['payment_status' => $status->status]);
-
-//            if ($status->status != 'success') {
-//                throw new Exception('Wait successful payment');
-//            }
             $params['payment'] = $order->payment;
+
             foreach ($carts as $cartItem) {
                 $params['sum'] = $cartItem->price()->first()->price;
+
+                if (is_null($params['sum'])) {
+                    throw new Exception('Cart item has no price');
+                }
+
                 $paymentConfig = config('constants.db.payment');
 
                 if (isset($paymentConfig[$params['payment']][1])) {
@@ -181,7 +196,22 @@ class AppointmentController extends Controller
                     'order_id' => $order->id
                 ];
                 $newAppointment = Appointment::create($appointment);
-                $schedules[] = $newAppointment->schedule()->first();
+
+                if (is_null($newAppointment)) {
+                    throw new Exception('Failed create appointment');
+                }
+
+                $newAppointmentSchedule = $newAppointment->schedule()->first();
+
+                if (is_null($newAppointmentSchedule)) {
+                    throw new Exception('Failed get schedule for appointment id ' . $newAppointment->id);
+                }
+
+                $schedules[] = $newAppointmentSchedule;
+            }
+
+            if (is_null($schedules)) {
+                throw new Exception('Failed get schedules for appointments');
             }
 
             foreach ($schedules as $schedule) {
@@ -189,11 +219,14 @@ class AppointmentController extends Controller
                 BlockService::unblock($schedule);
                 Cart::where('schedule_id', $schedule->id)->where('client_id', $user->id)->first()->delete();
             }
+
             DB::commit();
+
             return response()->json(['message' => 'Appointment successfully store']);
+
         } catch (Exception $e) {
             DB::rollBack();
-            $order->update(['status' => $e->getMessage()]);
+            $order->update(['description' => $e->getMessage()]);
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }

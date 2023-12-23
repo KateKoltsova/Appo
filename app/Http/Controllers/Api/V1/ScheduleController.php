@@ -58,6 +58,7 @@ class ScheduleController extends Controller
 
     public function getAllAvailable(Request $request)
     {
+        $master_id = $request->input('filter.master_id');
         $date = $request->input('filter.date');
         $category = $request->input('filter.category');
         $service = $request->input('filter.service_id');
@@ -67,6 +68,9 @@ class ScheduleController extends Controller
                 'firstname',
                 'lastname'
             ])
+            ->when($master_id, function ($query) use ($master_id) {
+                $query->where('id', $master_id);
+            })
             ->with([
                 'schedules' => function ($query) use ($date) {
                     $query

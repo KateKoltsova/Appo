@@ -8,12 +8,9 @@ use App\Http\Requests\ScheduleUpdateRequest;
 use App\Http\Resources\AvailableScheduleCollection;
 use App\Http\Resources\ScheduleCollection;
 use App\Http\Resources\ScheduleResource;
-use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Schedule;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class ScheduleController extends Controller
 {
@@ -145,6 +142,7 @@ class ScheduleController extends Controller
                 'status' => config('constants.db.status.available')
             ],
         );
+
         if ($schedule) {
             return $this->show($schedule->master_id, $schedule->id);
         } else {
@@ -184,6 +182,7 @@ class ScheduleController extends Controller
             ->where('master_id', $user)
             ->where('schedules.id', $schedule)
             ->first();
+
         if (!empty($scheduleInstance)) {
             $scheduleResource = new ScheduleResource($scheduleInstance);
             return response()->json(['data' => $scheduleResource]);
@@ -207,6 +206,7 @@ class ScheduleController extends Controller
     {
         $params = $request->validated();
         $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
+
         if ($scheduleInstance) {
             $scheduleInstance->update($params);
             return $this->show($user, $schedule);
@@ -221,13 +221,17 @@ class ScheduleController extends Controller
     public function destroy(string $user, string $schedule)
     {
         $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
+
         if (!$scheduleInstance) {
             return response()->json(['message' => 'Schedule not found'], 404);
         }
+
         if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
             $scheduleInstance->appointment()->first()->delete();
         }
+
         $scheduleInstance->delete();
+
         return response()->json(['message' => 'Schedule successfully deleted']);
     }
 

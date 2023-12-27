@@ -210,17 +210,35 @@ class CartController extends Controller
     public function getPayButton(OrderCreateRequest $request, string $user)
     {
         $params = $request->validated();
-        $user = User::findOrFail($user);
-        $carts = Cart::where('client_id', $user->id)
+        $userId = User::findOrFail($user)->id;
+        $carts = Cart::where('client_id', $userId)
             ->select([
                 'carts.*',
                 'prices.price'
             ])
             ->join('prices', 'carts.price_id', '=', 'prices.id')
             ->get();
+
+        foreach ($carts->toArray() as $cart) {
+            $cartItemSchedule = Schedule::firstWhere('id', $cart['schedule_id']);
+            if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
+                (!is_null($cartItemSchedule->blocked_by)
+                    && $cartItemSchedule->blocked_by != $userId
+                    && !is_null($cartItemSchedule->blocked_until)
+                    && ($cartItemSchedule->blocked_until >= now())) ||
+                ($cartItemSchedule->date < now()->format('Y-m-d') ||
+                    ($cartItemSchedule->date == now()->format('Y-m-d')
+                        && $cartItemSchedule->time <= now()->format('H:i:s')))) {
+                return response()->json(['message' => 'Some schedules in cart already unavailable'], 400);
+            }
+            if (is_null($cartItemSchedule->blocked_by) || ($cartItemSchedule->blocked_by != $userId)) {
+                return response()->json(['message' => 'You must checkout first'], 400);
+            }
+        }
+
         $totalSum = TotalSumService::totalSum($carts, $params['payment']);
         $orderParams = [
-            'user_id' => $user->id,
+            'user_id' => $userId,
             'total' => $totalSum,
             'payment' => $params['payment'],
             'payment_status' => null
@@ -228,14 +246,10 @@ class CartController extends Controller
         $order = Order::create($orderParams);
         $expired_at = $carts->first()->schedule()->first()->blocked_until;
 
-        if (is_null($expired_at)) {
-            return response()->json(['message' => 'You must checkout first'], 400);
-        }
-
         $resultUrl = $params['result_url'];
         $paidParams['payment'] = $params['payment'];
         $paidParams['html_button'] = LiqpayService::getHtml($totalSum, $order->id, $expired_at, $resultUrl);
         $paidParams['order_id'] = $order->id;
-        return $paidParams;
+        return response()->json(['data' => $paidParams]);
     }
 }

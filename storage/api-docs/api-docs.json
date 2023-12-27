@@ -47,7 +47,12 @@
         {
             "name": "Carts",
             "description": "Cart functionality"
+        },
+        {
+            "name": "Orders",
+            "description": "Create and pay order"
         }
+
     ],
     "paths": {
         "/register": {
@@ -489,7 +494,11 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Users"
+                                            "properties": {
+                                                "0": {
+                                                    "$ref": "#/components/schemas/Users"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -504,7 +513,7 @@
                 "tags": [
                     "Profile"
                 ],
-                "summary": "Find user by ID (only own data, admin-all data)",
+                "summary": "Find user by ID (only own data)",
                 "description": "Returns a specified user by ID",
                 "security": [
                     {
@@ -568,7 +577,7 @@
                 "tags": [
                     "Profile"
                 ],
-                "summary": "Update user (only own data, admin-all data)",
+                "summary": "Update user (only own data)",
                 "description": "Update specified user profile data",
                 "security": [
                     {
@@ -686,7 +695,7 @@
                 "tags": [
                     "Profile"
                 ],
-                "summary": "Delete user (only own data, admin-all data)",
+                "summary": "Delete user (only own data)",
                 "description": "Logout and soft deleted user",
                 "security": [
                     {
@@ -1157,7 +1166,11 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Schedules"
+                                            "properties": {
+                                                "0": {
+                                                    "$ref": "#/components/schemas/UnavailableSchedules"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1231,7 +1244,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Schedules"
+                                            "$ref": "#/components/schemas/AvailableSchedules"
                                         }
                                     }
                                 }
@@ -1297,7 +1310,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Schedules"
+                                            "$ref": "#/components/schemas/UnavailableSchedules"
                                         }
                                     }
                                 }
@@ -1391,7 +1404,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Schedules"
+                                            "$ref": "#/components/schemas/UnavailableSchedules"
                                         }
                                     }
                                 }
@@ -1463,17 +1476,82 @@
                 }
             }
         },
+        "/v1/users/{user}/schedules/{schedule}/appointment": {
+            "delete": {
+                "tags": [
+                    "Schedules"
+                ],
+                "summary": "Delete appointment on specified schedule (only master)",
+                "description": "Deleted appointment on specified schedule",
+                "security": [
+                    {
+                        "role": [
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "schedule",
+                        "in": "path",
+                        "description": "schedule ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Appointment on this schedule successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
         "/v1/users/{user}/appointments": {
             "get": {
                 "tags": [
                     "Appointments"
                 ],
-                "summary": "Get list of appointments specified client (only client)",
-                "description": "Send request to get full list of appointments specified client",
+                "summary": "Get list of appointments specified user",
+                "description": "Send request to get full list of appointments specified user",
                 "security": [
                     {
                         "role": [
-                            "client"
+                            "client",
+                            "master"
                         ],
                         "access_token": [
                         ]
@@ -1519,90 +1597,11 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/Appointments"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Appointments"
-                ],
-                "summary": "Store list of appointments from cart specified user (only auth users)",
-                "description": "Send request to store list of appointments from cart specified user",
-                "security": [
-                    {
-                        "role": [
-                            "client,master"
-                        ],
-                        "access_token": [
-                        ]
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "user",
-                        "in": "path",
-                        "description": "Client ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 15
-                        }
-                    },
-                    {
-                        "name": "access_token",
-                        "in": "header",
-                        "description": "Access token",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/components/securitySchemes/access_token"
-                        }
-                    },
-                    {
-                        "name": "payment",
-                        "in": "query",
-                        "description": "Way to pay",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "full",
-                            "enum": [
-                                "full",
-                                "prepayment"
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "example": "Appointment successfully store"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "BAD REQUEST",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "example": "Bad request"
+                                            "properties": {
+                                                "0": {
+                                                    "$ref": "#/components/schemas/Appointments"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1617,8 +1616,8 @@
                 "tags": [
                     "Appointments"
                 ],
-                "summary": "Find appointments by ID (only client)",
-                "description": "Returns a specified client appointment by ID",
+                "summary": "Find appointments by ID",
+                "description": "Returns a specified user appointment by ID",
                 "security": [
                     {
                         "role": [
@@ -1691,8 +1690,8 @@
                 "tags": [
                     "Appointments"
                 ],
-                "summary": "Delete client specified appointment (only client)",
-                "description": "Deleted client specified appointment",
+                "summary": "Delete user specified appointment",
+                "description": "Deleted user specified appointment",
                 "security": [
                     {
                         "role": [
@@ -1755,18 +1754,8 @@
                 "tags": [
                     "Services"
                 ],
-                "summary": "Get list of services (only admin, master)",
+                "summary": "Get list of services for drop down list",
                 "description": "You can get full list of services",
-                "security": [
-                    {
-                        "access_token": [
-                            "create:users",
-                            "read:users",
-                            "update:users",
-                            "delete:users"
-                        ]
-                    }
-                ],
                 "parameters": [
                     {
                         "name": "access_token",
@@ -2074,7 +2063,7 @@
         "/v1/users/{user}/checkout": {
             "get": {
                 "tags": [
-                    "Carts"
+                    "Orders"
                 ],
                 "summary": "Checkout carts specified user (only auth)",
                 "description": "Send request to block cart items by specified user and chose way to pay",
@@ -2144,22 +2133,107 @@
                 }
             }
         },
-        "/v1/schedules": {
+        "/v1/users/{user}/button": {
             "get": {
                 "tags": [
-                    "Schedules"
+                    "Orders"
                 ],
-                "summary": "Get list of available schedules (all users)",
-                "description": "Send request to get full list of available schedules",
+                "summary": "Get button for pay order by liqpay (only auth)",
+                "description": "Get pay button",
                 "security": [
                     {
                         "role": [
-                            "master,client"
+                            "client",
+                            "master"
                         ],
                         "access_token": [
                         ]
                     }
                 ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Client ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "result_url",
+                        "in": "path",
+                        "description": "Result redirect url",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://url.com/"
+                        }
+                    },
+                    {
+                        "name": "payment",
+                        "in": "path",
+                        "description": "Type of payment",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "full",
+                            "enum": [
+                                "full",
+                                "prepayment"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "payment": {
+                                                    "type": "string",
+                                                    "example": "full"
+                                                },
+                                                "html_button": {
+                                                    "type": "string",
+                                                    "example": "\n<form method=\"POST\" action=\"https://www.liqpay.ua/api/3/checkout\" accept-charset=\"utf-8\">\n<input type=\"hidden\" name=\"data\" value=\"eyJ2ZXJzaW9uIjoiMyIsImFjdGlvbiI6InBheSIsImFtb3VudCI6NzQwLCJjdXJyZW5jeSI6IlVBSCIsImRlc2NyaXB0aW9uIjoiUGF5IGZvciBiZWF1dHkgc2VydmljZXMiLCJvcmRlcl9pZCI6NzMsInNlcnZlcl91cmwiOiJodHRwczpcL1wvYXBwb2JlYXV0eS02ZWNiYzU5NmVlOGQuaGVyb2t1YXBwLmNvbVwvYXBpXC92MVwvYXBwb2ludG1lbnQiLCJyZXN1bHRfdXJsIjoiaHR0cDpcL1wvYXBwby5sb2NhbFwvIiwiZXhwaXJlZF9kYXRlIjoiMjAyMy0xMi0yMCAxNDoyNToyOCIsInB1YmxpY19rZXkiOiJzYW5kYm94X2k3OTg2ODYzMDUxIn0=\" />\n<input type=\"hidden\" name=\"signature\" value=\"+Vm0kWxHu/ezU2qufuH0mXLo+f4=\" />\n<input type=\"image\" src=\"//static.liqpay.ua/buttons/p1ru.radius.png\" name=\"btn_text\" />\n</form>\n"
+                                                },
+                                                "order_id": {
+                                                    "type": "number",
+                                                    "example": 73
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/schedules": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get list of available schedules (all users)",
+                "description": "Send request to get full list of available schedules",
                 "parameters": [
                     {
                         "name": "filter[date][]",
@@ -2189,6 +2263,16 @@
                         "schema": {
                             "type": "string",
                             "example": "Nails"
+                        }
+                    },
+                    {
+                        "name": "filter[maste_id][]",
+                        "in": "query",
+                        "description": "Master filter",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -2363,7 +2447,11 @@
             "Prices": {
                 "type": "object",
                 "properties": {
-                    "id": {
+                    "service_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "price_id": {
                         "type": "integer",
                         "example": 1
                     },
@@ -2381,7 +2469,7 @@
                     }
                 }
             },
-            "Schedules": {
+            "UnavailableSchedules": {
                 "type": "object",
                 "properties": {
                     "schedule_id": {
@@ -2445,8 +2533,37 @@
                                     "prepay",
                                     "full"
                                 ]
+                            },
+                            "paid_sum": {
+                                "type": "integer",
+                                "example": 250
                             }
                         }
+                    }
+                }
+            },
+            "AvailableSchedules": {
+                "type": "object",
+                "properties": {
+                    "schedule_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "date": {
+                        "type": "string",
+                        "example": "1111-01-01"
+                    },
+                    "time": {
+                        "type": "string",
+                        "example": "00-00-00"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "available",
+                        "enum": [
+                            "available",
+                            "unavailable"
+                        ]
                     }
                 }
             },
@@ -2466,6 +2583,10 @@
                         "example": 210
                     },
                     "sum": {
+                        "type": "integer",
+                        "example": 250
+                    },
+                    "paid_sum": {
                         "type": "integer",
                         "example": 250
                     },

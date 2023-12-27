@@ -168,8 +168,19 @@ class CartController extends Controller
     {
         try {
             $cart = $this->index($user)->original['data'];
+
+            if (is_null($cart->toArray())) {
+                throw new Exception('Cart is empty');
+            }
+
             $totalSum = TotalSumService::totalSum($cart['items'], 'payment');
+
+            if (is_null($totalSum)) {
+                throw new Exception('Total sum error');
+            }
+
             $cart['totalSum'] = $totalSum;
+
             DB::beginTransaction();
             foreach ($cart['items'] as $cartItem) {
                 $cartItemSchedule = Schedule::firstWhere('id', $cartItem['schedule_id']);
@@ -181,15 +192,18 @@ class CartController extends Controller
                     ($cartItemSchedule->date < now()->format('Y-m-d') ||
                         ($cartItemSchedule->date == now()->format('Y-m-d')
                             && $cartItemSchedule->time <= now()->format('H:i:s')))) {
-                    return response()->json(['message' => 'Some schedules in cart already unavailable'], 400);
+                    throw new Exception('Some schedules in cart already unavailable');
                 }
                 BlockService::block(config('constants.db.blocked.minutes'), $user, $cartItemSchedule);
             }
+
             DB::commit();
+
             return response()->json(['data' => $cart]);
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Bad request'], 400);
+
+            return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 

@@ -11,21 +11,22 @@ class TotalSumService
         $paymentConfig = config('constants.db.payment');
 
         foreach ($cartList as $cart) {
-            $schedule = $cart->schedule()->first();
-            if ($cart->status === config('constants.db.status.unavailable') ||
-                (!is_null($schedule->blocked_by)
-                    && $schedule->blocked_by != $cart->user()->first()->id
-                    && !is_null($schedule->blocked_until)
-                    && ($schedule->blocked_until >= now())) ||
-                ($schedule->date < now()->format('Y-m-d') ||
-                    ($schedule->date == now()->format('Y-m-d')
-                        && $schedule->time <= now()->format('H:i:s')))) {
-                continue;
-            } else {
+
+//            if ($cart->status === config('constants.db.status.unavailable') ||
+//                (!is_null($cart->blocked_by)
+//                    && $cart->blocked_by != $cart->user()->first()->id
+//                    && !is_null($cart->blocked_until)
+//                    && ($cart->blocked_until >= now())) ||
+//                ($cart->date < now()->format('Y-m-d') ||
+//                    ($cart->date == now()->format('Y-m-d')
+//                        && $cart->time <= now()->format('H:i:s')))) {
+//                continue;
+//            } else {
                 $totalSum += $cart->price;
                 $cartCount++;
-            }
+//            }
         }
+
         switch ($param) {
             case 'full':
             {

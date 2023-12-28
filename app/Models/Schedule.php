@@ -53,6 +53,8 @@ class Schedule extends Model
 
     private $enableDateTimeAttribute = true;
 
+    protected $trackedFields = ['date', 'time'];
+
     public static function boot()
     {
         parent::boot();
@@ -64,9 +66,13 @@ class Schedule extends Model
         });
 
         static::updating(function ($model) {
-            $model->disableDateTimeAttribute();
-            $model->setDateTimeAttributes($model->date, $model->time);
-            $model->enableDateTimeAttribute();
+            $changedFields = array_keys($model->getDirty());
+
+            if (count(array_intersect($changedFields, $model->trackedFields)) > 0) {
+                $model->disableDateTimeAttribute();
+                $model->setDateTimeAttributes($model->date, $model->time);
+                $model->enableDateTimeAttribute();
+            }
         });
     }
 

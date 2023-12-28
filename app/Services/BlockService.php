@@ -15,8 +15,10 @@ class BlockService
             'blocked_until' => $blockedUntil,
             'blocked_by' => $user_id
         ];
+
         try {
-            $blocked = $blockedModel->updateOrFail($params);
+            $blocked = $blockedModel->fill($params);
+            $blocked->save();
             return true;
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Model not found'], 404);
@@ -32,7 +34,8 @@ class BlockService
             'blocked_by' => null
         ];
         try {
-            $unblocked = $blockedModel->updateOrFail($params);
+            $unblocked = $blockedModel->fill($params);
+            $unblocked->save();
             return true;
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Model not found'], 404);

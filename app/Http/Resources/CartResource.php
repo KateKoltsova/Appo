@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Appointment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,6 +27,7 @@ class CartResource extends JsonResource
             'master_lastname' => $this->master_lastname,
             'date' => $this->date,
             'time' => $this->time,
+            'status' => $this->status
         ];
 
         if ($this->status === config('constants.db.status.unavailable') ||
@@ -39,6 +40,11 @@ class CartResource extends JsonResource
                     && $this->time <= now()->format('H:i:s')))) {
             $cart['message'] = 'Schedule already unavailable';
         }
+
+        $combinedDateTime = $this->date . ' ' . $this->time;
+        $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'UTC');
+        $cart['date'] = $dateTime->setTimezone('Europe/Kiev')->format('Y-m-d');
+        $cart['time'] = $dateTime->setTimezone('Europe/Kiev')->format('H:i:s');
 
         return $cart;
     }

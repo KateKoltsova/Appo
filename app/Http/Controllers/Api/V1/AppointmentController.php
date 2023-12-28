@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\BlockService;
 use App\Services\LiqpayService;
+use Carbon\Carbon;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -86,7 +87,7 @@ class AppointmentController extends Controller
             }
 
             $order->update(['payment_status' => $decodedData['status']]);
-
+            $order->update(['description' => $decodedData['description']]);
 
             if ($order->payment_status != 'success') {
                 $message = 'Payment status is ' . $order->payment_status;
@@ -114,14 +115,19 @@ class AppointmentController extends Controller
             foreach ($carts as $key => $cartItem) {
                 $cartItemSchedule = $cartItem->schedule()->first();
 
+                $combinedDateTime = $cartItemSchedule['date'] . ' ' . $cartItemSchedule['time'];
+                $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'Europe/Kiev');
+                $cartItemScheduleDate = $dateTime->setTimezone('UTC')->format('Y-m-d');
+                $cartItemScheduleTime = $dateTime->setTimezone('UTC')->format('H:i:s');
+
                 if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
                     (!is_null($cartItemSchedule->blocked_by)
                         && $cartItemSchedule->blocked_by != $user->id
                         && !is_null($cartItemSchedule->blocked_until)
                         && ($cartItemSchedule->blocked_until >= now())) ||
-                    ($cartItemSchedule->date < now()->format('Y-m-d') ||
-                        ($cartItemSchedule->date == now()->format('Y-m-d')
-                            && $cartItemSchedule->time <= now()->format('H:i:s')))) {
+                    ($cartItemScheduleDate < now()->format('Y-m-d') ||
+                        ($cartItemScheduleDate == now()->format('Y-m-d')
+                            && $cartItemScheduleTime <= now()->format('H:i:s')))) {
                     throw new Exception('Some schedules in cart already unavailable');
                 }
 
@@ -134,19 +140,24 @@ class AppointmentController extends Controller
                     foreach ($otherCartsItems as $otherCartItem) {
                         $otherCartItemSchedule = $otherCartItem->schedule()->first();
 
+                        $combinedDateTime = $otherCartItemSchedule['date'] . ' ' . $otherCartItemSchedule['time'];
+                        $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'Europe/Kiev');
+                        $otherCartItemScheduleDate = $dateTime->setTimezone('UTC')->format('Y-m-d');
+                        $otherCartItemScheduleTime = $dateTime->setTimezone('UTC')->format('H:i:s');
+
                         if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
                             (!is_null($otherCartItemSchedule->blocked_by)
                                 && $otherCartItemSchedule->blocked_by != $user->id
                                 && !is_null($otherCartItemSchedule->blocked_until)
                                 && ($otherCartItemSchedule->blocked_until >= now())) ||
-                            ($otherCartItemSchedule->date < now()->format('Y-m-d') ||
-                                ($otherCartItemSchedule->date == now()->format('Y-m-d')
-                                    && $otherCartItemSchedule->time <= now()->format('H:i:s')))) {
+                            ($otherCartItemScheduleDate < now()->format('Y-m-d') ||
+                                ($otherCartItemScheduleDate == now()->format('Y-m-d')
+                                    && $otherCartItemScheduleTime <= now()->format('H:i:s')))) {
                             continue;
                         }
 
-                        $timeCartItem = new DateTime($cartItemSchedule->time);
-                        $timeOtherCartItem = new DateTime($otherCartItemSchedule->time);
+                        $timeCartItem = new DateTime($cartItemScheduleTime);
+                        $timeOtherCartItem = new DateTime($otherCartItemScheduleTime);
                         $diff = $timeOtherCartItem->diff($timeCartItem);
                         $diffMinutes = $diff->i + $diff->h * 60;
 
@@ -226,7 +237,9 @@ class AppointmentController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
+
             $order->update(['description' => $e->getMessage()]);
+
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }

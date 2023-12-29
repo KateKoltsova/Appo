@@ -2,14 +2,9 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Swagger docs for Appo Beauty API",
-        "description": "This is a Appo Beauty Server based on the OpenAPI 3.0 specification.\n\n Ⓒ Kateryna Koltsova 2023. All rights reserved. \n\nSome useful links:\n- [The API repository](https://github.com/KateKoltsova/Appo)\n- [The API server](https://appobeauty-6ecbc596ee8d.herokuapp.com/api)",
+        "description": "Welcome to the Appo Beauty API – your key to the world of beauty and care!  \nOur API provides opportunities for managing beauty services and easy appointment. \n\n**Key features:**\n - *Master registration:*  \nSign up and showcase your services to users.\n\n - *Schedule management:*  \nMasters can efficiently manage their working hours.\n\n - *Service prices:*  \nMasters can set prices for their services.\n\n - *View available services:*  \nClients can easily find and choose suitable services.\n\n - *Client appointments:*  \nClients can conveniently appointment for master services.\n\n - *Service payments:*  \nMultiple online-payment options available for a convenient payment experience.\n\n **Ⓒ [Kateryna Koltsova](https://www.linkedin.com/in/kate-koltsova/) 2023.** All rights reserved. \n\n [**MIT** license](https://opensource.org/licenses/MIT) \n\n**Some useful links:**\n- [The API repository](https://github.com/KateKoltsova/Appo)\n- [The API server](https://appobeauty-6ecbc596ee8d.herokuapp.com/api)",
         "contact": {
-            "email": "kate.koltsova.work@gmail.com",
-            "url": "https://www.linkedin.com/in/kate-koltsova/"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
+            "email": "kate.koltsova.work@gmail.com"
         },
         "x-copyright": "Ⓒ Kateryna Koltsova 2023. All rights reserved.",
         "version": "1.0.0"

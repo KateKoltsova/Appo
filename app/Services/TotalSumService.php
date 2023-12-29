@@ -12,30 +12,34 @@ class TotalSumService
 
         foreach ($cartList as $cart) {
 
-//            if ($cart->status === config('constants.db.status.unavailable') ||
-//                (!is_null($cart->blocked_by)
-//                    && $cart->blocked_by != $cart->user()->first()->id
-//                    && !is_null($cart->blocked_until)
-//                    && ($cart->blocked_until >= now())) ||
-//                ($cart->date < now()->format('Y-m-d') ||
-//                    ($cart->date == now()->format('Y-m-d')
-//                        && $cart->time <= now()->format('H:i:s')))) {
-//                continue;
-//            } else {
+            if ($cart->status === config('constants.db.status.unavailable') ||
+                (!is_null($cart->blocked_by)
+                    && $cart->blocked_by != $cart->user()->first()->id
+                    && !is_null($cart->blocked_until)
+                    && ($cart->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
+                ($cart->date_time < now()->setTimezone('Europe/Kiev'))) {
+                continue;
+            } else {
                 $totalSum += $cart->price;
                 $cartCount++;
-//            }
+            }
         }
 
         switch ($param) {
             case 'full':
             {
-                return $totalSum;
+                return [
+                    'totalSum' => $totalSum,
+                    'totalCount' => $cartCount
+                ];
             }
             case 'prepayment':
             {
                 $totalSum = $paymentConfig['prepayment'][1] * $cartCount;
-                return $totalSum;
+                return [
+                    'totalSum' => $totalSum,
+                    'totalCount' => $cartCount
+                ];
             }
             case 'payment':
             {
@@ -47,7 +51,10 @@ class TotalSumService
                         $params[$payment[0]] = $totalSum;
                     }
                 }
-                return $params;
+                return [
+                    'totalSum' => $params,
+                    'totalCount' => $cartCount
+                ];
             }
         }
     }

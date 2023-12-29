@@ -13,9 +13,8 @@ return new class extends Migration {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('master_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->date('date');
-            $table->time('time');
-            $table->unique(['master_id', 'date', 'time']);
+            $table->timestamp('date_time');
+            $table->unique(['master_id', 'date_time']);
             $table->string('status');
             $table->timestamps();
         });

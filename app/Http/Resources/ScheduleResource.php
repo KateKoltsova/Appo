@@ -17,16 +17,14 @@ class ScheduleResource extends JsonResource
         if (!empty($this->appointment)) {
             $schedule = [
                 'schedule_id' => $this->schedule_id,
-                'date' => $this->date,
-                'time' => $this->time,
+                'date_time' => $this->date_time,
                 'status' => $this->status,
                 'appointment' => new AppointmentResource($this->appointment)
             ];
         } else {
             $schedule = [
                 'schedule_id' => $this->schedule_id,
-                'date' => $this->date,
-                'time' => $this->time,
+                'date_time' => $this->date_time,
                 'status' => $this->status,
             ];
         }

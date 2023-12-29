@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('schedules', function (Blueprint $table) {
-            $table->dateTime('blocked_until')
+            $table->timestamp('blocked_until')
                 ->after('status')
                 ->nullable();
         });

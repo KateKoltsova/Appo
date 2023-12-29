@@ -10,7 +10,7 @@ class BlockService
 {
     static function block(int $minutes, string $user_id, Model $blockedModel)
     {
-        $blockedUntil = now()->addMinutes($minutes);
+        $blockedUntil = now()->setTimezone('Europe/Kiev')->addMinutes($minutes);
         $params = [
             'blocked_until' => $blockedUntil,
             'blocked_by' => $user_id

@@ -3,17 +3,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AppointmentCreateRequest;
-use App\Http\Requests\OrderCreateRequest;
 use App\Http\Resources\AppointmentClientCollection;
 use App\Http\Resources\AppointmentClientResource;
 use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\Order;
-use App\Models\User;
 use App\Services\BlockService;
-use App\Services\LiqpayService;
-use Carbon\Carbon;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -33,24 +28,20 @@ class AppointmentController extends Controller
             'services.category',
             'masters.firstname as master_firstname',
             'masters.lastname as master_lastname',
-            'schedules.date',
-            'schedules.time',
+            'schedules.date_time'
         ])
             ->join('schedules', 'appointments.schedule_id', '=', 'schedules.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->join('users as masters', 'schedules.master_id', '=', 'masters.id')
             ->where('appointments.client_id', '=', $user)
             ->when($date, function ($query) use ($date) {
-                $query->whereIn('date', $date);
+                $query->whereIn(DB::raw('DATE(date_time)'), $date);
             })
-            ->where(function ($query) {
-                $query
-                    ->where('date', '>', now())
-                    ->orWhere('date', '=', now()->format('Y-m-d'))
-                    ->where('time', '>', now()->format('H:i:s'));
-            })
+            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
             ->get();
+
         $appointmentCollection = new AppointmentClientCollection($appointment);
+
         return response()->json(['data' => $appointmentCollection]);
     }
 
@@ -86,8 +77,10 @@ class AppointmentController extends Controller
                 throw new Exception('Invalid amount');
             }
 
-            $order->update(['payment_status' => $decodedData['status']]);
-            $order->update(['description' => $decodedData['description']]);
+            $order->update([
+                'payment_status' => $decodedData['status'],
+                'description' => $decodedData['description']
+            ]);
 
             if ($order->payment_status != 'success') {
                 $message = 'Payment status is ' . $order->payment_status;
@@ -112,22 +105,16 @@ class AppointmentController extends Controller
             }
 
             $otherCarts = clone $carts;
+
             foreach ($carts as $key => $cartItem) {
                 $cartItemSchedule = $cartItem->schedule()->first();
-
-                $combinedDateTime = $cartItemSchedule['date'] . ' ' . $cartItemSchedule['time'];
-                $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'Europe/Kiev');
-                $cartItemScheduleDate = $dateTime->setTimezone('UTC')->format('Y-m-d');
-                $cartItemScheduleTime = $dateTime->setTimezone('UTC')->format('H:i:s');
 
                 if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
                     (!is_null($cartItemSchedule->blocked_by)
                         && $cartItemSchedule->blocked_by != $user->id
                         && !is_null($cartItemSchedule->blocked_until)
-                        && ($cartItemSchedule->blocked_until >= now())) ||
-                    ($cartItemScheduleDate < now()->format('Y-m-d') ||
-                        ($cartItemScheduleDate == now()->format('Y-m-d')
-                            && $cartItemScheduleTime <= now()->format('H:i:s')))) {
+                        && ($cartItemSchedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
+                    ($cartItemSchedule->date_time < now()->setTimezone('Europe/Kiev'))) {
                     throw new Exception('Some schedules in cart already unavailable');
                 }
 
@@ -136,38 +123,32 @@ class AppointmentController extends Controller
                 }
 
                 $otherCartsItems = $otherCarts->forget($key);
+
                 if (!is_null($otherCartsItems)) {
                     foreach ($otherCartsItems as $otherCartItem) {
                         $otherCartItemSchedule = $otherCartItem->schedule()->first();
-
-                        $combinedDateTime = $otherCartItemSchedule['date'] . ' ' . $otherCartItemSchedule['time'];
-                        $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'Europe/Kiev');
-                        $otherCartItemScheduleDate = $dateTime->setTimezone('UTC')->format('Y-m-d');
-                        $otherCartItemScheduleTime = $dateTime->setTimezone('UTC')->format('H:i:s');
 
                         if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
                             (!is_null($otherCartItemSchedule->blocked_by)
                                 && $otherCartItemSchedule->blocked_by != $user->id
                                 && !is_null($otherCartItemSchedule->blocked_until)
-                                && ($otherCartItemSchedule->blocked_until >= now())) ||
-                            ($otherCartItemScheduleDate < now()->format('Y-m-d') ||
-                                ($otherCartItemScheduleDate == now()->format('Y-m-d')
-                                    && $otherCartItemScheduleTime <= now()->format('H:i:s')))) {
+                                && ($otherCartItemSchedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
+                            ($otherCartItemSchedule->date_time < now()->setTimezone('Europe/Kiev'))) {
                             continue;
                         }
 
-                        $timeCartItem = new DateTime($cartItemScheduleTime);
-                        $timeOtherCartItem = new DateTime($otherCartItemScheduleTime);
+                        $timeCartItem = new DateTime($cartItemSchedule->date_time);
+                        $timeOtherCartItem = new DateTime($otherCartItemSchedule->date_time);
                         $diff = $timeOtherCartItem->diff($timeCartItem);
-                        $diffMinutes = $diff->i + $diff->h * 60;
+                        $diffMinutes = $diff->i + $diff->h * 60 + $diff->d * 24 * 60;
 
-                        if ($otherCartItemSchedule->date === $cartItemSchedule->date) {
-                            if ($diffMinutes === 0) {
-                                throw new Exception('You already have the same date-time in the cart');
-                            } elseif ($diffMinutes < config('constants.db.diff_between_services.minutes')) {
-                                throw new Exception('Selected time too close to items in cart');
+                        if ($diffMinutes === 0) {
+                            throw new Exception('You already have the same date-time in the cart');
+                        }
 
-                            }
+                        if ($diffMinutes < config('constants.db.diff_between_services.minutes')) {
+                            throw new Exception('Selected time too close to items in cart');
+
                         }
                     }
                 }
@@ -197,6 +178,7 @@ class AppointmentController extends Controller
                 }
 
                 $params['client_id'] = $user->id;
+
                 $appointment = [
                     'schedule_id' => $cartItem->schedule_id,
                     'service_id' => $cartItem->service_id,
@@ -206,6 +188,7 @@ class AppointmentController extends Controller
                     'paid_sum' => $params['paid_sum'],
                     'order_id' => $order->id
                 ];
+
                 $newAppointment = Appointment::create($appointment);
 
                 if (is_null($newAppointment)) {
@@ -218,17 +201,11 @@ class AppointmentController extends Controller
                     throw new Exception('Failed get schedule for appointment id ' . $newAppointment->id);
                 }
 
-                $schedules[] = $newAppointmentSchedule;
-            }
+                $newAppointmentSchedule->update(['status' => config('constants.db.status.unavailable')]);
 
-            if (is_null($schedules)) {
-                throw new Exception('Failed get schedules for appointments');
-            }
+                BlockService::unblock($newAppointmentSchedule);
 
-            foreach ($schedules as $schedule) {
-                $schedule->update(['status' => config('constants.db.status.unavailable')]);
-                BlockService::unblock($schedule);
-                Cart::where('schedule_id', $schedule->id)->where('client_id', $user->id)->first()->delete();
+                Cart::where('schedule_id', $newAppointmentSchedule->id)->where('client_id', $user->id)->first()->delete();
             }
 
             DB::commit();
@@ -255,23 +232,18 @@ class AppointmentController extends Controller
             'services.category',
             'masters.firstname as master_firstname',
             'masters.lastname as master_lastname',
-            'schedules.date',
-            'schedules.time',
+            'schedules.date_time'
         ])
             ->join('schedules', 'appointments.schedule_id', '=', 'schedules.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->join('users as masters', 'schedules.master_id', '=', 'masters.id')
             ->where('appointments.client_id', '=', $user)
             ->where('appointments.id', '=', $appointment)
-            ->where(function ($query) {
-                $query
-                    ->where('date', '>', now())
-                    ->orWhere('date', '=', now()->format('Y-m-d'))
-                    ->where('time', '>', now()->format('H:i:s'));
-            })
+            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
             ->first();
+
         if (!empty($appointmentInstance)) {
-            $appointmentResource = new AppointmentClientResource($appointmentInstance);
+            $appointmentResource = AppointmentClientResource::make($appointmentInstance);
             return response()->json(['data' => $appointmentResource]);
         } else {
             return response()->json(['message' => 'Appointment not found'], 404);
@@ -307,6 +279,7 @@ class AppointmentController extends Controller
 
         $appointmentInstance->schedule()->first()->update(['status' => config('constants.db.status.available')]);
         $appointmentInstance->delete();
+
         return response()->json(['message' => 'Appointment successfully deleted']);
     }
 }

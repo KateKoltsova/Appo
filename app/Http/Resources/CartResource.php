@@ -25,8 +25,7 @@ class CartResource extends JsonResource
             'category' => $this->category,
             'master_firstname' => $this->master_firstname,
             'master_lastname' => $this->master_lastname,
-            'date' => $this->date,
-            'time' => $this->time,
+            'date_time' => $this->date_time,
             'status' => $this->status
         ];
 
@@ -34,17 +33,10 @@ class CartResource extends JsonResource
             (!is_null($this->blocked_by)
                 && $this->blocked_by != $this->user()->first()->id
                 && !is_null($this->blocked_until)
-                && ($this->blocked_until >= now())) ||
-            ($this->date < now()->format('Y-m-d') ||
-                ($this->date == now()->format('Y-m-d')
-                    && $this->time <= now()->format('H:i:s')))) {
+                && ($this->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
+            ($this->date_time < now()->setTimezone('Europe/Kiev'))) {
             $cart['message'] = 'Schedule already unavailable';
         }
-
-        $combinedDateTime = $this->date . ' ' . $this->time;
-        $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'UTC');
-        $cart['date'] = $dateTime->setTimezone('Europe/Kiev')->format('Y-m-d');
-        $cart['time'] = $dateTime->setTimezone('Europe/Kiev')->format('H:i:s');
 
         return $cart;
     }

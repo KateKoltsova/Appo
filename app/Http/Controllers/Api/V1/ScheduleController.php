@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleCreateRequest;
 use App\Http\Requests\ScheduleUpdateRequest;
-use App\Http\Resources\AvailableScheduleCollection;
-use App\Http\Resources\ScheduleCollection;
+use App\Http\Resources\AvailableScheduleResource;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Role;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
@@ -39,17 +39,14 @@ class ScheduleController extends Controller
             }
             ])
             ->where('master_id', $user)
-            ->where(function ($query) {
-                $query
-                    ->where('date', '>', now())
-                    ->orWhere('date', '=', now()->format('Y-m-d'))
-                    ->where('time', '>', now()->format('H:i:s'));
-            })
+            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
             ->when($date, function ($query) use ($date) {
-                $query->whereIn('date', $date);
+                $query->whereIn(DB::raw('DATE(date_time)'), $date);
             })
             ->get();
-        $scheduleCollection = new ScheduleCollection($schedule);
+
+        $scheduleCollection = ScheduleResource::collection($schedule);
+
         return response()->json(['data' => $scheduleCollection]);
     }
 
@@ -59,6 +56,7 @@ class ScheduleController extends Controller
         $date = $request->input('filter.date');
         $category = $request->input('filter.category');
         $service = $request->input('filter.service_id');
+
         $availableSchedules = Role::master()->first()->users()
             ->select([
                 'id',
@@ -77,20 +75,14 @@ class ScheduleController extends Controller
                                 ->where('schedules.blocked_until', '<', now())
                                 ->orWhereNull('schedules.blocked_until');
                         })
-                        ->where(function ($query) {
-                            $query
-                                ->where('date', '>', now())
-                                ->orWhere('date', '=', now()->format('Y-m-d'))
-                                ->where('time', '>', now()->format('H:i:s'));
-                        })
+                        ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
                         ->when($date, function ($query) use ($date) {
-                            $query->whereIn('date', $date);
+                            $query->whereIn(DB::raw('DATE(date_time)'), $date);
                         })
                         ->select([
                             'id as schedule_id',
                             'master_id',
-                            'date',
-                            'time',
+                            'date_time',
                             'status',
                         ]);
                 }
@@ -116,7 +108,9 @@ class ScheduleController extends Controller
                 }
             ])
             ->get();
-        $availableScheduleCollection = new AvailableScheduleCollection($availableSchedules);
+
+        $availableScheduleCollection = AvailableScheduleResource::collection($availableSchedules);
+
         return response()->json(['data' => $availableScheduleCollection]);
     }
 
@@ -137,8 +131,7 @@ class ScheduleController extends Controller
         $schedule = Schedule::create(
             [
                 'master_id' => $user,
-                'date' => $params['date'],
-                'time' => $params['time'],
+                'date_time' => $params['date_time'],
                 'status' => config('constants.db.status.available')
             ],
         );
@@ -173,18 +166,13 @@ class ScheduleController extends Controller
                     ]);
             }
             ])
-            ->where(function ($query) {
-                $query
-                    ->where('date', '>', now())
-                    ->orWhere('date', '=', now()->format('Y-m-d'))
-                    ->where('time', '>', now()->format('H:i:s'));
-            })
+            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
             ->where('master_id', $user)
             ->where('schedules.id', $schedule)
             ->first();
 
         if (!empty($scheduleInstance)) {
-            $scheduleResource = new ScheduleResource($scheduleInstance);
+            $scheduleResource = ScheduleResource::make($scheduleInstance);
             return response()->json(['data' => $scheduleResource]);
         } else {
             return response()->json(['message' => 'Schedule not found'], 404);
@@ -246,7 +234,6 @@ class ScheduleController extends Controller
         if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
             $scheduleInstance->appointment()->first()->delete();
             $scheduleInstance->update(['status' => config('constants.db.status.available')]);
-
         }
 
         return response()->json(['message' => 'Appointment on this schedule successfully deleted']);

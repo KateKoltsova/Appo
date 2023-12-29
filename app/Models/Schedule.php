@@ -37,91 +37,11 @@ class Schedule extends Model
 
     protected $fillable = [
         'master_id',
-        'date',
-        'time',
+        'date_time',
         'status',
         'blocked_until',
         'blocked_by'
     ];
-
-    protected $timezone = 'Europe/Kiev';
-
-    protected $dates = [
-        'date',
-        'time',
-    ];
-
-    private $enableDateTimeAttribute = true;
-
-    protected $trackedFields = ['date', 'time'];
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->disableDateTimeAttribute();
-            $model->setDateTimeAttributes($model->date, $model->time);
-            $model->enableDateTimeAttribute();
-        });
-
-        static::updating(function ($model) {
-            $changedFields = array_keys($model->getDirty());
-
-            if (count(array_intersect($changedFields, $model->trackedFields)) > 0) {
-                $model->disableDateTimeAttribute();
-                $model->setDateTimeAttributes($model->date, $model->time);
-                $model->enableDateTimeAttribute();
-            }
-        });
-    }
-
-    public function setDateTimeAttributes($date, $time)
-    {
-        $dateTimeString = $date . ' ' . $time;
-        $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString, $this->timezone);
-
-        $this->attributes['date'] = $dateTime->setTimezone('UTC')->format('Y-m-d');
-        $this->attributes['time'] = $dateTime->setTimezone('UTC')->format('H:i:s');
-    }
-
-    public function getDateTimeAttribute()
-    {
-        if ($this->enableDateTimeAttribute) {
-            $combinedDateTime = $this->attributes['date'] . ' ' . $this->attributes['time'];
-            $dateTime = Carbon::createFromFormat('Y-m-d H:i:s', $combinedDateTime, 'UTC');
-
-            return [
-                'date' => $dateTime->setTimezone($this->timezone)->format('Y-m-d'),
-                'time' => $dateTime->setTimezone($this->timezone)->format('H:i:s')
-            ];
-        } else {
-            return [
-                'date' => $this->attributes['date'],
-                'time' => $this->attributes['time']
-            ];
-        }
-    }
-
-    private function disableDateTimeAttribute()
-    {
-        $this->enableDateTimeAttribute = false;
-    }
-
-    private function enableDateTimeAttribute()
-    {
-        $this->enableDateTimeAttribute = true;
-    }
-
-    public function getDateAttribute()
-    {
-        return $this->getDateTimeAttribute()['date'];
-    }
-
-    public function getTimeAttribute()
-    {
-        return $this->getDateTimeAttribute()['time'];
-    }
 
     public function user()
     {

@@ -25,8 +25,7 @@ class AppointmentClientResource extends JsonResource
             "category" => $this->category,
             "master_firstname" => $this->master_firstname,
             "master_lastname" => $this->master_lastname,
-            "date" => $this->date,
-            "time" => $this->time,
+            "date_time" => $this->date_time
         ];
     }
 }

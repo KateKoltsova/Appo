@@ -49,6 +49,7 @@ class HomeController extends Controller
         $orderParams = [
             'user_id' => $user->id,
             'total' => $totalSum,
+            'payment' => 'full',
             'payment_status' => null
         ];
         $order = Order::create($orderParams);

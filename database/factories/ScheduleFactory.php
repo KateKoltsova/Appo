@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Role;
+use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -22,30 +23,28 @@ class ScheduleFactory extends Factory
         $status = config('constants.db.status.available');
         $role = Role::master()->first();
         $masters = $role->users()->get();
-        $date = new DateTime('now', new DateTimeZone('Europe/Kiev'));
-        $daysInMonth = $date->format('t');
 
-        for ($day = 1; $day <= $daysInMonth; $day += 2) {
-            $dates[] = date('Y-m-') . $day;
+        $startDate = new DateTime('tomorrow 8:00', new DateTimeZone('Europe/Kiev'));
+        $endDate = new DateTime('last day of this month 18:00', new DateTimeZone('Europe/Kiev'));
+
+        $interval = new DateInterval('PT2H'); // интервал 2 часа
+
+        $currentDate = clone $startDate;
+        $dates = [];
+
+        while ($currentDate <= $endDate) {
+            $dates[] = $currentDate->format('Y-m-d H:i:s');
+            $currentDate->add($interval);
         }
-
-        $times = [
-            fake()->time('H') . ':00:00',
-            fake()->time('H') . ':00:00',
-            fake()->time('H') . ':00:00'
-        ];
 
         $result = [];
         foreach ($masters as $master) {
             foreach ($dates as $date) {
-                foreach ($times as $time) {
-                    $result[] = [
-                        'master_id' => $master->id,
-                        'date' => $date,
-                        'time' => $time,
-                        'status' => $status
-                    ];
-                }
+                $result[] = [
+                    'master_id' => $master->id,
+                    'date_time' => $date,
+                    'status' => $status
+                ];
             }
         }
         return $result;

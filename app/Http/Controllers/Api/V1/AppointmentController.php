@@ -8,7 +8,7 @@ use App\Http\Resources\AppointmentClientResource;
 use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\Order;
-use App\Services\BlockService;
+use App\Services\Contracts\BlockModel;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
+    public function __construct(private BlockModel $blockModel)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -203,7 +206,7 @@ class AppointmentController extends Controller
 
                 $newAppointmentSchedule->update(['status' => config('constants.db.status.unavailable')]);
 
-                BlockService::unblock($newAppointmentSchedule);
+                $this->blockModel->unblock($newAppointmentSchedule);
 
                 Cart::where('schedule_id', $newAppointmentSchedule->id)->where('client_id', $user->id)->first()->delete();
             }

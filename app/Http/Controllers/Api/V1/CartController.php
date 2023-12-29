@@ -10,7 +10,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Schedule;
 use App\Models\User;
-use App\Services\BlockService;
+use App\Services\Contracts\BlockModel;
 use App\Services\LiqpayService;
 use App\Services\TotalSumService;
 use Carbon\Carbon;
@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
+    public function __construct(private BlockModel $blockModel)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -159,7 +162,7 @@ class CartController extends Controller
 
         $schedule = $cartItem->schedule()->first();
         if ($schedule->blocked_by == $user) {
-            BlockService::unblock($schedule);
+            $this->blockModel->unblock($schedule);
         }
         $cartItem->delete();
 
@@ -189,7 +192,7 @@ class CartController extends Controller
                     throw new Exception('Some schedules in cart already unavailable');
                 }
 
-                BlockService::block(config('constants.db.blocked.minutes'), $user, $cartItemSchedule);
+                $this->blockModel->block(config('constants.db.blocked.minutes'), $user, $cartItemSchedule);
             }
 
             $total = TotalSumService::totalSum($cart['items'], 'payment');

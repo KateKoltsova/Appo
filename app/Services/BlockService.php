@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Services\Contracts\BlockModel;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class BlockService
+class BlockService implements BlockModel
 {
-    static function block(int $minutes, string $user_id, Model $blockedModel)
+    public function block(int $minutes, string $user_id, Model $blockedModel): bool
     {
         $blockedUntil = now()->setTimezone('Europe/Kiev')->addMinutes($minutes);
         $params = [
@@ -27,7 +28,7 @@ class BlockService
         }
     }
 
-    static function unblock(Model $blockedModel)
+    public function unblock(Model $blockedModel): bool
     {
         $params = [
             'blocked_until' => null,

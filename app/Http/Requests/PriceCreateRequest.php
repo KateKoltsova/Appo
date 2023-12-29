@@ -24,13 +24,9 @@ class PriceCreateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $role = Role::master()->first();
-        $masters = $role->users()->pluck('id')->toArray();
-        $services = Service::pluck('id')->toArray();
         return [
-            'master_id' => ['required', Rule::in($masters)],
-            'service_id' => ['required', Rule::in($services)],
-            'price' => ['required', 'integer', 'min:1']
+            'service_id' => ['required', 'exists:App\Models\Service,id'],
+            'price' => ['required', 'integer', 'min:100']
         ];
     }
 }

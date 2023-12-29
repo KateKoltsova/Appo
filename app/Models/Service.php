@@ -41,4 +41,9 @@ class Service extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
 }

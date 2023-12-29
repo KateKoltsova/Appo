@@ -20,10 +20,10 @@ class UserFactory extends Factory
         return [
             'firstname' => fake()->firstName(),
             'lastname' => fake()->lastName(),
-            'birthdate' => fake()->date(),
+            'birthdate' => fake()->dateTimeBetween('-18 years'),
             'email' => fake()->unique()->safeEmail(),
             'phone_number' => fake()->unique()->numerify('+380#########'),
-            'password' => fake()->password(3, 20),
+            'password' => '11111111',
         ];
     }
 

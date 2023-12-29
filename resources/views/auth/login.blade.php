@@ -12,21 +12,6 @@
                             @csrf
 
                             <div class="row mb-3">
-                                <div class="col-md-8 offset-md-4">
-                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                                        <input type="radio" class="btn-check" name="role_id" id="master" value="1"
-                                               autocomplete="off">
-                                        <label class="btn btn-outline-primary" for="master">{{ __('Master') }}</label>
-
-                                        <input type="radio" class="btn-check" name="role_id" id="client" value="2"
-                                               autocomplete="off" checked>
-                                        <label class="btn btn-outline-primary" for="client">{{ __('Client') }}</label>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div class="row mb-3">
                                 <label for="email"
                                        class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
 
@@ -57,19 +42,6 @@
                                         <strong>{{ $message }}</strong>
                                     </span>
                                     @enderror
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-6 offset-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="remember"
-                                               id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                        <label class="form-check-label" for="remember">
-                                            {{ __('Remember Me') }}
-                                        </label>
-                                    </div>
                                 </div>
                             </div>
 

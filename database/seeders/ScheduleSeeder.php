@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Schedule;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ScheduleSeeder extends Seeder
@@ -18,8 +17,7 @@ class ScheduleSeeder extends Seeder
             Schedule::updateOrCreate(
                 [
                     'master_id' => $schedule['master_id'],
-                    'date' => $schedule['date'],
-                    'time' => $schedule['time']
+                    'date_time' => $schedule['date_time'],
                 ],
                 ['status' => $schedule['status']]
             );

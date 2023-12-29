@@ -10,6 +10,7 @@ use App\Http\Resources\PriceResource;
 use App\Models\Price;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class PriceController extends Controller
 {
@@ -19,19 +20,20 @@ class PriceController extends Controller
     public function index(Request $request, string $user)
     {
         $categories = $request->input('filter.category');
-        $prices = Service::select(['services.*', 'prices.price'])
-            ->rightJoin('prices', 'service_id', '=', 'services.id')
+        $prices = Service::select([
+            'services.id as service_id',
+            'services.*',
+            'prices.id as price_id',
+            'prices.price'
+        ])
+            ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
             ->where('master_id', $user)
             ->when($categories, function ($query) use ($categories) {
                 $query->whereIn('category', $categories);
             })
             ->get();
-        if (!empty($prices)) {
             $priceCollection = new PriceCollection($prices);
             return response()->json(['data' => $priceCollection]);
-        } else {
-            return response()->json(['message' => 'No data'], 404);
-        }
     }
 
     /**
@@ -45,15 +47,15 @@ class PriceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PriceCreateRequest $request)
+    public function store(PriceCreateRequest $request, string $user)
     {
         $params = $request->validated();
         $price = Price::updateOrCreate(
-            ['master_id' => $params['master_id'], 'service_id' => $params['service_id']],
+            ['master_id' => $user, 'service_id' => $params['service_id']],
             ['price' => $params['price']]
         );
         if ($price) {
-            return $this->show($price->master_id, $price->service_id);
+            return $this->show($price->master_id, $price->id);
         } else {
             return response()->json(['message' => 'Bad request'], 400);
         }
@@ -64,16 +66,21 @@ class PriceController extends Controller
      */
     public function show(string $user, string $price)
     {
-        $priceInstance = Service::select(['services.*', 'prices.price'])
-            ->rightJoin('prices', 'service_id', '=', 'services.id')
+        $priceInstance = Service::select([
+            'services.id as service_id',
+            'services.*',
+            'prices.id as price_id',
+            'prices.price'
+        ])
+            ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
             ->where('master_id', $user)
-            ->where('services.id', $price)
+            ->where('prices.id', $price)
             ->first();
         if (!empty($priceInstance)) {
             $priceResource = new PriceResource($priceInstance);
             return response()->json(['data' => $priceResource]);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Price not found'], 404);
         }
     }
 
@@ -91,14 +98,13 @@ class PriceController extends Controller
     public function update(PriceUpdateRequest $request, string $user, string $price)
     {
         $params = $request->validated();
-        $priceInstance = Price::where('master_id', $user)->where('service_id', $price);
+        $priceInstance = Price::where('master_id', $user)->where('id', $price);
         if ($priceInstance) {
             $priceInstance->update($params);
             return $this->show($user, $price);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'Price not found'], 404);
         }
-
     }
 
     /**
@@ -106,7 +112,11 @@ class PriceController extends Controller
      */
     public function destroy(string $user, string $price)
     {
-        Price::where('master_id', $user)->where('service_id', $price)->delete();
+        $priceInstance = Price::where('master_id', $user)->where('id', $price)->first();
+        if (!$priceInstance) {
+            return response()->json(['message' => 'Price not found'], 404);
+        }
+        $priceInstance->delete();
         return response()->json(['message' => 'Price successfully deleted']);
     }
 }

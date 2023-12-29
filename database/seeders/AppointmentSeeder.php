@@ -14,10 +14,14 @@ class AppointmentSeeder extends Seeder
      */
     public function run(): void
     {
-        $appointment = Appointment::factory()->definition();
-        Schedule::where('id', '=', $appointment['schedule_id'])
-            ->update(['status' => $appointment['status']]);
-        unset($appointment['status']);
-        Appointment::create($appointment);
+        $i = 0;
+        while ($i < 5) {
+            $appointment = Appointment::factory()->definition();
+            Schedule::where('id', '=', $appointment['schedule_id'])
+                ->update(['status' => $appointment['status']]);
+            unset($appointment['status']);
+            Appointment::create($appointment);
+            $i++;
+        }
     }
 }

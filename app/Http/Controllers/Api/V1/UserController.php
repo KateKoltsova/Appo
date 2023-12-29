@@ -18,18 +18,18 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $roles = $request->input('filter.role') ?? ['master'];
-        $users = User::with('role')
-            ->whereHas('role', function ($query) use ($roles) {
+        $roles = $request->input('filter.role');
+        $users = User::join('roles', 'users.role_id', '=', 'roles.id')
+            ->select([
+                'users.*',
+                'roles.role'
+            ])
+            ->when($roles, function ($query) use ($roles) {
                 $query->whereIn('role', $roles);
             })
             ->get();
-        if (!empty($users)) {
             $userCollection = new UserCollection($users);
             return response()->json(['data' => $userCollection]);
-        } else {
-            return response()->json(['message' => 'No data'], 404);
-        }
     }
 
     /**
@@ -53,14 +53,18 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::where('id', $id)
-            ->with('role')
+        $user = User::where('users.id', $id)
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->select([
+                'users.*',
+                'roles.role'
+            ])
             ->first();
         if (!empty($user)) {
             $userResource = new UserResource($user);
             return response()->json(['data' => $userResource]);
         } else {
-            return response()->json(['message' => 'No data'], 404);
+            return response()->json(['message' => 'User not found'], 404);
 
         }
     }

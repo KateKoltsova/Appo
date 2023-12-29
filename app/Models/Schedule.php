@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,13 +35,31 @@ class Schedule extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'master_id',
+        'date_time',
+        'status',
+        'blocked_until',
+        'blocked_by'
+    ];
+
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'master_id', 'id');
+    }
+
+    public function master()
+    {
+        return $this->user();
     }
 
     public function appointment()
     {
         return $this->hasOne(Appointment::class);
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(Cart::class, 'schedule_id', 'id');
     }
 }

@@ -4,7 +4,7 @@ return [
         'roles' => [
             'master' => 'master',
             'client' => 'client',
-            'admin' =>'admin',
+            'admin' => 'admin',
         ],
         'services' => [
             ['category' => 'Lashes',
@@ -43,14 +43,18 @@ return [
             ],
         ],
         'payment' => [
-            ['name' => 'full'],
-            ['name' => 'prepayment',
-                'value' => 100,
-            ]
+            'full' => ['full'],
+            'prepayment' => ['prepayment', 100],
         ],
         'status' => [
             'available' => 'available',
             'unavailable' => 'unavailable'
+        ],
+        'blocked' => [
+            'minutes' => 15
+        ],
+        'diff_between_services' => [
+            'minutes' => 60
         ]
     ]
 ];

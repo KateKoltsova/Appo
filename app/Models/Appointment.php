@@ -37,9 +37,19 @@ class Appointment extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'schedule_id',
+        'service_id',
+        'client_id',
+        'sum',
+        'payment',
+        'paid_sum',
+        'order_id'
+    ];
+
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'client_id', 'id');
     }
 
     public function service()
@@ -50,5 +60,10 @@ class Appointment extends Model
     public function schedule()
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'id');
     }
 }

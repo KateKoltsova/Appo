@@ -28,7 +28,9 @@ class AppointmentFactory extends Factory
             ->where('service_id', '=', $service->id)
             ->first();
         $wayToPay = config('constants.db.payment');
-        $payment = $wayToPay[rand(1, count($wayToPay)) - 1]['name'];
+        $wayToPay = $wayToPay[array_rand($wayToPay)];
+        $payment = $wayToPay[0];
+        $paid_sum = $wayToPay[1] ?? $sum->price;
         $status = config('constants.db.status.unavailable');
         return [
             'schedule_id' => $schedule->id,
@@ -37,6 +39,7 @@ class AppointmentFactory extends Factory
             'client_id' => $client->id,
             'sum' => $sum->price,
             'payment' => $payment,
+            'paid_sum' => $paid_sum
         ];
     }
 }

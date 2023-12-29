@@ -22,7 +22,7 @@ class PriceUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'price' => ['required', 'integer', 'min:1'],
+            'price' => ['required', 'integer', 'min:100'],
         ];
     }
 }

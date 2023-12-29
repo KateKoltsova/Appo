@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\Role;
+use GuzzleHttp\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 
 class LoginController extends Controller
@@ -47,7 +51,6 @@ class LoginController extends Controller
     public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'role_id' => ['required', Rule::in(Role::client()->first()->id, Role::master()->first()->id)],
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string'],
         ]);
@@ -57,8 +60,41 @@ class LoginController extends Controller
             return redirect(RouteServiceProvider::HOME);
         }
 
-        return back()->withErrors([
-            'master' => Role::where('id', $credentials['role_id'])->first()->role.' with this credentials do not exist.',
-        ])->onlyInput('master');
+        return back();
+    }
+
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $client = new Client();
+        $response = $client->post('https://appobeauty-6ecbc596ee8d.herokuapp.com/api/oauth/login',
+            [
+                'form_params' => [
+                    'email' => $request->input('email'),
+                    'password' => $request->input('password'),
+                ],
+                'headers' => [
+                    'Accept' => 'application / json',
+                ]
+            ]
+        );
+
+        if ($response->getStatusCode() == 200) {
+
+            $tokens = json_decode($response->getBody(), true);
+
+            Session::put('access_token', $tokens['data']['access_token']);
+            Session::put('refresh_token', $tokens['data']['refresh_token']);
+            Session::put('id', $tokens['data']['id']);
+            Cookie::make('access_token', $tokens['data']['access_token']);
+            Cookie::make('refresh_token', $tokens['data']['refresh_token']);
+            Cookie::make('id', $tokens['data']['id']);
+
+            return redirect('/home');
+        }
     }
 }

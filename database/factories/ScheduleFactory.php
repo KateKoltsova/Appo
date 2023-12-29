@@ -3,6 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Role;
+use DateInterval;
+use DateTime;
+use DateTimeZone;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,27 +24,27 @@ class ScheduleFactory extends Factory
         $role = Role::master()->first();
         $masters = $role->users()->get();
 
-        for ($day = 1; $day <= cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y')); $day++) {
-            $dates[] = date('Y-m-') . $day;
-        }
+        $startDate = new DateTime('tomorrow 8:00', new DateTimeZone('Europe/Kiev'));
+        $endDate = new DateTime('last day of this month 18:00', new DateTimeZone('Europe/Kiev'));
 
-        $times = [
-            fake()->time('H') . ':00:00',
-            fake()->time('H') . ':00:00',
-            fake()->time('H') . ':00:00'
-        ];
+        $interval = new DateInterval('PT2H'); // интервал 2 часа
+
+        $currentDate = clone $startDate;
+        $dates = [];
+
+        while ($currentDate <= $endDate) {
+            $dates[] = $currentDate->format('Y-m-d H:i:s');
+            $currentDate->add($interval);
+        }
 
         $result = [];
         foreach ($masters as $master) {
             foreach ($dates as $date) {
-                foreach ($times as $time) {
-                    $result[] = [
-                        'master_id' => $master->id,
-                        'date' => $date,
-                        'time' => $time,
-                        'status' => $status
-                    ];
-                }
+                $result[] = [
+                    'master_id' => $master->id,
+                    'date_time' => $date,
+                    'status' => $status
+                ];
             }
         }
         return $result;

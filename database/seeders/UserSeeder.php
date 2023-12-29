@@ -14,6 +14,15 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $admin = Role::admin()->first();
+        $admin->users()->create([
+            'firstname' => 'Admin',
+            'lastname' => 'Admin',
+            'birthdate' => fake()->dateTimeBetween('-18 years'),
+            'email' => 'admin@admin.com',
+            'phone_number' => fake()->unique()->numerify('+380#########'),
+            'password' => '11111111',
+        ]);
         $i = 0;
         while ($i < 2) {
             $master = Role::master()->first();

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 
 class RegisterRequest extends FormRequest
 {
@@ -13,6 +14,16 @@ class RegisterRequest extends FormRequest
     {
         return true;
     }
+
+    protected function prepareForValidation()
+    {
+        if (Str::substr($this->phone_number, 0, 1) != '+') {
+            $this->merge([
+                'phone_number' => '+' . $this->phone_number,
+            ]);
+        }
+    }
+
 
     /**
      * Get the validation rules that apply to the request.

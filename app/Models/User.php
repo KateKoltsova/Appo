@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 //use Laravel\Sanctum\HasApiTokens;
 use Laravel\Passport\HasApiTokens;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Models\User
@@ -54,9 +53,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    protected $dates = ['deleted_at'];
     /**
      * The attributes that are mass assignable.
      *
@@ -99,16 +97,24 @@ class User extends Authenticatable
 
     public function prices()
     {
-        return $this->hasMany(Price::class);
+        return $this->hasMany(Price::class, 'master_id', 'id');
     }
 
     public function schedules()
     {
-        return $this->hasMany(Schedule::class);
+        return $this->hasMany(Schedule::class, 'master_id', 'id');
     }
 
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function carts() {
+        return $this->hasMany(Cart::class, 'client_id', 'id');
+    }
+
+    public function orders() {
+        return $this->hasMany(Cart::class, 'user_id', 'id');
     }
 }

@@ -2,11 +2,16 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Swagger docs for Appo Beauty API",
-        "description": "This is a Appo Beauty Server based on the OpenAPI 3.0 specification. \n\nSome useful links:\n- [The API repository](https://github.com/KateKoltsova/Appo)\n- [The API server](https://appobeauty-6ecbc596ee8d.herokuapp.com/api)",
+        "description": "This is a Appo Beauty Server based on the OpenAPI 3.0 specification.\n\n Ⓒ Kateryna Koltsova 2023. All rights reserved. \n\nSome useful links:\n- [The API repository](https://github.com/KateKoltsova/Appo)\n- [The API server](https://appobeauty-6ecbc596ee8d.herokuapp.com/api)",
         "contact": {
-            "email": "kate.koltsova.work@gmail.com"
+            "email": "kate.koltsova.work@gmail.com",
+            "url": "https://www.linkedin.com/in/kate-koltsova/"
         },
-        "x-copyright": "(C) Kateryna Koltsova 2023. All rights reserved.",
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "x-copyright": "Ⓒ Kateryna Koltsova 2023. All rights reserved.",
         "version": "1.0.0"
     },
     "servers": [
@@ -1206,23 +1211,13 @@
                         }
                     },
                     {
-                        "name": "date",
+                        "name": "date_time",
                         "in": "query",
-                        "description": "Date",
+                        "description": "Date_time for new schedule",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "1111-11-11"
-                        }
-                    },
-                    {
-                        "name": "time",
-                        "in": "query",
-                        "description": "Time",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "11:00"
+                            "example": "1111-11-11 11:00:00"
                         }
                     },
                     {
@@ -1366,23 +1361,13 @@
                         }
                     },
                     {
-                        "name": "date",
+                        "name": "date_time",
                         "in": "query",
-                        "description": "The schedule date",
-                        "required": false,
+                        "description": "The schedule date_time",
+                        "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "2023-01-01"
-                        }
-                    },
-                    {
-                        "name": "time",
-                        "in": "query",
-                        "description": "The schedule time",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "12:43"
+                            "example": "2023-01-01 11:00:00"
                         }
                     },
                     {
@@ -1864,6 +1849,10 @@
                                                 "totalSum": {
                                                     "type": "integer",
                                                     "example": 780
+                                                },
+                                                "totalCount": {
+                                                    "type": "integer",
+                                                    "example": 2
                                                 }
                                             }
                                         }
@@ -1968,6 +1957,10 @@
                                                 "totalSum": {
                                                     "type": "integer",
                                                     "example": 780
+                                                },
+                                                "totalCount": {
+                                                    "type": "integer",
+                                                    "example": 2
                                                 }
                                             }
                                         }
@@ -2122,6 +2115,10 @@
                                                             "example": 200
                                                         }
                                                     }
+                                                },
+                                                "totalCount": {
+                                                    "type": "integer",
+                                                    "example": 2
                                                 }
                                             }
                                         }
@@ -2209,13 +2206,13 @@
                                                     "type": "string",
                                                     "example": "full"
                                                 },
-                                                "html_button": {
-                                                    "type": "string",
-                                                    "example": "\n<form method=\"POST\" action=\"https://www.liqpay.ua/api/3/checkout\" accept-charset=\"utf-8\">\n<input type=\"hidden\" name=\"data\" value=\"eyJ2ZXJzaW9uIjoiMyIsImFjdGlvbiI6InBheSIsImFtb3VudCI6NzQwLCJjdXJyZW5jeSI6IlVBSCIsImRlc2NyaXB0aW9uIjoiUGF5IGZvciBiZWF1dHkgc2VydmljZXMiLCJvcmRlcl9pZCI6NzMsInNlcnZlcl91cmwiOiJodHRwczpcL1wvYXBwb2JlYXV0eS02ZWNiYzU5NmVlOGQuaGVyb2t1YXBwLmNvbVwvYXBpXC92MVwvYXBwb2ludG1lbnQiLCJyZXN1bHRfdXJsIjoiaHR0cDpcL1wvYXBwby5sb2NhbFwvIiwiZXhwaXJlZF9kYXRlIjoiMjAyMy0xMi0yMCAxNDoyNToyOCIsInB1YmxpY19rZXkiOiJzYW5kYm94X2k3OTg2ODYzMDUxIn0=\" />\n<input type=\"hidden\" name=\"signature\" value=\"+Vm0kWxHu/ezU2qufuH0mXLo+f4=\" />\n<input type=\"image\" src=\"//static.liqpay.ua/buttons/p1ru.radius.png\" name=\"btn_text\" />\n</form>\n"
-                                                },
                                                 "order_id": {
                                                     "type": "number",
                                                     "example": 73
+                                                },
+                                                "html_button": {
+                                                    "type": "string",
+                                                    "example": "\n<form method=\"POST\" action=\"https://www.liqpay.ua/api/3/checkout\" accept-charset=\"utf-8\">\n<input type=\"hidden\" name=\"data\" value=\"eyJ2ZXJzaW9uIjoiMyIsImFjdGlvbiI6InBheSIsImFtb3VudCI6NzQwLCJjdXJyZW5jeSI6IlVBSCIsImRlc2NyaXB0aW9uIjoiUGF5IGZvciBiZWF1dHkgc2VydmljZXMiLCJvcmRlcl9pZCI6NzMsInNlcnZlcl91cmwiOiJodHRwczpcL1wvYXBwb2JlYXV0eS02ZWNiYzU5NmVlOGQuaGVyb2t1YXBwLmNvbVwvYXBpXC92MVwvYXBwb2ludG1lbnQiLCJyZXN1bHRfdXJsIjoiaHR0cDpcL1wvYXBwby5sb2NhbFwvIiwiZXhwaXJlZF9kYXRlIjoiMjAyMy0xMi0yMCAxNDoyNToyOCIsInB1YmxpY19rZXkiOiJzYW5kYm94X2k3OTg2ODYzMDUxIn0=\" />\n<input type=\"hidden\" name=\"signature\" value=\"+Vm0kWxHu/ezU2qufuH0mXLo+f4=\" />\n<input type=\"image\" src=\"//static.liqpay.ua/buttons/p1ru.radius.png\" name=\"btn_text\" />\n</form>\n"
                                                 }
                                             }
                                         }
@@ -2304,11 +2301,8 @@
                                                                         "schedule_id": {
                                                                             "example": 1
                                                                         },
-                                                                        "date": {
-                                                                            "example": "2023-11-11"
-                                                                        },
-                                                                        "time": {
-                                                                            "example": "11:11:11"
+                                                                        "date_time": {
+                                                                            "example": "2023-11-11 11:00:00"
                                                                         },
                                                                         "status": {
                                                                             "example": "available"
@@ -2476,13 +2470,9 @@
                         "type": "integer",
                         "example": 10
                     },
-                    "date": {
+                    "date_time": {
                         "type": "string",
-                        "example": "1111-01-01"
-                    },
-                    "time": {
-                        "type": "string",
-                        "example": "00-00-00"
+                        "example": "1111-01-01 01:01:01"
                     },
                     "status": {
                         "type": "string",
@@ -2549,13 +2539,9 @@
                         "type": "integer",
                         "example": 10
                     },
-                    "date": {
+                    "date_time": {
                         "type": "string",
-                        "example": "1111-01-01"
-                    },
-                    "time": {
-                        "type": "string",
-                        "example": "00-00-00"
+                        "example": "1111-01-01 01:01:01"
                     },
                     "status": {
                         "type": "string",
@@ -2614,13 +2600,9 @@
                         "type": "string",
                         "example": "Lastname"
                     },
-                    "date": {
+                    "date_time": {
                         "type": "string",
-                        "example": "1111-01-01"
-                    },
-                    "time": {
-                        "type": "string",
-                        "example": "00-00-00"
+                        "example": "1111-01-01 01:01:01"
                     }
                 }
             },
@@ -2663,13 +2645,9 @@
                         "type": "string",
                         "example": "Lastname"
                     },
-                    "date": {
+                    "date_time": {
                         "type": "string",
-                        "example": "1111-01-01"
-                    },
-                    "time": {
-                        "type": "string",
-                        "example": "00-00-00"
+                        "example": "1111-01-01 01:01:01"
                     },
                     "message?": {
                         "type": "string",

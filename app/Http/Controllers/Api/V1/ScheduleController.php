@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleCreateRequest;
 use App\Http\Requests\ScheduleUpdateRequest;
+use App\Http\Resources\AvailableScheduleCollection;
 use App\Http\Resources\AvailableScheduleResource;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Role;
@@ -109,7 +110,7 @@ class ScheduleController extends Controller
             ])
             ->get();
 
-        $availableScheduleCollection = AvailableScheduleResource::collection($availableSchedules);
+        $availableScheduleCollection = new AvailableScheduleCollection($availableSchedules);
 
         return response()->json(['data' => $availableScheduleCollection]);
     }

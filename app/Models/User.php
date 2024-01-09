@@ -6,7 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+
 //use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passport\HasApiTokens;
 
 /**
@@ -110,11 +112,64 @@ class User extends Authenticatable
         return $this->hasMany(Appointment::class);
     }
 
-    public function carts() {
+    public function carts()
+    {
         return $this->hasMany(Cart::class, 'client_id', 'id');
     }
 
-    public function orders() {
+    public function orders()
+    {
         return $this->hasMany(Cart::class, 'user_id', 'id');
+    }
+
+    public function scopeWithSchedules($query, $date)
+    {
+        return $query
+            ->with([
+                'schedules' => function ($query) use ($date) {
+                    $query
+                        ->where('schedules.status', config('constants.db.status.available'))
+                        ->where(function ($query) {
+                            $query
+                                ->where('schedules.blocked_until', '<', now()->setTimezone('Europe/Kiev'))
+                                ->orWhereNull('schedules.blocked_until');
+                        })
+                        ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
+                        ->when($date, function ($query) use ($date) {
+                            $query->whereIn(DB::raw('DATE(date_time)'), $date);
+                        })
+                        ->select([
+                            'id as schedule_id',
+                            'master_id',
+                            'date_time',
+                            'status',
+                        ]);
+                }
+            ]);
+    }
+
+    public function scopeWithPrices($query, $service, $category)
+    {
+        return $query
+            ->with([
+                'prices' => function ($query) use ($service, $category) {
+                    $query
+                        ->join('services', 'prices.service_id', '=', 'services.id')
+                        ->when($service, function ($query) use ($service) {
+                            $query->whereIn('service_id', $service);
+                        })
+                        ->when($category, function ($query) use ($category) {
+                            $query->whereIn('category', $category);
+                        })
+                        ->select([
+                            'prices.id as price_id',
+                            'master_id',
+                            'service_id',
+                            'price',
+                            'category',
+                            'title'
+                        ]);
+                }
+            ]);
     }
 }

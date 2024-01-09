@@ -6,6 +6,8 @@ use App\Services\AuthService;
 use App\Services\BlockService;
 use App\Services\Contracts\AuthTokenGenerator;
 use App\Services\Contracts\BlockModel;
+use App\Services\Contracts\PayService;
+use App\Services\LiqpayService;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(AuthTokenGenerator::class, AuthService::class);
         $this->app->bind(BlockModel::class, BlockService::class);
+        $this->app->bind(PayService::class, LiqpayService::class);
     }
 
     /**

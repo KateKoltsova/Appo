@@ -8,17 +8,20 @@ use App\Http\Resources\AppointmentClientResource;
 use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\Schedule;
 use App\Services\Contracts\BlockModel;
-use DateTime;
+use App\Services\Contracts\PayService;
+use App\Services\ScheduleService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    public function __construct(private BlockModel $blockModel)
+    public function __construct(private BlockModel $blockModel, private PayService $payService)
     {
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -62,17 +65,11 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->input('data');
-            $signature = $request->input('signature');
+            $decodedData = $this->payService->getCallback($request);
 
-            $privateKey = env('LIQPAY_TEST_PRIVATE_KEY');
-            $expectedSignature = base64_encode(sha1($privateKey . $data . $privateKey, true));
-
-            if ($signature !== $expectedSignature) {
-                throw new Exception('Invalid signature');
+            if (!$decodedData) {
+                throw new Exception('Failed getting callback');
             }
-
-            $decodedData = json_decode(base64_decode($data), true);
 
             $order = Order::where('id', $decodedData['order_id'])->first();
 
@@ -84,131 +81,85 @@ class AppointmentController extends Controller
                 'payment_status' => $decodedData['status'],
                 'description' => $decodedData['description']
             ]);
+            $params['payment'] = $order->payment;
 
             if ($order->payment_status != 'success') {
                 $message = 'Payment status is ' . $order->payment_status;
                 throw new Exception($message);
             }
 
-            $user = $order->user()->first();
+            $userId = $order->user()->first()->id;
 
-            if (is_null($user)) {
+            if (is_null($userId)) {
                 $message = 'User not found';
                 throw new Exception($message);
             }
 
-            $carts = Cart::where('client_id', $user->id)->get();
-
-            if (is_null($carts)) {
-                throw new Exception('Carts not found');
-            }
+            $carts = Cart::where('client_id', $userId)->get();
 
             if (empty($carts->toArray())) {
                 throw new Exception('Cart is empty');
             }
 
-            $otherCarts = clone $carts;
-
-            foreach ($carts as $key => $cartItem) {
-                $cartItemSchedule = $cartItem->schedule()->first();
-
-                if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
-                    (!is_null($cartItemSchedule->blocked_by)
-                        && $cartItemSchedule->blocked_by != $user->id
-                        && !is_null($cartItemSchedule->blocked_until)
-                        && ($cartItemSchedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-                    ($cartItemSchedule->date_time < now()->setTimezone('Europe/Kiev'))) {
-                    throw new Exception('Some schedules in cart already unavailable');
-                }
-
-                if (is_null($cartItemSchedule->blocked_by)) {
-                    throw new Exception('You must checkout first');
-                }
-
-                $otherCartsItems = $otherCarts->forget($key);
-
-                if (!is_null($otherCartsItems)) {
-                    foreach ($otherCartsItems as $otherCartItem) {
-                        $otherCartItemSchedule = $otherCartItem->schedule()->first();
-
-                        if ($otherCartItemSchedule->status === config('constants.db.status.unavailable') ||
-                            (!is_null($otherCartItemSchedule->blocked_by)
-                                && $otherCartItemSchedule->blocked_by != $user->id
-                                && !is_null($otherCartItemSchedule->blocked_until)
-                                && ($otherCartItemSchedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-                            ($otherCartItemSchedule->date_time < now()->setTimezone('Europe/Kiev'))) {
-                            continue;
-                        }
-
-                        $timeCartItem = new DateTime($cartItemSchedule->date_time);
-                        $timeOtherCartItem = new DateTime($otherCartItemSchedule->date_time);
-                        $diff = $timeOtherCartItem->diff($timeCartItem);
-                        $diffMinutes = $diff->i + $diff->h * 60 + $diff->d * 24 * 60;
-
-                        if ($diffMinutes === 0) {
-                            throw new Exception('You already have the same date-time in the cart');
-                        }
-
-                        if ($diffMinutes < config('constants.db.diff_between_services.minutes')) {
-                            throw new Exception('Selected time too close to items in cart');
-
-                        }
-                    }
-                }
-
-                if (!$cartItemSchedule->master()->first()->prices()->whereId($cartItem->price_id)->first()) {
-                    throw new Exception('This master does not provide such a service');
-                }
-            }
-
             DB::beginTransaction();
 
-            $params['payment'] = $order->payment;
+            $schedules = Schedule::whereIn('id', function ($query) use ($userId) {
+                $query->select('schedule_id')
+                    ->from('carts')
+                    ->where('client_id', $userId);
+            })->get();
 
-            foreach ($carts as $cartItem) {
-                $params['sum'] = $cartItem->price()->first()->price;
+            foreach ($schedules as $key => $schedule) {
 
-                if (is_null($params['sum'])) {
-                    throw new Exception('Cart item has no price');
+                $otherSchedules = $schedules->filter(function ($item, $otherKey) use ($key) {
+                    return $otherKey !== $key;
+                });
+
+                $isValid = ScheduleService::scheduleValidation($otherSchedules, $userId, $schedule);
+
+                if ($isValid) {
+                    $cartItem = $carts->first(function ($cart) use ($schedule) {
+                        return $cart->schedule_id == $schedule->id;
+                    });
+
+                    $params['sum'] = $cartItem->price()->first()->price;
+
+                    if (is_null($params['sum'])) {
+                        throw new Exception('Cart item has no price');
+                    }
+
+                    $paymentConfig = config('constants.db.payment');
+
+                    if (isset($paymentConfig[$params['payment']][1])) {
+                        $params['paid_sum'] = $paymentConfig[$params['payment']][1];
+                    } else {
+                        $params['paid_sum'] = $params['sum'];
+                    }
+
+                    $params['client_id'] = $userId;
+
+                    $appointment = [
+                        'schedule_id' => $cartItem->schedule_id,
+                        'service_id' => $cartItem->service_id,
+                        'client_id' => $params['client_id'],
+                        'sum' => $params['sum'],
+                        'payment' => $params['payment'],
+                        'paid_sum' => $params['paid_sum'],
+                        'order_id' => $order->id
+                    ];
+
+                    $newAppointment = Appointment::create($appointment);
+
+                    if (is_null($newAppointment)) {
+                        throw new Exception('Failed create appointment');
+                    }
+
+                    $schedule->update(['status' => config('constants.db.status.unavailable')]);
+
+                    $this->blockModel->unblock($schedule);
+
+                    Cart::where('schedule_id', $schedule->id)->where('client_id', $userId)->first()->delete();
                 }
-
-                $paymentConfig = config('constants.db.payment');
-
-                if (isset($paymentConfig[$params['payment']][1])) {
-                    $params['paid_sum'] = $paymentConfig[$params['payment']][1];
-                } else {
-                    $params['paid_sum'] = $params['sum'];
-                }
-
-                $params['client_id'] = $user->id;
-
-                $appointment = [
-                    'schedule_id' => $cartItem->schedule_id,
-                    'service_id' => $cartItem->service_id,
-                    'client_id' => $params['client_id'],
-                    'sum' => $params['sum'],
-                    'payment' => $params['payment'],
-                    'paid_sum' => $params['paid_sum'],
-                    'order_id' => $order->id
-                ];
-
-                $newAppointment = Appointment::create($appointment);
-
-                if (is_null($newAppointment)) {
-                    throw new Exception('Failed create appointment');
-                }
-
-                $newAppointmentSchedule = $newAppointment->schedule()->first();
-
-                if (is_null($newAppointmentSchedule)) {
-                    throw new Exception('Failed get schedule for appointment id ' . $newAppointment->id);
-                }
-
-                $newAppointmentSchedule->update(['status' => config('constants.db.status.unavailable')]);
-
-                $this->blockModel->unblock($newAppointmentSchedule);
-
-                Cart::where('schedule_id', $newAppointmentSchedule->id)->where('client_id', $user->id)->first()->delete();
             }
 
             DB::commit();

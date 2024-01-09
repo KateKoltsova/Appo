@@ -67,47 +67,8 @@ class ScheduleController extends Controller
             ->when($master_id, function ($query) use ($master_id) {
                 $query->where('id', $master_id);
             })
-            ->with([
-                'schedules' => function ($query) use ($date) {
-                    $query
-                        ->where('schedules.status', config('constants.db.status.available'))
-                        ->where(function ($query) {
-                            $query
-                                ->where('schedules.blocked_until', '<', now())
-                                ->orWhereNull('schedules.blocked_until');
-                        })
-                        ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
-                        ->when($date, function ($query) use ($date) {
-                            $query->whereIn(DB::raw('DATE(date_time)'), $date);
-                        })
-                        ->select([
-                            'id as schedule_id',
-                            'master_id',
-                            'date_time',
-                            'status',
-                        ]);
-                }
-            ])
-            ->with([
-                'prices' => function ($query) use ($service, $category) {
-                    $query
-                        ->join('services', 'prices.service_id', '=', 'services.id')
-                        ->when($service, function ($query) use ($service) {
-                            $query->whereIn('service_id', $service);
-                        })
-                        ->when($category, function ($query) use ($category) {
-                            $query->whereIn('category', $category);
-                        })
-                        ->select([
-                            'prices.id as price_id',
-                            'master_id',
-                            'service_id',
-                            'price',
-                            'category',
-                            'title'
-                        ]);
-                }
-            ])
+            ->withSchedules($date)
+            ->withPrices($service, $category)
             ->get();
 
         $availableScheduleCollection = new AvailableScheduleCollection($availableSchedules);

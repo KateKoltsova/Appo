@@ -2,25 +2,25 @@
 
 namespace App\Services;
 
-class TotalSumService
+class TotalService
 {
-    static function totalSum($cartList, string $param = 'full')
+    static function total($cartList, string $param = 'full')
     {
-        $totalSum = 0;
+        $cartSum = 0;
         $cartCount = 0;
         $paymentConfig = config('constants.db.payment');
 
-        foreach ($cartList as $cart) {
+        foreach ($cartList as $key => $cartItem) {
+            $userId = $cartItem->user()->first()->id;
 
-            if ($cart->status === config('constants.db.status.unavailable') ||
-                (!is_null($cart->blocked_by)
-                    && $cart->blocked_by != $cart->user()->first()->id
-                    && !is_null($cart->blocked_until)
-                    && ($cart->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-                ($cart->date_time < now()->setTimezone('Europe/Kiev'))) {
-                continue;
-            } else {
-                $totalSum += $cart->price;
+            $otherCartItems = $cartList->filter(function ($item, $otherKey) use ($key) {
+                return $otherKey !== $key;
+            });
+
+            $isValid = ScheduleService::scheduleValidation($otherCartItems, $userId, $cartItem);
+
+            if ($isValid) {
+                $cartSum += $cartItem->price;
                 $cartCount++;
             }
         }
@@ -29,15 +29,15 @@ class TotalSumService
             case 'full':
             {
                 return [
-                    'totalSum' => $totalSum,
+                    'totalSum' => $cartSum,
                     'totalCount' => $cartCount
                 ];
             }
             case 'prepayment':
             {
-                $totalSum = $paymentConfig['prepayment'][1] * $cartCount;
+                $cartSum = $paymentConfig['prepayment'][1] * $cartCount;
                 return [
-                    'totalSum' => $totalSum,
+                    'totalSum' => $cartSum,
                     'totalCount' => $cartCount
                 ];
             }
@@ -48,7 +48,7 @@ class TotalSumService
                     if (isset($payment[1])) {
                         $params[$payment[0]] = $payment[1] * $cartCount;
                     } else {
-                        $params[$payment[0]] = $totalSum;
+                        $params[$payment[0]] = $cartSum;
                     }
                 }
                 return [

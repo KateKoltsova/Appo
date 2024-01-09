@@ -5,24 +5,26 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\CartAddRequest;
+use App\Http\Resources\CartCollection;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Schedule;
 use App\Models\User;
 use App\Services\Contracts\BlockModel;
-use App\Services\LiqpayService;
-use App\Services\TotalSumService;
+use App\Services\Contracts\PayService;
+use App\Services\ScheduleService;
+use App\Services\TotalService;
 use Carbon\Carbon;
-use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
-    public function __construct(private BlockModel $blockModel)
+    public function __construct(private BlockModel $blockModel, private PayService $payService)
     {
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -47,8 +49,8 @@ class CartController extends Controller
             ->where('carts.client_id', '=', $user)
             ->get();
 
-        $cartCollection = CartResource::collection($cart);
-        $totalSum = TotalSumService::totalSum($cartCollection);
+        $cartCollection = new CartCollection($cart);
+        $totalSum = TotalService::total($cartCollection);
         $response = ['data' => []];
         $response['data']['items'] = $cartCollection;
         $response['data']['totalSum'] = $totalSum['totalSum'];
@@ -72,47 +74,23 @@ class CartController extends Controller
         $params = $request->validated();
         $params['client_id'] = $user;
 
-        $schedule = Schedule::findOrFail($params['schedule_id']);
+        $addingSchedule = Schedule::findOrFail($params['schedule_id']);
 
-        if ($schedule->status === config('constants.db.status.unavailable') ||
-            (!is_null($schedule->blocked_by)
-                && $schedule->blocked_by != $user
-                && !is_null($schedule->blocked_until)
-                && ($schedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-            ($schedule->date_time < now()->setTimezone('Europe/Kiev'))) {
-            return response()->json(['message' => 'Schedule already unavailable'], 400);
+        $schedules = Schedule::whereIn('id', function ($query) use ($user) {
+            $query->select('schedule_id')
+                ->from('carts')
+                ->where('client_id', $user);
+        })->get();
+
+        $validSchedule = ScheduleService::scheduleValidation($schedules, $user, $addingSchedule);
+
+        if (!$validSchedule) {
+            return response()->json(['message' => 'Invalid schedule'], 400);
         }
 
-        $inCart = Cart::where('client_id', $user)->pluck('schedule_id')->toArray();
+        $master = $addingSchedule->master()->first();
 
-        $otherSchedules = Schedule::whereIn('id', $inCart)->get();
-
-        foreach ($otherSchedules->toArray() as $otherSchedule) {
-
-            if ($otherSchedule['status'] === config('constants.db.status.unavailable') ||
-                (!is_null($otherSchedule['blocked_by'])
-                    && $otherSchedule['blocked_by'] != $user
-                    && !is_null($otherSchedule['blocked_until'])
-                    && ($otherSchedule['blocked_until'] >= now()->setTimezone('Europe/Kiev'))) ||
-                ($otherSchedule['date_time'] < now()->setTimezone('Europe/Kiev'))) {
-                continue;
-            }
-
-            $timeInCart = new DateTime($otherSchedule['date_time']);
-            $timeAdding = new DateTime($schedule->date_time);
-            $diff = $timeInCart->diff($timeAdding);
-            $diffMinutes = $diff->i + $diff->h * 60 + $diff->d * 24 * 60;
-
-            if ($diffMinutes === 0) {
-                return response()->json(['message' => 'You already have the same date-time in the cart'], 400);
-            }
-
-            if ($diffMinutes < config('constants.db.diff_between_services.minutes')) {
-                return response()->json(['message' => 'Selected time too close to items in cart'], 400);
-            }
-        }
-
-        if (!$schedule->master()->first()->prices()->whereId($params['price_id'])->first()) {
+        if (!$master->prices()->whereId($params['price_id'])->first()) {
             return response()->json(['message' => 'This master does not provide such a service'], 400);
         }
 
@@ -161,6 +139,7 @@ class CartController extends Controller
         }
 
         $schedule = $cartItem->schedule()->first();
+
         if ($schedule->blocked_by == $user) {
             $this->blockModel->unblock($schedule);
         }
@@ -169,33 +148,37 @@ class CartController extends Controller
         return response()->json(['message' => 'Cart item successfully deleted']);
     }
 
+    /**
+     * Get way to pay and blocked specified resource by user
+     */
     public function checkout(string $user)
     {
         try {
             $cart = $this->index($user)->original['data'];
 
-            if (is_null($cart)) {
+            if (empty($cart)) {
                 throw new Exception('Cart is empty');
             }
 
             DB::beginTransaction();
 
-            foreach ($cart['items'] as $cartItem) {
-                $cartItemSchedule = Schedule::firstWhere('id', $cartItem['schedule_id']);
+            $schedules = Schedule::whereIn('id', function ($query) use ($user) {
+                $query->select('schedule_id')
+                    ->from('carts')
+                    ->where('client_id', $user);
+            })->get();
 
-                if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
-                    (!is_null($cartItemSchedule->blocked_by)
-                        && $cartItemSchedule->blocked_by != $user
-                        && !is_null($cartItemSchedule->blocked_until)
-                        && ($cartItemSchedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-                    ($cartItemSchedule->date_time < now()->setTimezone('Europe/Kiev'))) {
-                    throw new Exception('Some schedules in cart already unavailable');
-                }
+            $validSchedule = ScheduleService::scheduleValidation($schedules, $user);
 
-                $this->blockModel->block(config('constants.db.blocked.minutes'), $user, $cartItemSchedule);
+            if (!$validSchedule) {
+                throw new Exception('Invalid schedule');
             }
 
-            $total = TotalSumService::totalSum($cart['items'], 'payment');
+            $schedules->each(function ($schedule) use ($user){
+                $this->blockModel->block(config('constants.db.blocked.minutes'), $user, $schedule);
+            });
+
+            $total = TotalService::total($cart['items'], 'payment');
 
             if (is_null($total)) {
                 throw new Exception('Total sum error');
@@ -215,6 +198,9 @@ class CartController extends Controller
         }
     }
 
+    /**
+     * Create order and get payment button with link and data for pay order
+     */
     public function getPayButton(OrderCreateRequest $request, string $user)
     {
         try {
@@ -229,28 +215,30 @@ class CartController extends Controller
 
             DB::beginTransaction();
 
-            foreach ($carts['items'] as $cart) {
-                $cartItemSchedule = Schedule::firstWhere('id', $cart['schedule_id']);
+            $schedules = Schedule::whereIn('id', function ($query) use ($userId) {
+                $query->select('schedule_id')
+                    ->from('carts')
+                    ->where('client_id', $userId);
+            })->get();
 
-                if ($cartItemSchedule->status === config('constants.db.status.unavailable') ||
-                    (!is_null($cartItemSchedule->blocked_by)
-                        && $cartItemSchedule->blocked_by != $userId
-                        && !is_null($cartItemSchedule->blocked_until)
-                        && ($cartItemSchedule->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-                    ($cartItemSchedule->date_time < now()->setTimezone('Europe/Kiev'))) {
-                    throw new Exception('Some schedules in cart already unavailable');
-                }
+            $validSchedule = ScheduleService::scheduleValidation($schedules, $userId);
 
-                if (is_null($cartItemSchedule->blocked_by) ||
-                    ($cartItemSchedule->blocked_by != $userId) ||
-                    ($cartItemSchedule->blocked_until < now()->setTimezone('Europe/Kiev'))) {
+            if (!$validSchedule) {
+                throw new Exception('Invalid schedule');
+            }
+
+
+            foreach ($schedules as $schedule) {
+                if (is_null($schedule->blocked_by) ||
+                    ($schedule->blocked_by != $userId) ||
+                    ($schedule->blocked_until < now()->setTimezone('Europe/Kiev'))) {
                     throw new Exception('You must checkout first');
                 }
 
-                $expired_at = Carbon::createFromDate($cartItemSchedule->blocked_until, 'Europe/Kiev')->setTimezone('UTC');
+                $expired_at = Carbon::createFromDate($schedule->blocked_until, 'Europe/Kiev')->setTimezone('UTC');
             }
 
-            $total = TotalSumService::totalSum($carts['items'], $params['payment']);
+            $total = TotalService::total($carts['items'], $params['payment']);
 
             if (is_null($total)) {
                 throw new Exception('Total sum error');
@@ -266,7 +254,7 @@ class CartController extends Controller
             $resultUrl = $params['result_url'];
             $paidParams['payment'] = $params['payment'];
             $paidParams['order_id'] = $order->id;
-            $paidParams['html_button'] = LiqpayService::getHtml($total['totalSum'], $order->id, $expired_at, $resultUrl);
+            $paidParams['html_button'] = $this->payService->getHtml($total['totalSum'], $order->id, $expired_at, $resultUrl);
 
             DB::commit();
 

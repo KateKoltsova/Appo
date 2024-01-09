@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Services\Contracts\PayService;
+use Exception;
+use Illuminate\Http\Request;
 use LiqPay;
-use Request;
 
-class LiqpayService
+class LiqpayService implements PayService
 {
-    static function getHtml(int $total, int $orderId, string $expired_at, string $resultUrl)
+    public function getHtml(int $total, int $orderId, string $expired_at, string $resultUrl): string
     {
         $public_key = env('LIQPAY_TEST_PUBLIC_KEY');
         $private_key = env('LIQPAY_TEST_PRIVATE_KEY');
@@ -26,7 +28,7 @@ class LiqpayService
         return $html;
     }
 
-    static function getResponse(int $orderId)
+    public function getResponse(int $orderId): mixed
     {
         $public_key = env('LIQPAY_TEST_PUBLIC_KEY');
         $private_key = env('LIQPAY_TEST_PRIVATE_KEY');
@@ -37,5 +39,20 @@ class LiqpayService
             'order_id' => $orderId
         ));
         return $res;
+    }
+
+    public function getCallback(Request $request)
+    {
+        $data = $request->input('data');
+        $signature = $request->input('signature');
+
+        $privateKey = env('LIQPAY_TEST_PRIVATE_KEY');
+        $expectedSignature = base64_encode(sha1($privateKey . $data . $privateKey, true));
+
+        if ($signature !== $expectedSignature) {
+            return false;
+        }
+
+        return json_decode(base64_decode($data), true);
     }
 }

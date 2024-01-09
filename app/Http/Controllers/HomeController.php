@@ -6,7 +6,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\LiqpayService;
-use App\Services\TotalSumService;
+use App\Services\TotalService;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -45,7 +45,7 @@ class HomeController extends Controller
             ])
             ->join('prices', 'carts.price_id', '=', 'prices.id')
             ->get();
-        $totalSum = TotalSumService::totalSum($carts, 'full');
+        $totalSum = TotalService::totalSum($carts, 'full');
         $orderParams = [
             'user_id' => $user->id,
             'total' => $totalSum,

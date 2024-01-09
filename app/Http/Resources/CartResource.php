@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\ScheduleService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,12 +30,7 @@ class CartResource extends JsonResource
             'status' => $this->status
         ];
 
-        if ($this->status === config('constants.db.status.unavailable') ||
-            (!is_null($this->blocked_by)
-                && $this->blocked_by != $this->user()->first()->id
-                && !is_null($this->blocked_until)
-                && ($this->blocked_until >= now()->setTimezone('Europe/Kiev'))) ||
-            ($this->date_time < now()->setTimezone('Europe/Kiev'))) {
+        if (!ScheduleService::isAvailable($this->resource, $this->user()->first()->id)) {
             $cart['message'] = 'Schedule already unavailable';
         }
 

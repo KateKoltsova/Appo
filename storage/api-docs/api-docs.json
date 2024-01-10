@@ -381,6 +381,74 @@
                 }
             }
         },
+        "/password/change": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Change auth user password",
+                "description": "When you send request to this route, the user change the password",
+                "security": [
+                    {
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    },
+                    {
+                        "name": "old_password",
+                        "in": "query",
+                        "description": "Old user password",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 11111111
+                        }
+                    },
+                    {
+                        "name": "new_password",
+                        "in": "query",
+                        "description": "New user password",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": 11111111
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Password for user email@email.com successfully changed"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "UNPROCESSABLE CONTENT",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Invalid token"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/oauth/logout": {
             "delete": {
                 "tags": [

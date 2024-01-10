@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
-use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
-class ResetPasswordController extends Controller
+class PasswordController extends Controller
 {
     public function __construct(private PasswordBroker $passwordBroker)
     {
@@ -55,6 +56,31 @@ class ResetPasswordController extends Controller
             return response()->json(['message' => 'Invalid token'], 422);
         } else {
             return response()->json(['message' => "Password for user $request->email successfully changed"]);
+        }
+    }
+
+    public function change(Request $request)
+    {
+        $credentials = $request->validate([
+            'old_password' => ['required', 'string'],
+            'new_password' => ['required', 'string'],
+        ]);
+        $user = $request->user();
+
+        if (!Hash::check($credentials['old_password'], $user->password)) {
+            return response()->json(['message' => 'The given data was invalid'], 422);
+        } else {
+            $user->password = $credentials['new_password'];
+            $user->save();
+
+            $oauth = new OAuthController(new AuthService());
+            $logout = $oauth->logoutAll();
+
+            if (!$logout) {
+                return response()->json(['message' => $logout->original['message']]);
+            }
+
+            return response()->json(['message' => 'Password successfully changed']);
         }
     }
 }

@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Services\Contracts\AuthTokenGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
 use Laravel\Passport\RefreshToken;
 use Laravel\Passport\Token;
 
@@ -93,5 +91,4 @@ class OAuthController extends Controller
         $tokenHeaderArray = json_decode($tokenHeaderJson, true);
         return $tokenHeaderArray['jti'];
     }
-
 }

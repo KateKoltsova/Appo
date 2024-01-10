@@ -21,14 +21,16 @@ Route::group(['prefix' => '/oauth'], function () {
     Route::post('login', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'token'])->name('oauth.login');
     Route::post('refresh', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'refresh'])->name('oauth.refresh');
     Route::delete('logout', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'logout'])->name('oauth.logout')
-    ->middleware(['auth:api']);
+        ->middleware(['auth:api']);
     Route::delete('logout/all', [\App\Http\Controllers\Api\Auth\OAuthController::class, 'logoutAll'])->name('oauth.logoutAll')
-    ->middleware(['auth:api']);
+        ->middleware(['auth:api']);
 });
 
 Route::group(['prefix' => '/password'], function () {
-    Route::post('forgot', [\App\Http\Controllers\Api\Auth\ResetPasswordController::class, 'forgot'])->name('password.forgot');
-    Route::post('reset', [\App\Http\Controllers\Api\Auth\ResetPasswordController::class, 'reset'])->name('password.reset');
+    Route::post('forgot', [\App\Http\Controllers\Api\Auth\PasswordController::class, 'forgot'])->name('password.forgot');
+    Route::post('reset', [\App\Http\Controllers\Api\Auth\PasswordController::class, 'reset'])->name('password.reset');
+    Route::post('change', [\App\Http\Controllers\Api\Auth\PasswordController::class, 'change'])->name('password.change')
+        ->middleware(['auth:api']);
 });
 
 Route::post('register', \App\Http\Controllers\Api\Auth\RegisterController::class)->name('register');

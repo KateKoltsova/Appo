@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+    nginx:
+        image: "nginx:stable-alpine"
+        ports:
+            - "8080:80"
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf:rw
+            - ./:/var/www/Appo
+        depends_on:
+            - mysql
+            - php
+#        networks:
+#            - mynetwork
+
+    mysql:
+        image: mysql:8.0
+        ports:
+            - "3316:3306"
+        env_file:
+            - mysql.env
+
+    php:
+        image: php:8.1-fpm-alpine
+        volumes:
+            - ./:/var/www/Appo
+        command: /bin/sh -c "docker-php-ext-install mysqli pdo pdo_mysql && php-fpm"
+        depends_on:
+            - mysql
+#        ports:
+#            - "8000:80"
+#        networks:
+#            - mynetwork
+
+    composer:
+        image: composer
+        volumes:
+            - ./:/var/www/Appo
+        working_dir: /var/www/Appo
+        command: install --ignore-platform-reqs
+        depends_on:
+            - mysql
+#        networks:
+#            - mynetwork
+#networks:
+#    mynetwork:
+#        driver: bridge

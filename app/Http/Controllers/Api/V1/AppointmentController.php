@@ -109,13 +109,19 @@ class AppointmentController extends Controller
                     ->where('client_id', $userId);
             })->get();
 
+            $appointmentSchedules = Schedule::whereIn('id', function ($query) use ($userId) {
+                $query->select('schedule_id')
+                    ->from('appointments')
+                    ->where('client_id', $userId);
+            })->get();
+
             foreach ($schedules as $key => $schedule) {
 
                 $otherSchedules = $schedules->filter(function ($item, $otherKey) use ($key) {
                     return $otherKey !== $key;
                 });
 
-                $isValid = ScheduleService::scheduleValidation($otherSchedules, $userId, $schedule);
+                $isValid = ScheduleService::scheduleValidation($otherSchedules, $userId, $appointmentSchedules, $schedule);
 
                 if ($isValid) {
                     $cartItem = $carts->first(function ($cart) use ($schedule) {

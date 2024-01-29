@@ -4,7 +4,7 @@ namespace App\Services;
 
 class TotalService
 {
-    static function total($cartList, string $param = 'full')
+    static function total($cartList, $appointmentSchedules, string $param = 'full')
     {
         $cartSum = 0;
         $cartCount = 0;
@@ -17,7 +17,7 @@ class TotalService
                 return $otherKey !== $key;
             });
 
-            $isValid = ScheduleService::scheduleValidation($otherCartItems, $userId, $cartItem);
+            $isValid = ScheduleService::scheduleValidation($otherCartItems, $userId, $appointmentSchedules, $cartItem);
 
             if ($isValid) {
                 $cartSum += $cartItem->price;

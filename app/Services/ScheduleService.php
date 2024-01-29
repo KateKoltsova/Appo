@@ -8,11 +8,11 @@ use Exception;
 class ScheduleService
 {
 
-    static function scheduleValidation($schedules, $userId, $addingSchedule = null)
+    static function scheduleValidation($schedules, $userId, $appointmentSchedules, $addingSchedule = null)
     {
         if (is_null($addingSchedule)) {
 
-            return $schedules->every(function ($schedule, $key) use ($userId, $schedules) {
+            return $schedules->every(function ($schedule, $key) use ($userId, $schedules, $appointmentSchedules) {
                 if (!self::isAvailable($schedule, $userId)) {
                     return false;
                 }
@@ -20,11 +20,17 @@ class ScheduleService
                     return $otherKey !== $key;
                 });
 
-                return $otherSchedules->every(function ($otherSchedule) use ($userId, $schedule) {
+                $otherSchedulesValidation = $otherSchedules->every(function ($otherSchedule) use ($userId, $schedule) {
                     return
                         self::isAvailable($otherSchedule, $userId) &&
                         self::isValidDateTime($schedule, $otherSchedule);
                 });
+
+                $appointmentSchedulesValidation = $appointmentSchedules->every(function ($appointmentSchedule) use ($userId, $schedule) {
+                    return self::isValidDateTime($schedule, $appointmentSchedule);
+                });
+
+                return $otherSchedulesValidation && $appointmentSchedulesValidation;
             });
         } else {
 
@@ -32,13 +38,19 @@ class ScheduleService
                 return false;
             }
 
-            return $schedules->every(function ($schedule) use ($userId, $addingSchedule) {
+            $schedulesValidation = $schedules->every(function ($schedule) use ($userId, $addingSchedule) {
                 if (self::isAvailable($schedule, $userId)) {
                     return self::isValidDateTime($addingSchedule, $schedule);
                 }
 
                 return true;
             });
+
+            $appointmentSchedulesValidation = $appointmentSchedules->every(function ($appointmentSchedules) use ($userId, $addingSchedule) {
+                return self::isValidDateTime($addingSchedule, $appointmentSchedules);
+            });
+
+            return $schedulesValidation && $appointmentSchedulesValidation;
         }
 
     }
@@ -57,7 +69,7 @@ class ScheduleService
         }
     }
 
-    static function isValidDateTime($schedule, $otherSchedule)
+    static function isValidDateTime($schedule, $otherSchedule): bool
     {
         $timeItem = new DateTime($schedule['date_time']);
         $timeOtherItem = new DateTime($otherSchedule['date_time']);

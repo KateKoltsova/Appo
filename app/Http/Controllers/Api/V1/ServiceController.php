@@ -13,7 +13,7 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::get(['id', 'title', 'category']);
+        $services = Service::get(['id', 'title', 'description', 'category']);
         $categories = $services->pluck('category')->unique();
         return response()->json(['data' => [
             'categories' => array_values($categories->toArray()),

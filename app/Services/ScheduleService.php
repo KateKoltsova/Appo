@@ -2,57 +2,67 @@
 
 namespace App\Services;
 
+use App\Models\Schedule;
+use App\Repositories\ScheduleRepository;
 use DateTime;
-use Exception;
 
 class ScheduleService
 {
+    public function __construct(
+        private ScheduleRepository $scheduleRepository,
+    )
+    {
+    }
+
+    public function check(string $userId, Schedule $addingSchedule = null)
+    {
+        $schedulesInCart = $this->scheduleRepository->getSchedulesInCartByUserId($userId);
+
+        $appointmentSchedules = $this->scheduleRepository->getAppointmentSchedulesByUserId($userId);
+
+        $validSchedule = $this->scheduleValidation($schedulesInCart, $userId, $appointmentSchedules, $addingSchedule);
+
+        if ($validSchedule) {
+            return $schedulesInCart;
+        }
+    }
 
     static function scheduleValidation($schedules, $userId, $appointmentSchedules, $addingSchedule = null)
     {
         if (is_null($addingSchedule)) {
 
             return $schedules->every(function ($schedule, $key) use ($userId, $schedules, $appointmentSchedules) {
-                if (!self::isAvailable($schedule, $userId)) {
-                    return false;
-                }
                 $otherSchedules = $schedules->filter(function ($item, $otherKey) use ($key) {
                     return $otherKey !== $key;
                 });
 
-                $otherSchedulesValidation = $otherSchedules->every(function ($otherSchedule) use ($userId, $schedule) {
-                    return
-                        self::isAvailable($otherSchedule, $userId) &&
-                        self::isValidDateTime($schedule, $otherSchedule);
-                });
-
-                $appointmentSchedulesValidation = $appointmentSchedules->every(function ($appointmentSchedule) use ($userId, $schedule) {
-                    return self::isValidDateTime($schedule, $appointmentSchedule);
-                });
-
-                return $otherSchedulesValidation && $appointmentSchedulesValidation;
+                return self::isValidScheduleComparedToOthers($schedule, $otherSchedules, $appointmentSchedules, $userId);
             });
         } else {
 
-            if (!self::isAvailable($addingSchedule, $userId)) {
-                return false;
-            }
+            return self::isValidScheduleComparedToOthers($addingSchedule, $schedules, $appointmentSchedules, $userId);
+        }
+    }
 
-            $schedulesValidation = $schedules->every(function ($schedule) use ($userId, $addingSchedule) {
-                if (self::isAvailable($schedule, $userId)) {
-                    return self::isValidDateTime($addingSchedule, $schedule);
-                }
-
-                return true;
-            });
-
-            $appointmentSchedulesValidation = $appointmentSchedules->every(function ($appointmentSchedules) use ($userId, $addingSchedule) {
-                return self::isValidDateTime($addingSchedule, $appointmentSchedules);
-            });
-
-            return $schedulesValidation && $appointmentSchedulesValidation;
+    static function isValidScheduleComparedToOthers($schedule, $otherSchedules, $appointmentSchedules, $userId)
+    {
+        if (!self::isAvailable($schedule, $userId)) {
+            return false;
         }
 
+        $otherSchedulesValidation = $otherSchedules->every(function ($otherSchedule) use ($userId, $schedule) {
+            if (self::isAvailable($otherSchedule, $userId)) {
+                return self::isValidDateTime($schedule, $otherSchedule);
+            }
+
+            return true;
+        });
+
+        $appointmentSchedulesValidation = $appointmentSchedules->every(function ($appointmentSchedules) use ($userId, $schedule) {
+            return self::isValidDateTime($schedule, $appointmentSchedules);
+        });
+
+        return $otherSchedulesValidation && $appointmentSchedulesValidation;
     }
 
     static function isAvailable($schedule, $userId): bool

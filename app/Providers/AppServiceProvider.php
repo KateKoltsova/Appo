@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Repositories\AppointmentRepository;
 use App\Repositories\CartRepository;
+use App\Services\Api\AppointmentService;
 use App\Services\ScheduleService;
 use App\Services\Api\CartService;
 use App\Services\AuthService;
@@ -30,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(PayService::class),
                 $app->make(CartRepository::class),
                 $app->make(ScheduleService::class)
+            );
+        });
+        $this->app->singleton(AppointmentService::class, function ($app) {
+            return new AppointmentService(
+                $app->make(BlockModel::class),
+                $app->make(AppointmentRepository::class)
             );
         });
     }

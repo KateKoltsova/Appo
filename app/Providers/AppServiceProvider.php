@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Repositories\CartRepository;
+use App\Services\ScheduleService;
+use App\Services\Api\CartService;
 use App\Services\AuthService;
 use App\Services\BlockService;
 use App\Services\Contracts\AuthTokenGenerator;
@@ -21,6 +24,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuthTokenGenerator::class, AuthService::class);
         $this->app->bind(BlockModel::class, BlockService::class);
         $this->app->bind(PayService::class, LiqpayService::class);
+        $this->app->singleton(CartService::class, function ($app) {
+            return new CartService(
+                $app->make(BlockModel::class),
+                $app->make(PayService::class),
+                $app->make(CartRepository::class),
+                $app->make(ScheduleService::class)
+            );
+        });
     }
 
     /**

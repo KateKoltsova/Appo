@@ -9,6 +9,7 @@ use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Schedule;
+use App\Repositories\ScheduleRepository;
 use App\Services\Contracts\BlockModel;
 use App\Services\Contracts\PayService;
 use App\Services\ScheduleService;
@@ -18,7 +19,9 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    public function __construct(private BlockModel $blockModel, private PayService $payService)
+    public function __construct(private BlockModel         $blockModel,
+                                private PayService         $payService,
+                                private ScheduleRepository $scheduleRepository)
     {
     }
 
@@ -34,7 +37,7 @@ class AppointmentController extends Controller
             'services.category',
             'masters.firstname as master_firstname',
             'masters.lastname as master_lastname',
-            'schedules.date_time'
+            'schedules.date_time',
         ])
             ->join('schedules', 'appointments.schedule_id', '=', 'schedules.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
@@ -79,8 +82,9 @@ class AppointmentController extends Controller
 
             $order->update([
                 'payment_status' => $decodedData['status'],
-                'description' => $decodedData['description']
+                'description' => $decodedData['description'],
             ]);
+
             $params['payment'] = $order->payment;
 
             if ($order->payment_status != 'success') {
@@ -103,69 +107,47 @@ class AppointmentController extends Controller
 
             DB::beginTransaction();
 
-            $schedules = Schedule::whereIn('id', function ($query) use ($userId) {
-                $query->select('schedule_id')
-                    ->from('carts')
-                    ->where('client_id', $userId);
-            })->get();
+            foreach ($carts as $cartItem) {
 
-            $appointmentSchedules = Schedule::whereIn('id', function ($query) use ($userId) {
-                $query->select('schedule_id')
-                    ->from('appointments')
-                    ->where('client_id', $userId);
-            })->get();
+                $params['sum'] = $cartItem->price()->first()->price;
 
-            foreach ($schedules as $key => $schedule) {
-
-                $otherSchedules = $schedules->filter(function ($item, $otherKey) use ($key) {
-                    return $otherKey !== $key;
-                });
-
-                $isValid = ScheduleService::scheduleValidation($otherSchedules, $userId, $appointmentSchedules, $schedule);
-
-                if ($isValid) {
-                    $cartItem = $carts->first(function ($cart) use ($schedule) {
-                        return $cart->schedule_id == $schedule->id;
-                    });
-
-                    $params['sum'] = $cartItem->price()->first()->price;
-
-                    if (is_null($params['sum'])) {
-                        throw new Exception('Cart item has no price');
-                    }
-
-                    $paymentConfig = config('constants.db.payment');
-
-                    if (isset($paymentConfig[$params['payment']][1])) {
-                        $params['paid_sum'] = $paymentConfig[$params['payment']][1];
-                    } else {
-                        $params['paid_sum'] = $params['sum'];
-                    }
-
-                    $params['client_id'] = $userId;
-
-                    $appointment = [
-                        'schedule_id' => $cartItem->schedule_id,
-                        'service_id' => $cartItem->service_id,
-                        'client_id' => $params['client_id'],
-                        'sum' => $params['sum'],
-                        'payment' => $params['payment'],
-                        'paid_sum' => $params['paid_sum'],
-                        'order_id' => $order->id
-                    ];
-
-                    $newAppointment = Appointment::create($appointment);
-
-                    if (is_null($newAppointment)) {
-                        throw new Exception('Failed create appointment');
-                    }
-
-                    $schedule->update(['status' => config('constants.db.status.unavailable')]);
-
-                    $this->blockModel->unblock($schedule);
-
-                    Cart::where('schedule_id', $schedule->id)->where('client_id', $userId)->first()->delete();
+                if (is_null($params['sum'])) {
+                    throw new Exception('Cart item has no price');
                 }
+
+                $paymentConfig = config('constants.db.payment');
+
+                if (isset($paymentConfig[$params['payment']][1])) {
+                    $params['paid_sum'] = $paymentConfig[$params['payment']][1];
+                } else {
+                    $params['paid_sum'] = $params['sum'];
+                }
+
+                $params['client_id'] = $userId;
+
+                $appointmentParams = [
+                    'schedule_id' => $cartItem->schedule_id,
+                    'service_id' => $cartItem->service_id,
+                    'client_id' => $params['client_id'],
+                    'sum' => $params['sum'],
+                    'payment' => $params['payment'],
+                    'paid_sum' => $params['paid_sum'],
+                    'order_id' => $order->id,
+                ];
+
+                $newAppointment = Appointment::create($appointmentParams);
+
+                if (is_null($newAppointment)) {
+                    throw new Exception('Failed create appointment');
+                }
+
+                $schedule = $cartItem->schedule()->first();
+
+                $schedule->update(['status' => config('constants.db.status.unavailable')]);
+
+                $this->blockModel->unblock($schedule);
+
+                $cartItem->delete();
             }
 
             DB::commit();
@@ -192,7 +174,7 @@ class AppointmentController extends Controller
             'services.category',
             'masters.firstname as master_firstname',
             'masters.lastname as master_lastname',
-            'schedules.date_time'
+            'schedules.date_time',
         ])
             ->join('schedules', 'appointments.schedule_id', '=', 'schedules.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')

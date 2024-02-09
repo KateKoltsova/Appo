@@ -4,23 +4,15 @@ namespace App\Services;
 
 class TotalService
 {
-    static function total($cartList, $appointmentSchedules, string $param = 'full')
+    static function total($cartList, string $param = 'full')
     {
         $cartSum = 0;
         $cartCount = 0;
         $paymentConfig = config('constants.db.payment');
 
-        foreach ($cartList as $key => $cartItem) {
-            $userId = $cartItem->user()->first()->id;
-
-            $otherCartItems = $cartList->filter(function ($item, $otherKey) use ($key) {
-                return $otherKey !== $key;
-            });
-
-            $isValid = ScheduleService::scheduleValidation($otherCartItems, $userId, $appointmentSchedules, $cartItem);
-
-            if ($isValid) {
-                $cartSum += $cartItem->price;
+        foreach ($cartList as $cartItem) {
+            if (!isset($cartItem['message'])) {
+                $cartSum += $cartItem['price'];
                 $cartCount++;
             }
         }

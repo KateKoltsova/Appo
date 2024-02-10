@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Repositories\AppointmentRepository;
 use App\Repositories\CartRepository;
+use App\Repositories\PriceRepository;
 use App\Repositories\ScheduleRepository;
 use App\Services\Api\AppointmentService;
 use App\Services\Api\CartService;
+use App\Services\Api\PriceService;
 use App\Services\Api\ScheduleService;
 use App\Services\AuthService;
 use App\Services\BlockService;
@@ -44,6 +46,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ScheduleService::class, function ($app) {
             return new ScheduleService(
                 $app->make(ScheduleRepository::class),
+            );
+        });
+        $this->app->singleton(PriceService::class, function ($app) {
+            return new PriceService(
+                $app->make(PriceRepository::class),
             );
         });
     }

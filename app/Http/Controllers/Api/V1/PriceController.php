@@ -5,35 +5,26 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PriceCreateRequest;
 use App\Http\Requests\PriceUpdateRequest;
-use App\Http\Resources\PriceCollection;
-use App\Http\Resources\PriceResource;
-use App\Models\Price;
-use App\Models\Service;
+use App\Services\Api\PriceService;
+use Exception;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class PriceController extends Controller
 {
+    public function __construct(
+        private PriceService $priceService,
+    )
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, string $user)
     {
-        $categories = $request->input('filter.category');
-        $prices = Service::select([
-            'services.id as service_id',
-            'services.*',
-            'prices.id as price_id',
-            'prices.price'
-        ])
-            ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
-            ->where('master_id', $user)
-            ->when($categories, function ($query) use ($categories) {
-                $query->whereIn('category', $categories);
-            })
-            ->get();
-            $priceCollection = new PriceCollection($prices);
-            return response()->json(['data' => $priceCollection]);
+        $filters['category'] = $request->input('filter.category');
+
+        return response()->json($this->priceService->getList($filters, $user));
     }
 
     /**
@@ -49,15 +40,15 @@ class PriceController extends Controller
      */
     public function store(PriceCreateRequest $request, string $user)
     {
-        $params = $request->validated();
-        $price = Price::updateOrCreate(
-            ['master_id' => $user, 'service_id' => $params['service_id']],
-            ['price' => $params['price']]
-        );
-        if ($price) {
-            return $this->show($price->master_id, $price->id);
-        } else {
-            return response()->json(['message' => 'Bad request'], 400);
+        try {
+            $params = $request->validated();
+
+            $response = $this->priceService->create($params, $user);
+
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -66,21 +57,13 @@ class PriceController extends Controller
      */
     public function show(string $user, string $price)
     {
-        $priceInstance = Service::select([
-            'services.id as service_id',
-            'services.*',
-            'prices.id as price_id',
-            'prices.price'
-        ])
-            ->rightJoin('prices', 'prices.service_id', '=', 'services.id')
-            ->where('master_id', $user)
-            ->where('prices.id', $price)
-            ->first();
-        if (!empty($priceInstance)) {
-            $priceResource = new PriceResource($priceInstance);
-            return response()->json(['data' => $priceResource]);
-        } else {
-            return response()->json(['message' => 'Price not found'], 404);
+        try {
+            $response = $this->priceService->getById($user, $price);
+
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -97,13 +80,14 @@ class PriceController extends Controller
      */
     public function update(PriceUpdateRequest $request, string $user, string $price)
     {
-        $params = $request->validated();
-        $priceInstance = Price::where('master_id', $user)->where('id', $price);
-        if ($priceInstance) {
-            $priceInstance->update($params);
-            return $this->show($user, $price);
-        } else {
-            return response()->json(['message' => 'Price not found'], 404);
+        try {
+            $params = $request->validated();
+            $response = $this->priceService->update($params, $user, $price);
+
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -112,11 +96,13 @@ class PriceController extends Controller
      */
     public function destroy(string $user, string $price)
     {
-        $priceInstance = Price::where('master_id', $user)->where('id', $price)->first();
-        if (!$priceInstance) {
-            return response()->json(['message' => 'Price not found'], 404);
+        try {
+            $this->priceService->delete($user, $price);
+
+            return response()->json(['message' => 'Price successfully deleted']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
-        $priceInstance->delete();
-        return response()->json(['message' => 'Price successfully deleted']);
     }
 }

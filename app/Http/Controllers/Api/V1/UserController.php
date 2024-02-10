@@ -4,32 +4,26 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserUpdateRequest;
-use App\Http\Resources\UserCollection;
-use App\Http\Resources\UserResource;
-use App\Models\User;
+use App\Services\Api\UserService;
+use Exception;
 use Illuminate\Http\Request;
-use Laravel\Passport\RefreshToken;
-use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private UserService $userService,
+    )
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $roles = $request->input('filter.role');
-        $users = User::join('roles', 'users.role_id', '=', 'roles.id')
-            ->select([
-                'users.*',
-                'roles.role'
-            ])
-            ->when($roles, function ($query) use ($roles) {
-                $query->whereIn('role', $roles);
-            })
-            ->get();
-            $userCollection = new UserCollection($users);
-            return response()->json(['data' => $userCollection]);
+        $filters['role'] = $request->input('filter.role');
+
+        return response()->json($this->userService->getList($filters));
     }
 
     /**
@@ -53,19 +47,13 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::where('users.id', $id)
-            ->join('roles', 'users.role_id', '=', 'roles.id')
-            ->select([
-                'users.*',
-                'roles.role'
-            ])
-            ->first();
-        if (!empty($user)) {
-            $userResource = new UserResource($user);
-            return response()->json(['data' => $userResource]);
-        } else {
-            return response()->json(['message' => 'User not found'], 404);
+        try {
+            $response = $this->userService->getById($id);
 
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -82,9 +70,15 @@ class UserController extends Controller
      */
     public function update(UserUpdateRequest $request, string $id)
     {
-        $params = $request->validated();
-        User::findOrFail($id)->update($params);
-        return $this->show($id);
+        try {
+            $params = $request->validated();
+            $response = $this->userService->update($params, $id);
+
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
+        }
     }
 
     /**
@@ -92,12 +86,13 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        $user = User::findOrFail($id);
-        $accessTokens = $user->tokens->each->revoke();
-        foreach ($accessTokens as $accessToken) {
-            RefreshToken::firstWhere('access_token_id', $accessToken->id)->revoke();
+        try {
+            $this->userService->delete($id);
+
+            return response()->json(['message' => 'User successfully deleted']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
-        $user->delete();
-        return response()->json(['message' => 'User successfully deleted']);
     }
 }

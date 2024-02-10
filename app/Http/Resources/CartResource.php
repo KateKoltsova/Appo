@@ -2,8 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Services\ScheduleService;
-use Carbon\Carbon;
+use App\Services\Api\ScheduleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

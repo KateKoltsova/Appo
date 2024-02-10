@@ -5,75 +5,36 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleCreateRequest;
 use App\Http\Requests\ScheduleUpdateRequest;
-use App\Http\Resources\AvailableScheduleCollection;
-use App\Http\Resources\AvailableScheduleResource;
-use App\Http\Resources\ScheduleResource;
-use App\Models\Role;
-use App\Models\Schedule;
+use App\Services\Api\ScheduleService;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
+    public function __construct(
+        private ScheduleService $scheduleService,
+    )
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, string $user)
     {
-        $date = $request->input('filter.date');
-        $schedule = Schedule::select([
-            'schedules.id as schedule_id',
-            'schedules.*'
-        ])
-            ->with(['appointment' => function ($query) {
-                $query
-                    ->join('users', 'appointments.client_id', '=', 'users.id')
-                    ->join('services', 'appointments.service_id', '=', 'services.id')
-                    ->select([
-                        'users.id as users_id',
-                        'users.*',
-                        'services.id as services_id',
-                        'services.*',
-                        'appointments.id as appointments_id',
-                        'appointments.*',
-                    ]);
-            }
-            ])
-            ->where('master_id', $user)
-            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
-            ->when($date, function ($query) use ($date) {
-                $query->whereIn(DB::raw('DATE(date_time)'), $date);
-            })
-            ->get();
+        $filters['date'] = $request->input('filter.date');
 
-        $scheduleCollection = ScheduleResource::collection($schedule);
-
-        return response()->json(['data' => $scheduleCollection]);
+        return response()->json($this->scheduleService->getList($filters, $user));
     }
 
     public function getAllAvailable(Request $request)
     {
-        $master_id = $request->input('filter.master_id');
-        $date = $request->input('filter.date');
-        $category = $request->input('filter.category');
-        $service = $request->input('filter.service_id');
+        $filters['master_id'] = $request->input('filter.master_id');
+        $filters['date'] = $request->input('filter.date');
+        $filters['category'] = $request->input('filter.category');
+        $filters['service_id'] = $request->input('filter.service_id');
 
-        $availableSchedules = Role::master()->first()->users()
-            ->select([
-                'id',
-                'firstname',
-                'lastname'
-            ])
-            ->when($master_id, function ($query) use ($master_id) {
-                $query->where('id', $master_id);
-            })
-            ->withSchedules($date)
-            ->withPrices($service, $category)
-            ->get();
-
-        $availableScheduleCollection = new AvailableScheduleCollection($availableSchedules);
-
-        return response()->json(['data' => $availableScheduleCollection]);
+        return response()->json($this->scheduleService->getAvailable($filters));
     }
 
     /**
@@ -89,19 +50,15 @@ class ScheduleController extends Controller
      */
     public function store(ScheduleCreateRequest $request, string $user)
     {
-        $params = $request->validated();
-        $schedule = Schedule::create(
-            [
-                'master_id' => $user,
-                'date_time' => $params['date_time'],
-                'status' => config('constants.db.status.available')
-            ],
-        );
+        try {
+            $params = $request->validated();
 
-        if ($schedule) {
-            return $this->show($schedule->master_id, $schedule->id);
-        } else {
-            return response()->json(['message' => 'Bad request'], 400);
+            $response = $this->scheduleService->create($params, $user);
+
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -110,34 +67,13 @@ class ScheduleController extends Controller
      */
     public function show(string $user, string $schedule)
     {
-        $scheduleInstance = Schedule::select([
-            'schedules.id as schedule_id',
-            'schedules.*'
-        ])
-            ->with(['appointment' => function ($query) {
-                $query
-                    ->join('users', 'appointments.client_id', '=', 'users.id')
-                    ->join('services', 'appointments.service_id', '=', 'services.id')
-                    ->select([
-                        'users.id as users_id',
-                        'users.*',
-                        'services.id as services_id',
-                        'services.*',
-                        'appointments.id as appointments_id',
-                        'appointments.*',
-                    ]);
-            }
-            ])
-            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
-            ->where('master_id', $user)
-            ->where('schedules.id', $schedule)
-            ->first();
+        try {
+            $response = $this->scheduleService->getById($user, $schedule);
 
-        if (!empty($scheduleInstance)) {
-            $scheduleResource = ScheduleResource::make($scheduleInstance);
-            return response()->json(['data' => $scheduleResource]);
-        } else {
-            return response()->json(['message' => 'Schedule not found'], 404);
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -154,14 +90,14 @@ class ScheduleController extends Controller
      */
     public function update(ScheduleUpdateRequest $request, string $user, string $schedule)
     {
-        $params = $request->validated();
-        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
+        try {
+            $params = $request->validated();
+            $response = $this->scheduleService->update($params, $user, $schedule);
 
-        if ($scheduleInstance) {
-            $scheduleInstance->update($params);
-            return $this->show($user, $schedule);
-        } else {
-            return response()->json(['message' => 'Schedule not found'], 404);
+            return response()->json($response);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -170,34 +106,25 @@ class ScheduleController extends Controller
      */
     public function destroy(string $user, string $schedule)
     {
-        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
+        try {
+            $this->scheduleService->delete($user, $schedule);
 
-        if (!$scheduleInstance) {
-            return response()->json(['message' => 'Schedule not found'], 404);
+            return response()->json(['message' => 'Schedule successfully deleted']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
-
-        if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
-            $scheduleInstance->appointment()->first()->delete();
-        }
-
-        $scheduleInstance->delete();
-
-        return response()->json(['message' => 'Schedule successfully deleted']);
     }
 
     public function destroyAppointment(string $user, string $schedule)
     {
-        $scheduleInstance = Schedule::where('id', $schedule)->where('master_id', $user)->first();
+        try {
+            $this->scheduleService->cancelAppointment($user, $schedule);
 
-        if (!$scheduleInstance) {
-            return response()->json(['message' => 'Schedule not found'], 404);
+            return response()->json(['message' => 'Appointment on this schedule successfully deleted']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
-
-        if ($scheduleInstance->status == config('constants.db.status.unavailable')) {
-            $scheduleInstance->appointment()->first()->delete();
-            $scheduleInstance->update(['status' => config('constants.db.status.available')]);
-        }
-
-        return response()->json(['message' => 'Appointment on this schedule successfully deleted']);
     }
 }

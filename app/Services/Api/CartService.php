@@ -9,7 +9,6 @@ use App\Models\Schedule;
 use App\Repositories\CartRepository;
 use App\Services\Contracts\BlockModel;
 use App\Services\Contracts\PayService;
-use App\Services\ScheduleService;
 use App\Services\TotalService;
 use Carbon\Carbon;
 use Exception;

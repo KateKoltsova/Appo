@@ -1,4 +1,5 @@
 <?php
+
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
     ->only('index')
     ->middleware(['auth:api', 'scope:admin']);
@@ -45,3 +46,11 @@ Route::get('users/{user}/button', [\App\Http\Controllers\Api\V1\CartController::
 Route::post('appointment', [\App\Http\Controllers\Api\V1\AppointmentController::class, 'store'])
     ->name('appointment.store')
     ->middleware(['sessionTz']);
+
+Route::post('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController::class, 'loadAvatar'])
+    ->name('users.avatar')
+    ->middleware(['auth:api', 'owner', 'sessionTz']);
+
+Route::delete('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController::class, 'deleteAvatar'])
+    ->name('users.deleteAvatar')
+    ->middleware(['auth:api', 'owner', 'sessionTz']);

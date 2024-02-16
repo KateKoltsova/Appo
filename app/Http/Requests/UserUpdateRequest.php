@@ -38,6 +38,7 @@ class UserUpdateRequest extends FormRequest
             'birthdate' => ['nullable', 'date', 'before_or_equal:-18 years'],
             'email' => ['string', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
             'phone_number' => ['string', 'min:13', 'max:13', 'regex:/^\+380[0-9]{9}$/', Rule::unique('users')->ignore($this->user()->id)],
+            'image' => ['image', 'mimes:jpeg,png,jpg', 'max:5120'],
         ];
     }
 }

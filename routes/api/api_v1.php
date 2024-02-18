@@ -54,3 +54,11 @@ Route::post('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController:
 Route::delete('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController::class, 'deleteAvatar'])
     ->name('users.deleteAvatar')
     ->middleware(['auth:api', 'owner', 'sessionTz']);
+
+Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
+    ->only('index', 'show')
+    ->middleware(['auth:api', 'owner', 'sessionTz']);
+
+Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
+    ->only('store', 'destroy')
+    ->middleware(['auth:api', 'scope:master', 'owner', 'sessionTz']);

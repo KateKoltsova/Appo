@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageService implements FileStorage
 {
-    private string $path = 'images/avatars';
+    public string $path = 'images/avatars';
 
     public function upload(UploadedFile $image)
     {

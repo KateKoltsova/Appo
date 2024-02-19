@@ -57,7 +57,7 @@ Route::delete('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserControlle
 
 Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
     ->only('index', 'show')
-    ->middleware(['auth:api', 'owner', 'sessionTz']);
+    ->middleware(['auth:api', 'sessionTz']);
 
 Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
     ->only('store', 'destroy')

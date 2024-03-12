@@ -718,6 +718,16 @@
                         }
                     },
                     {
+                        "name": "image",
+                        "in": "query",
+                        "description": "The user avatar",
+                        "required": false,
+                        "schema": {
+                            "type": "object",
+                            "example": "example.jpg"
+                        }
+                    },
+                    {
                         "name": "access_token",
                         "in": "header",
                         "description": "Access token",

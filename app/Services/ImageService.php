@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Services\Contracts\FileStorage;
+use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,7 +14,7 @@ class ImageService implements FileStorage
     public function upload(UploadedFile $image)
     {
         if (!$image) {
-            throw new \Exception('You didn\'t select image');
+            throw new Exception('You didn\'t select image', 400);
         }
 
         $path = $image->store($this->path, 's3');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoadGalleryRequest;
 use App\Services\Api\GalleryService;
 use Exception;
 use Illuminate\Http\Request;
@@ -32,11 +33,11 @@ class GalleryController extends Controller
         }
     }
 
-    public function store(Request $request, string $user)
+    public function store(LoadGalleryRequest $request, string $user)
     {
         try {
-            $images = $request->file('images');
-            $response = $this->galleryService->addPhoto($user, $images);
+            $params = $request->validated();
+            $response = $this->galleryService->addPhoto($user, $params['images']);
 
             return response()->json($response);
 

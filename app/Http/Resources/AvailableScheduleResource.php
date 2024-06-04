@@ -23,6 +23,7 @@ class AvailableScheduleResource extends JsonResource
                 'master_id' => $this->id,
                 'master_firstname' => $this->firstname,
                 'master_lastname' => $this->lastname,
+                'master_image' => $this->image_url,
                 'schedules' => ScheduleResource::collection($this->schedules),
                 'prices' => PriceResource::collection($this->prices),
                 'categories' => $uniqueCategories

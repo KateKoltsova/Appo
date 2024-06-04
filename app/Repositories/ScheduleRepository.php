@@ -72,7 +72,8 @@ class ScheduleRepository
             ->select([
                 'id',
                 'firstname',
-                'lastname'
+                'lastname',
+                'image_url'
             ])
             ->when($filters['master_id'], function ($query) use ($filters) {
                 $query->where('id', $filters['master_id']);

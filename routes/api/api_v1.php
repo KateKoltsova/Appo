@@ -1,5 +1,10 @@
 <?php
 
+Route::post('admin/master', [\App\Http\Controllers\Api\V1\AdminController::class, 'createMaster'])
+    ->name('masterRegister')
+    ->middleware(['auth:api', 'scope:admin']);
+
+
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
     ->only('index')
     ->middleware(['auth:api', 'scope:admin']);

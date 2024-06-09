@@ -32,6 +32,17 @@ class Service extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'title',
+        'description',
+        'category'
+    ];
+
     public function prices()
     {
         return $this->hasMany(Price::class);

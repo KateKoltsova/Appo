@@ -4,6 +4,9 @@ Route::post('admin/master', [\App\Http\Controllers\Api\V1\AdminController::class
     ->name('masterRegister')
     ->middleware(['auth:api', 'scope:admin']);
 
+Route::post('admin/service', [\App\Http\Controllers\Api\V1\AdminController::class, 'createService'])
+    ->name('serviceCreate')
+    ->middleware(['auth:api', 'scope:admin']);
 
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
     ->only('index')

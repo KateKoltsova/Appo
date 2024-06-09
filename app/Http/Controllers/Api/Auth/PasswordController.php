@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Password;
 
 class PasswordController extends Controller
 {
+    //TODO: refactor to use service for actions with password
     public function __construct(private PasswordBroker $passwordBroker)
     {
     }

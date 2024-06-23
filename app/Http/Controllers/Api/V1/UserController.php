@@ -18,6 +18,11 @@ class UserController extends Controller
     {
     }
 
+    public function rolesList()
+    {
+        return response()->json($this->userService->getRolesList());
+    }
+
     /**
      * Display a listing of the resource.
      */

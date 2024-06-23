@@ -3,6 +3,7 @@
 namespace App\Services\Api;
 
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\ImageService;
@@ -17,6 +18,12 @@ class UserService
         private ImageService   $imageService,
     )
     {
+    }
+
+    public function getRolesList()
+    {
+        $roles = Role::orderBy('id')->get(['id', 'role']);
+        return ['data' => $roles];
     }
 
     /**

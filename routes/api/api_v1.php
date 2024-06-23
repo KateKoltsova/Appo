@@ -1,5 +1,8 @@
 <?php
 
+Route::get('roles', [\App\Http\Controllers\Api\V1\UserController::class, 'rolesList'])
+    ->middleware(['auth:api', 'scope:admin']);
+
 Route::post('admin/master', [\App\Http\Controllers\Api\V1\AdminController::class, 'createMaster'])
     ->name('masterRegister')
     ->middleware(['auth:api', 'scope:admin']);

@@ -22,6 +22,7 @@ class UserResource extends JsonResource
                 'birthdate' => $this->birthdate,
                 'email' => $this->email,
                 'phone_number' => $this->phone_number,
+                'role_id' => $this->role_id,
                 'role' => $this->role,
                 'image_url' => $this->image_url
             ];
@@ -33,7 +34,8 @@ class UserResource extends JsonResource
                 'birthdate' => $this->birthdate,
                 'email' => $this->email,
                 'phone_number' => $this->phone_number,
-                'role' => $this->role
+                'role_id' => $this->role_id,
+                'role' => $this->role,
             ];
         }
         return $user;

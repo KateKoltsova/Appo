@@ -94,13 +94,24 @@ class UserService
         $user = User::findOrFail($userId);
 
         if (!empty($user)) {
-            $accessTokens = $user->tokens->each->revoke();
+            
+            $accessTokens = $user->tokens;
+            
+            if (!empty($accessTokens)) {
+                $accessTokens->each->revoke();
 
-            foreach ($accessTokens as $accessToken) {
-                RefreshToken::firstWhere('access_token_id', $accessToken->id)->revoke();
+                foreach ($accessTokens as $accessToken) {
+                    $refreshToken = RefreshToken::firstWhere('access_token_id', $accessToken->id);
+                    
+                    if (!empty($refreshToken)) {
+                        $refreshToken->revoke();
+                    }
+                }
             }
-
-            // $this->imageService->delete($user->image_url);
+            
+            if (!empty($user->image_url)) {
+                $this->imageService->delete($user->image_url);
+            }
 
             $user->delete();
 

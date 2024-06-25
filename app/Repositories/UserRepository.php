@@ -17,7 +17,7 @@ class UserRepository
             'roles.role',
         ])
             ->join('roles', 'users.role_id', '=', 'roles.id')
-            ->when($filters['role'], function ($query) use ($filters) {
+            ->when($filters['role_id'], function ($query) use ($filters) {
                 $query->whereIn('users.role_id', $filters['role_id']);
             })
             ->get();

@@ -72,7 +72,7 @@ class AdminController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
-            return response()->json(['message' => $e->getMessage()]);
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
 
 //        return response()->json(['message' => 'Master successfully created and received link to set password'], 201);

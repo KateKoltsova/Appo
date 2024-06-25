@@ -28,7 +28,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $filters['role'] = $request->input('filter.role');
+        $filters['role_id'] = $request->input('filter.role_id');
 
         return response()->json($this->userService->getList($filters));
     }

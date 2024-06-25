@@ -100,7 +100,7 @@ class UserService
                 RefreshToken::firstWhere('access_token_id', $accessToken->id)->revoke();
             }
 
-            // $this->imageService->delete($user->image_url);
+            $this->imageService->delete($user->image_url);
 
             $user->delete();
 

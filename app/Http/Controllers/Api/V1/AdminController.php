@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MasterCreateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ServiceCreateRequest;
 use App\Models\Role;
@@ -24,25 +25,17 @@ class AdminController extends Controller
     }
 
     //TODO: refactor to use service for reset password
-    public function createMaster(Request $request)
+    public function createMaster(MasterCreateRequest $request)
     {
         try {
-            $requestData = $request->only(['email', 'phone_number']);
             $defaultValues = config('constants.db.default_master');
 
-            $params = [
+            $params = $request->validated();
+            $params = array_merge($params, [
                 'firstname' => $defaultValues['firstname'],
                 'lastname' => $defaultValues['lastname'],
-                'email' => $requestData['email'],
-                'phone_number' => $requestData['phone_number'],
                 'password' => $defaultValues['password'],
-            ];
-
-            $validator = Validator::make($params, (new RegisterRequest())->rules());
-
-            if ($validator->fails()) {
-                throw new ValidationException($validator);
-            }
+            ]);
 
             DB::beginTransaction();
 
@@ -72,7 +65,7 @@ class AdminController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()]);
         }
 
 //        return response()->json(['message' => 'Master successfully created and received link to set password'], 201);

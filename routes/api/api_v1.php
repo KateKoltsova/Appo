@@ -28,7 +28,7 @@ Route::get('schedules', [\App\Http\Controllers\Api\V1\ScheduleController::class,
     ->middleware(['sessionTz']);
 
 Route::resource('users/{user}/appointments', \App\Http\Controllers\Api\V1\AppointmentController::class)
-    ->only('index', 'show', 'destroy')
+    ->only('index', 'store', 'show', 'destroy')
     ->middleware(['auth:api', 'scope:client,master', 'owner', 'sessionTz']);
 
 Route::delete('users/{user}/schedules/{schedule}/appointment', [\App\Http\Controllers\Api\V1\ScheduleController::class, 'destroyAppointment'])
@@ -54,8 +54,8 @@ Route::get('users/{user}/button', [\App\Http\Controllers\Api\V1\CartController::
     ->name('cart.getPayButton')
     ->middleware(['auth:api', 'owner', 'sessionTz']);
 
-Route::post('appointment', [\App\Http\Controllers\Api\V1\AppointmentController::class, 'store'])
-    ->name('appointment.store')
+Route::post('callback', [\App\Http\Controllers\Api\V1\AppointmentController::class, 'callback'])
+    ->name('callback')
     ->middleware(['sessionTz']);
 
 Route::post('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController::class, 'loadAvatar'])

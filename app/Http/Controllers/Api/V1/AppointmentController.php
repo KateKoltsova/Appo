@@ -35,15 +35,28 @@ class AppointmentController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function callback(Request $request)
     {
         try {
             $decodedData = $this->payService->getCallback($request);
 
-            $this->appointmentService->create($decodedData);
+            $this->appointmentService->callback($decodedData);
+
+            return response()->json(['message' => 'Order payment status updated']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
+        }
+    }
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request, $user)
+    {
+        try {
+            $orderId = $request->input('order_id');
+
+            $this->appointmentService->create($orderId, $user);
 
             return response()->json(['message' => 'Appointment successfully created']);
 

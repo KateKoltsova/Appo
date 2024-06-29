@@ -33,15 +33,15 @@ class AppointmentService
         return ['data' => $appointmentCollection];
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function create($decodedData)
+    public function callback($decodedData)
     {
         try {
+            DB::beginTransaction();
+
             if (!$decodedData) {
                 throw new Exception('Failed getting callback', 400);
             }
+
             $order = Order::where('id', $decodedData['order_id'])->first();
 
             if ($decodedData['amount'] != $order->total) {
@@ -53,17 +53,41 @@ class AppointmentService
                 'description' => $decodedData['description'],
             ]);
 
-            $params['payment'] = $order->payment;
-
             if ($order->payment_status != 'success') {
                 throw new Exception('Payment status is ' . $order->payment_status, 400);
             }
 
-            $userId = $order->user()->first()->id;
+            DB::commit();
 
-            if (is_null($userId)) {
-                throw new Exception('User not found', 404);
+            return true;
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            $order->update(['description' => $e->getMessage()]);
+
+            throw new Exception($e->getMessage(), $e->getCode());
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function create(int $orderId, int $userId)
+    {
+        try {
+            $order = Order::where('id', $orderId)->where('user_id', $userId)->first();
+
+            if (empty($order->toArray())) {
+                throw new Exception('Order not found', 404);
             }
+
+            $order->update([
+                'payment_status' => 'wait for pay',
+                'description' => 'Order waiting for successful payment',
+            ]);
+
+            $params['payment'] = $order->payment;
 
             $carts = Cart::where('client_id', $userId)->get();
 

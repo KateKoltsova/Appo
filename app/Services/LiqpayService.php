@@ -21,7 +21,7 @@ class LiqpayService implements PayService
             'currency' => 'UAH',
             'description' => 'Pay for beauty services',
             'order_id' => $orderId,
-            'server_url' => env('APP_URL') . 'api/v1/appointment',
+            'server_url' => env('APP_URL') . 'api/v1/callback',
             'result_url' => $resultUrl,
             'expired_date' => $expired_at
         ));

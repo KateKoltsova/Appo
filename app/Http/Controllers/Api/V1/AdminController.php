@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MasterCreateRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\ServiceCreateRequest;
 use App\Models\Role;
-use App\Models\Service;
 use App\Notifications\MasterResetPasswordNotification;
 use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -69,23 +67,6 @@ class AdminController extends Controller
         }
 
 //        return response()->json(['message' => 'Master successfully created and received link to set password'], 201);
-    }
-
-    public function createService(ServiceCreateRequest $request)
-    {
-        try {
-            $params = $request->validated();
-
-            $service = Service::create($params);
-
-            if (!$service) {
-                throw new Exception('Error creating service', 422);
-            }
-
-            return response()->json(['message' => 'Service successfully created'], 201);
-        } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
-        }
     }
 
     /**

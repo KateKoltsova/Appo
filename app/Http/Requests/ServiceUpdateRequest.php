@@ -6,7 +6,7 @@ use App\Models\Service;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ServiceCreateRequest extends FormRequest
+class ServiceUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,9 @@ class ServiceCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:200', 'unique:App\Models\Service'],
-            'description' => ['required', 'string', 'max:1000'],
-            'category' => ['required',
+            'title' => ['string', 'max:200', Rule::unique('services')->ignore($this->service)],
+            'description' => ['string', 'max:1000'],
+            'category' => [
                 function ($attribute, $value, $fail) {
                     $categoryExists = Service::where('category', $value)->exists();
 

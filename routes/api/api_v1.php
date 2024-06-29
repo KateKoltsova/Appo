@@ -7,10 +7,6 @@ Route::post('admin/master', [\App\Http\Controllers\Api\V1\AdminController::class
     ->name('masterRegister')
     ->middleware(['auth:api', 'scope:admin']);
 
-Route::post('admin/service', [\App\Http\Controllers\Api\V1\AdminController::class, 'createService'])
-    ->name('serviceCreate')
-    ->middleware(['auth:api', 'scope:admin']);
-
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
     ->only('index')
     ->middleware(['auth:api', 'scope:admin']);
@@ -41,6 +37,10 @@ Route::delete('users/{user}/schedules/{schedule}/appointment', [\App\Http\Contro
 
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index');
+
+Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
+    ->only('store', 'update', 'destroy')
+    ->middleware(['auth:api', 'scope:admin']);
 
 Route::resource('users/{user}/carts', \App\Http\Controllers\Api\V1\CartController::class)
     ->only('index', 'store', 'destroy')

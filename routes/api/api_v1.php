@@ -73,3 +73,9 @@ Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryCo
 Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
     ->only('store', 'destroy')
     ->middleware(['auth:api', 'scope:master', 'owner', 'sessionTz']);
+
+Route::get('statuses/{order}', function ($order) {
+    $liqpay = new \App\Services\LiqpayService();
+    $resp = $liqpay->getResponse($order);
+    return response()->json(['data' => $resp]);
+});

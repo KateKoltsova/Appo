@@ -205,10 +205,15 @@ class CartService
             ];
             $order = Order::create($orderParams);
 
+            $description = 'Pay for beauty services:';
+            foreach ($schedulesChecked as $item) {
+                $description .= ", \n" . $item->date_time . '-' . $item->user()->first_name . $item->user()->last_name;
+            }
+
             $resultUrl = $params['result_url'];
             $paidParams['payment'] = $params['payment'];
             $paidParams['order_id'] = $order->id;
-            $paidParams['html_button'] = $this->payService->getHtml($total['totalSum'], $order->id, $expired_at, $resultUrl);
+            $paidParams['html_button'] = $this->payService->getHtml($total['totalSum'], $order->id, $expired_at, $resultUrl, $description);
 
             DB::commit();
 

@@ -50,11 +50,11 @@ class AppointmentService
 
             $order->update([
                 'payment_status' => $decodedData['status'],
-                'description' => $decodedData['description'],
+                'description' => $decodedData['err_description'],
             ]);
 
             if ($order->payment_status != 'success') {
-                throw new Exception('Payment status is ' . $order->payment_status, 400);
+                throw new Exception('Payment status is ' . $order->payment_status . ', because ' . $order->description, 400);
             }
 
             DB::commit();
@@ -65,6 +65,14 @@ class AppointmentService
             DB::rollBack();
 
             $order->update(['description' => $e->getMessage()]);
+
+            $appointments = $order->appointments()->get();
+
+            foreach ($appointments as $appointment) {
+                $schedule = $appointment->schedule()->first();
+                $schedule->update(['status' => config('constants.db.status.available')]);
+                $appointment->delete();
+            }
 
             throw new Exception($e->getMessage(), $e->getCode());
         }

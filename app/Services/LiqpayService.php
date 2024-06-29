@@ -9,7 +9,7 @@ use LiqPay;
 
 class LiqpayService implements PayService
 {
-    public function getHtml(int $total, int $orderId, string $expired_at, string $resultUrl): string
+    public function getHtml(int $total, int $orderId, string $expired_at, string $resultUrl, string $description): string
     {
         $public_key = env('LIQPAY_TEST_PUBLIC_KEY');
         $private_key = env('LIQPAY_TEST_PRIVATE_KEY');
@@ -19,7 +19,7 @@ class LiqpayService implements PayService
             'action' => 'pay',
             'amount' => $total,
             'currency' => 'UAH',
-            'description' => 'Pay for beauty services',
+            'description' => $description,
             'order_id' => $orderId,
             'server_url' => env('APP_URL') . 'api/v1/callback',
             'result_url' => $resultUrl,

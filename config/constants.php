@@ -10,6 +10,32 @@ return [
             'master' => 'master',
             'client' => 'client',
             'admin' => 'admin',
+            'super-admin' => 'super-admin'
+        ],
+        'permissions' => [
+            'instances' => [
+                'roles',
+                'permissions',
+                'users',
+                'services',
+                'prices',
+                'schedules',
+                'galleries',
+                'appointments',
+                'carts',
+                'orders'
+            ],
+            'actions' => [
+                'create-own',
+                'create-other',
+                'read-all',
+                'read-own',
+                'read-other',
+                'update-own',
+                'update-other',
+                'delete-own',
+                'delete-other'
+            ]
         ],
         'services' => [
             ['category' => 'Lashes',

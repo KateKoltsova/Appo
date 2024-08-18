@@ -1,5 +1,28 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
+Route::group(['prefix' => 'assign'], function () {
+    Route::post('role', [\App\Http\Controllers\Api\V1\PermissionController::class, 'assignRole'])
+        ->name('assignRole')
+        ->middleware(['auth:api']);
+    Route::post('roles', [\App\Http\Controllers\Api\V1\PermissionController::class, 'assignRoles'])
+        ->name('assignRoles')
+        ->middleware(['auth:api']);
+});
+
+Route::resource('permissions', \App\Http\Controllers\Api\V1\PermissionController::class)
+    ->middleware(['auth:api']);
+
+Route::group(['prefix' => 'permissions'], function () {
+    Route::post('assign-role', [\App\Http\Controllers\Api\V1\PermissionController::class, 'assignRolePermissions'])
+        ->name('assignRolePermissions')
+        ->middleware(['auth:api']);
+    Route::post('assign-user', [\App\Http\Controllers\Api\V1\PermissionController::class, 'assignUserPermissions'])
+        ->name('assignUserPermissions')
+        ->middleware(['auth:api']);
+});
+
 Route::get('roles', [\App\Http\Controllers\Api\V1\UserController::class, 'rolesList'])
     ->middleware(['auth:api', 'scope:admin']);
 

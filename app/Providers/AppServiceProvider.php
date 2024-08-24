@@ -17,6 +17,7 @@ use App\Services\BlockService;
 use App\Services\Contracts\AuthTokenGenerator;
 use App\Services\Contracts\BlockModel;
 use App\Services\Contracts\PayService;
+use App\Services\ImageService;
 use App\Services\LiqpayService;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -58,7 +59,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(UserService::class, function ($app) {
             return new UserService(
                 $app->make(UserRepository::class),
+                $app->make(ImageService::class)
             );
+        });
+        $this->app->singleton(ImageService::class, function ($app) {
+            return new ImageService();
         });
     }
 

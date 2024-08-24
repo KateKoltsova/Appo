@@ -21,16 +21,18 @@ return new class extends Migration
             $table->timestamps();
         });
         $user = \App\Models\User::first();
-        if (!is_null($user->id)) {
-            DB::table('orders')->insert([
-                'user_id' => $user->id,
-                'total' => 0,
-                'payment' => 'full',
-                'payment_status' => 'success',
-                'description' => 'Default successful payment order',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        if (!is_null($user)) {
+            if (!is_null($user->id)) {
+                DB::table('orders')->insert([
+                    'user_id' => $user->id,
+                    'total' => 0,
+                    'payment' => 'full',
+                    'payment_status' => 'success',
+                    'description' => 'Default successful payment order',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 

@@ -49,10 +49,9 @@
             "description": "Cart functionality"
         },
         {
-            "name": "Orders",
-            "description": "Create and pay order"
+            "name": "User images",
+            "description": "CRUD operations with images"
         }
-
     ],
     "paths": {
         "/register": {
@@ -719,6 +718,16 @@
                         }
                     },
                     {
+                        "name": "image",
+                        "in": "query",
+                        "description": "The user avatar",
+                        "required": false,
+                        "schema": {
+                            "type": "object",
+                            "example": "example.jpg"
+                        }
+                    },
+                    {
                         "name": "access_token",
                         "in": "header",
                         "description": "Access token",
@@ -1302,7 +1311,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/AvailableSchedules"
+                                            "$ref": "#/components/schemas/AvailableSchedulesForMaster"
                                         }
                                     }
                                 }
@@ -1899,13 +1908,6 @@
                                                     "properties": {
                                                         "0": {
                                                             "$ref": "#/components/schemas/Carts"
-                                                        },
-                                                        "1": {
-                                                            "$ref": "#/components/schemas/Carts"
-                                                        },
-                                                        "...": {},
-                                                        "n": {
-                                                            "$ref": "#/components/schemas/Carts"
                                                         }
                                                     }
                                                 },
@@ -2006,13 +2008,6 @@
                                                 "items": {
                                                     "properties": {
                                                         "0": {
-                                                            "$ref": "#/components/schemas/Carts"
-                                                        },
-                                                        "1": {
-                                                            "$ref": "#/components/schemas/Carts"
-                                                        },
-                                                        "...": {},
-                                                        "n": {
                                                             "$ref": "#/components/schemas/Carts"
                                                         }
                                                     }
@@ -2119,7 +2114,7 @@
         "/v1/users/{user}/checkout": {
             "get": {
                 "tags": [
-                    "Orders"
+                    "Carts"
                 ],
                 "summary": "Checkout carts specified user (only auth)",
                 "description": "Send request to block cart items by specified user and chose way to pay",
@@ -2165,7 +2160,11 @@
                                         "data": {
                                             "properties": {
                                                 "items": {
-                                                    "$ref": "#/components/schemas/Carts"
+                                                    "properties": {
+                                                        "0": {
+                                                            "$ref": "#/components/schemas/Carts"
+                                                        }
+                                                    }
                                                 },
                                                 "totalSum": {
                                                     "properties": {
@@ -2196,7 +2195,7 @@
         "/v1/users/{user}/button": {
             "get": {
                 "tags": [
-                    "Orders"
+                    "Carts"
                 ],
                 "summary": "Get button for pay order by liqpay (only auth)",
                 "description": "Get pay button",
@@ -2290,7 +2289,7 @@
         "/v1/schedules": {
             "get": {
                 "tags": [
-                    "Orders"
+                    "Schedules"
                 ],
                 "summary": "Get list of available schedules (all users)",
                 "description": "Send request to get full list of available schedules",
@@ -2347,72 +2346,370 @@
                                         "data": {
                                             "properties": {
                                                 "0": {
-                                                    "properties": {
-                                                        "master_id": {
-                                                            "example": 1
-                                                        },
-                                                        "master_firstname": {
-                                                            "example": "Firstname"
-                                                        },
-                                                        "master_lastname": {
-                                                            "example": "Lastname"
-                                                        },
-                                                        "schedules": {
-                                                            "properties": {
-                                                                "0": {
-                                                                    "properties": {
-                                                                        "schedule_id": {
-                                                                            "example": 1
-                                                                        },
-                                                                        "date_time": {
-                                                                            "example": "2023-11-11 11:00:00"
-                                                                        },
-                                                                        "status": {
-                                                                            "example": "available"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        "prices": {
-                                                            "properties": {
-                                                                "0": {
-                                                                    "properties": {
-                                                                        "service_id": {
-                                                                            "example": 1
-                                                                        },
-                                                                        "price_id": {
-                                                                            "example": 1
-                                                                        },
-                                                                        "title": {
-                                                                            "example": "Eyelash extension classic"
-                                                                        },
-                                                                        "category": {
-                                                                            "example": "Lashes"
-                                                                        },
-                                                                        "price": {
-                                                                            "example": 740
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        "categories": {
-                                                            "properties": {
-                                                                "0": {
-                                                                    "example": [
-                                                                        "Nails",
-                                                                        "Lashes",
-                                                                        "Brows"
-                                                                    ]
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                                                    "$ref": "#/components/schemas/AvailableSchedulesForClient"
                                                 }
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/avatar": {
+            "post": {
+                "tags": [
+                    "User images"
+                ],
+                "summary": "Set user avatar",
+                "description": "Send request to set user avatar",
+                "security": [
+                    {
+                        "role": [
+                            "master",
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "image",
+                        "in": "query",
+                        "description": "Image file",
+                        "required": true
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User avatar successfully loaded"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "User images"
+                ],
+                "summary": "Delete user avatar",
+                "description": "Sent request to delete user avatar",
+                "security": [
+                    {
+                        "role": [
+                            "master",
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "User avatar successfully deleted"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/galleries": {
+            "get": {
+                "tags": [
+                    "User images"
+                ],
+                "summary": "Get list of master gallery",
+                "description": "Sent request to get list of master gallery",
+                "security": [
+                    {
+                        "role": [
+                            "master",
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "0": {
+                                                    "$ref": "#/components/schemas/Images"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "User images"
+                ],
+                "summary": "Add images to master gallery",
+                "description": "Send request to add images to master gallery",
+                "security": [
+                    {
+                        "role": [
+                            "master"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "images[]",
+                        "in": "query",
+                        "description": "Image files",
+                        "required": true
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "0": {
+                                                    "$ref": "#/components/schemas/Images"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{user}/galleries/{gallery}": {
+            "get": {
+                "tags": [
+                    "User images"
+                ],
+                "summary": "Get special photo of master gallery",
+                "description": "Sent request to get special photo of master gallery",
+                "security": [
+                    {
+                        "role": [
+                            "master",
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "gallery",
+                        "in": "path",
+                        "description": "Gallery photo ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/securitySchemes/access_token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Images"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "User images"
+                ],
+                "summary": "Delete special photo of master gallery",
+                "description": "Sent request to delete special photo of master gallery",
+                "security": [
+                    {
+                        "role": [
+                            "master",
+                            "client"
+                        ],
+                        "access_token": [
+                        ]
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "Master ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "gallery",
+                        "in": "path",
+                        "description": "Image ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "access_token",
+                        "in": "header",
+                        "description": "Access token"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Image successfully deleted"
                                 }
                             }
                         }
@@ -2452,12 +2749,15 @@
                     },
                     "role": {
                         "type": "string",
-                        "example": "master",
-                        "enum": [
-                            "master",
-                            "client",
-                            "admin"
-                        ]
+                        "example": {
+                            "$ref": "#/components/schemas/Roles/properties/role/example"
+                        }
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "example": {
+                            "$ref": "#/components/schemas/Images/properties/image_url/example"
+                        }
                     }
                 }
             },
@@ -2470,7 +2770,7 @@
                     },
                     "role": {
                         "type": "string",
-                        "example": "client",
+                        "example": "master",
                         "enum": [
                             "client",
                             "master",
@@ -2498,6 +2798,10 @@
                     "title": {
                         "type": "string",
                         "example": "Brow coloring"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Professional brow coloring service to enhance or change the color of eyebrows for a defined look."
                     }
                 }
             },
@@ -2514,11 +2818,15 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Brows coloring"
+                        "example": {
+                            "$ref": "#/components/schemas/Services/properties/title/example"
+                        }
                     },
                     "category": {
                         "type": "string",
-                        "example": "Brows"
+                        "example": {
+                            "$ref": "#/components/schemas/Services/properties/category/example"
+                        }
                     },
                     "price": {
                         "type": "integer",
@@ -2535,7 +2843,9 @@
                     },
                     "date_time": {
                         "type": "string",
-                        "example": "1111-01-01 01:01:01"
+                        "example": {
+                            "$ref": "#/components/schemas/AvailableSchedulesForMaster/properties/date_time/example"
+                        }
                     },
                     "status": {
                         "type": "string",
@@ -2553,27 +2863,39 @@
                             },
                             "firstname": {
                                 "type": "string",
-                                "example": "Firstname"
+                                "example": {
+                                    "$ref": "#/components/schemas/Users/properties/firstname/example"
+                                }
                             },
                             "lastname": {
                                 "type": "string",
-                                "example": "Lastname"
+                                "example": {
+                                    "$ref": "#/components/schemas/Users/properties/lastname/example"
+                                }
                             },
                             "email": {
                                 "type": "string",
-                                "example": "email@email.com"
+                                "example": {
+                                    "$ref": "#/components/schemas/Users/properties/email/example"
+                                }
                             },
                             "phone_number": {
                                 "type": "string",
-                                "example": "+380111111111"
+                                "example": {
+                                    "$ref": "#/components/schemas/Users/properties/phone_number/example"
+                                }
                             },
                             "title": {
                                 "type": "string",
-                                "example": "Brows coloring"
+                                "example": {
+                                    "$ref": "#/components/schemas/Services/properties/title/example"
+                                }
                             },
                             "category": {
                                 "type": "string",
-                                "example": "Brows"
+                                "example": {
+                                    "$ref": "#/components/schemas/Services/properties/category/example"
+                                }
                             },
                             "sum": {
                                 "type": "integer",
@@ -2581,7 +2903,9 @@
                             },
                             "payment": {
                                 "type": "string",
-                                "example": "full",
+                                "example": {
+                                    "$ref": "#/components/schemas/Appointments/properties/payment/example"
+                                },
                                 "enum": [
                                     "prepay",
                                     "full"
@@ -2595,7 +2919,7 @@
                     }
                 }
             },
-            "AvailableSchedules": {
+            "AvailableSchedulesForMaster": {
                 "type": "object",
                 "properties": {
                     "schedule_id": {
@@ -2613,6 +2937,98 @@
                             "available",
                             "unavailable"
                         ]
+                    }
+                }
+            },
+            "AvailableSchedulesForClient": {
+                "type": "object",
+                "properties": {
+                    "master_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "master_firstname": {
+                        "type": "string",
+                        "example": {
+                            "$ref": "#/components/schemas/Users/properties/firstname/example"
+                        }
+                    },
+                    "master_lastname": {
+                        "type": "string",
+                        "example": {
+                            "$ref": "#/components/schemas/Users/properties/lastname/example"
+                        }
+                    },
+                    "schedules": {
+                        "type": "object",
+                        "properties": {
+                            "0": {
+                                "type": "object",
+                                "properties": {
+                                    "schedule_id": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/AvailableSchedulesForMaster/properties/schedule_id/example"
+                                        }
+                                    },
+                                    "date_time": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/AvailableSchedulesForMaster/properties/date_time/example"
+                                        }
+                                    },
+                                    "status": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/AvailableSchedulesForMaster/properties/status/example"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "prices": {
+                        "type": "object",
+                        "properties": {
+                            "0": {
+                                "type": "object",
+                                "properties": {
+                                    "service_id": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/Prices/properties/service_id/example"
+                                        }
+                                    },
+                                    "price_id": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/Prices/properties/price_id/example"
+                                        }
+                                    },
+                                    "title": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/Prices/properties/title/example"
+                                        }
+                                    },
+                                    "category": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/Prices/properties/category/example"
+                                        }
+                                    },
+                                    "price": {
+                                        "example": {
+                                            "$ref": "#/components/schemas/Prices/properties/price/example"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "categories": {
+                        "type": "object",
+                        "properties": {
+                            "0": {
+                                "type": "object",
+                                "example": {
+                                    "$ref": "#/components/schemas/Services/properties/category/example"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -2649,23 +3065,33 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Brows coloring"
+                        "example": {
+                            "$ref": "#/components/schemas/Services/properties/title/example"
+                        }
                     },
                     "category": {
                         "type": "string",
-                        "example": "Brows"
+                        "example": {
+                            "$ref": "#/components/schemas/Services/properties/category/example"
+                        }
                     },
                     "master_firstname": {
                         "type": "string",
-                        "example": "Firstname"
+                        "example": {
+                            "$ref": "#/components/schemas/Users/properties/firstname/example"
+                        }
                     },
                     "master_lastname": {
                         "type": "string",
-                        "example": "Lastname"
+                        "example": {
+                            "$ref": "#/components/schemas/Users/properties/lastname/example"
+                        }
                     },
                     "date_time": {
                         "type": "string",
-                        "example": "1111-01-01 01:01:01"
+                        "example": {
+                            "$ref": "#/components/schemas/AvailableSchedulesForMaster/properties/date_time/example"
+                        }
                     }
                 }
             },
@@ -2694,23 +3120,33 @@
                     },
                     "title": {
                         "type": "string",
-                        "example": "Brows coloring"
+                        "example": {
+                            "$ref": "#/components/schemas/Services/properties/title/example"
+                        }
                     },
                     "category": {
                         "type": "string",
-                        "example": "Brows"
+                        "example": {
+                            "$ref": "#/components/schemas/Services/properties/category/example"
+                        }
                     },
                     "master_firstname": {
                         "type": "string",
-                        "example": "Firstname"
+                        "example": {
+                            "$ref": "#/components/schemas/Users/properties/firstname/example"
+                        }
                     },
                     "master_lastname": {
                         "type": "string",
-                        "example": "Lastname"
+                        "example": {
+                            "$ref": "#/components/schemas/Users/properties/lastname/example"
+                        }
                     },
                     "date_time": {
                         "type": "string",
-                        "example": "1111-01-01 01:01:01"
+                        "example": {
+                            "$ref": "#/components/schemas/AvailableSchedulesForMaster/properties/date_time/example"
+                        }
                     },
                     "message?": {
                         "type": "string",
@@ -2737,6 +3173,19 @@
                     }
                 },
                 "type": "object"
+            },
+            "Images": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "example": "https://appobeauty.s3.eu-west-2.amazonaws.com/images/example.jpg"
+                    }
+                }
             }
         },
         "securitySchemes": {

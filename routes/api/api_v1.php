@@ -1,4 +1,12 @@
 <?php
+
+Route::get('roles', [\App\Http\Controllers\Api\V1\UserController::class, 'rolesList'])
+    ->middleware(['auth:api', 'scope:admin']);
+
+Route::post('admin/master', [\App\Http\Controllers\Api\V1\AdminController::class, 'createMaster'])
+    ->name('masterRegister')
+    ->middleware(['auth:api', 'scope:admin']);
+
 Route::resource('users', \App\Http\Controllers\Api\V1\UserController::class)
     ->only('index')
     ->middleware(['auth:api', 'scope:admin']);
@@ -30,6 +38,10 @@ Route::delete('users/{user}/schedules/{schedule}/appointment', [\App\Http\Contro
 Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
     ->only('index');
 
+Route::resource('services', \App\Http\Controllers\Api\V1\ServiceController::class)
+    ->only('store', 'update', 'destroy')
+    ->middleware(['auth:api', 'scope:admin']);
+
 Route::resource('users/{user}/carts', \App\Http\Controllers\Api\V1\CartController::class)
     ->only('index', 'store', 'destroy')
     ->middleware(['auth:api', 'owner', 'sessionTz']);
@@ -45,3 +57,19 @@ Route::get('users/{user}/button', [\App\Http\Controllers\Api\V1\CartController::
 Route::post('appointment', [\App\Http\Controllers\Api\V1\AppointmentController::class, 'store'])
     ->name('appointment.store')
     ->middleware(['sessionTz']);
+
+Route::post('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController::class, 'loadAvatar'])
+    ->name('users.avatar')
+    ->middleware(['auth:api', 'owner', 'sessionTz']);
+
+Route::delete('users/{user}/avatar', [\App\Http\Controllers\Api\V1\UserController::class, 'deleteAvatar'])
+    ->name('users.deleteAvatar')
+    ->middleware(['auth:api', 'owner', 'sessionTz']);
+
+Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
+    ->only('index', 'show')
+    ->middleware(['auth:api', 'sessionTz']);
+
+Route::resource('users/{user}/galleries', \App\Http\Controllers\Api\V1\GalleryController::class)
+    ->only('store', 'destroy')
+    ->middleware(['auth:api', 'scope:master', 'owner', 'sessionTz']);

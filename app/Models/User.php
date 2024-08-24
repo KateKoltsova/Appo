@@ -70,6 +70,7 @@ class User extends Authenticatable
         'email',
         'phone_number',
         'password',
+        'image_url'
     ];
 
     /**
@@ -144,7 +145,7 @@ class User extends Authenticatable
                             'date_time',
                             'status',
                         ]);
-                }
+                },
             ]);
     }
 
@@ -167,9 +168,14 @@ class User extends Authenticatable
                             'service_id',
                             'price',
                             'category',
-                            'title'
+                            'title',
                         ]);
-                }
+                },
             ]);
+    }
+
+    public function galleries()
+    {
+        return $this->hasMany(Gallery::class, 'master_id', 'id');
     }
 }

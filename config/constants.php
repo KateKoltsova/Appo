@@ -1,6 +1,11 @@
 <?php
 return [
     'db' => [
+        'default_master' => [
+            'firstname' => 'Default',
+            'lastname' => 'Master',
+            'password' => 'default',
+        ],
         'roles' => [
             'master' => 'master',
             'client' => 'client',

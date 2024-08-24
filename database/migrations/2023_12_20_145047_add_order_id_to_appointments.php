@@ -19,9 +19,11 @@ return new class extends Migration
                 ->cascadeOnDelete();
         });
         $order = \App\Models\Order::first();
-        DB::table('appointments')->update([
-            'order_id' => $order->id,
-        ]);
+        if (!is_null($order)) {
+            DB::table('appointments')->update([
+                'order_id' => $order->id,
+            ]);
+        }
 
         Schema::table('appointments', function (Blueprint $table) {
             $table->foreignId('order_id')->nullable(false)->change();

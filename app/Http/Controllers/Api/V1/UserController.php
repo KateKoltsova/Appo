@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoadAvatarRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Models\User;
 use App\Services\Api\UserService;
 use Exception;
 use Illuminate\Http\Request;
@@ -16,12 +18,17 @@ class UserController extends Controller
     {
     }
 
+    public function rolesList()
+    {
+        return response()->json($this->userService->getRolesList());
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $filters['role'] = $request->input('filter.role');
+        $filters['role_id'] = $request->input('filter.role_id');
 
         return response()->json($this->userService->getList($filters));
     }
@@ -90,6 +97,36 @@ class UserController extends Controller
             $this->userService->delete($id);
 
             return response()->json(['message' => 'User successfully deleted']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    public function loadAvatar(LoadAvatarRequest $request, string $user)
+    {
+        try {
+            $user = User::findOrFail($user);
+
+            $params = $request->validated();
+
+            $this->userService->loadAvatar($params['image'], $user);
+
+            return response()->json(['message' => 'User avatar successfully loaded']);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    public function deleteAvatar(string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $this->userService->deleteAvatar($user);
+
+            return response()->json(['message' => 'User avatar successfully deleted']);
 
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode());

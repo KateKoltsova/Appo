@@ -203,7 +203,7 @@ class ScheduleService
         $timeItem = new DateTime($schedule['date_time']);
         $timeOtherItem = new DateTime($otherSchedule['date_time']);
         $diff = $timeOtherItem->diff($timeItem);
-        $diffMinutes = $diff->i + $diff->h * 60 + $diff->d * 24 * 60;
+        $diffMinutes = $diff->i + $diff->h * 60 + $diff->days * 24 * 60;
 
         if ($diffMinutes === 0 ||
             $diffMinutes < config('constants.db.diff_between_services.minutes')) {

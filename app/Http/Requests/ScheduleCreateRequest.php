@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use DateTime;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,7 +28,13 @@ class ScheduleCreateRequest extends FormRequest
                 'required',
                 'date_format:Y-m-d H:i:s',
                 'after:' . now()->setTimezone('Europe/Kiev')->toDateTimeString(),
-                Rule::unique('schedules')->where('master_id', $this->user()->id)
+                Rule::unique('schedules')->where('master_id', $this->user()->id),
+                function ($attribute, $value, $fail) {
+                    $date = DateTime::createFromFormat('Y-m-d H:i:s', $value);
+                    if ($date && $date->format('s') !== '00') {
+                        $fail('The ' . $attribute . ' must have seconds set to 00.');
+                    }
+                }
             ]
         ];
     }

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Price;
 use App\Models\Schedule;
 use App\Models\User;
+use App\Policies\PricePolicy;
 use App\Policies\SchedulePolicy;
 use App\Policies\UserPolicy;
 // use Illuminate\Support\Facades\Gate;
@@ -19,7 +21,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         User::class => UserPolicy::class,
-        Schedule::class => SchedulePolicy::class
+        Schedule::class => SchedulePolicy::class,
+        Price::class => PricePolicy::class
     ];
 
     protected $scopes = [

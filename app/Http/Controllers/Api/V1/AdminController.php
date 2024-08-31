@@ -45,6 +45,11 @@ class AdminController extends Controller
                 throw new Exception('Invalid user', 422);
             }
 
+            $newMaster->syncRoles([]);
+            $newMaster->assignRole($role->name);
+            $newMaster->role_id = $role->id;
+            $newMaster->save();
+
             $user = $this->passwordBroker->getUser($params);
 
             $token = $this->passwordBroker->createToken($user);

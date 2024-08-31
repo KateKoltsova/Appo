@@ -20,7 +20,11 @@ class UserController extends Controller
 
     public function rolesList()
     {
-        return response()->json($this->userService->getRolesList());
+        try {
+            return response()->json($this->userService->getRolesList());
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+        }
     }
 
     /**
@@ -28,9 +32,13 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $filters['role_id'] = $request->input('filter.role_id');
-
-        return response()->json($this->userService->getList($filters));
+        try {
+            $this->authorize('view', User::class);
+            $filters['role_id'] = $request->input('filter.role_id');
+            return response()->json($this->userService->getList($filters));
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+        }
     }
 
     /**
@@ -55,12 +63,11 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
+            $this->authorize('view', [User::class, $id]);
             $response = $this->userService->getById($id);
-
             return response()->json($response);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
         }
     }
 
@@ -78,13 +85,12 @@ class UserController extends Controller
     public function update(UserUpdateRequest $request, string $id)
     {
         try {
+            $this->authorize('update', [User::class, $id]);
             $params = $request->validated();
             $response = $this->userService->update($params, $id);
-
             return response()->json($response);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
         }
     }
 
@@ -94,42 +100,36 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         try {
+            $this->authorize('delete', [User::class, $id]);
             $this->userService->delete($id);
-
             return response()->json(['message' => 'User successfully deleted']);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
         }
     }
 
-    public function loadAvatar(LoadAvatarRequest $request, string $user)
+    public function loadAvatar(LoadAvatarRequest $request, string $id)
     {
         try {
-            $user = User::findOrFail($user);
-
+            $this->authorize('update', [User::class, $id]);
+            $user = User::findOrFail($id);
             $params = $request->validated();
-
             $this->userService->loadAvatar($params['image'], $user);
-
             return response()->json(['message' => 'User avatar successfully loaded']);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
         }
     }
 
     public function deleteAvatar(string $id)
     {
         try {
+            $this->authorize('update', [User::class, $id]);
             $user = User::findOrFail($id);
-
             $this->userService->deleteAvatar($user);
-
             return response()->json(['message' => 'User avatar successfully deleted']);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
         }
     }
 }

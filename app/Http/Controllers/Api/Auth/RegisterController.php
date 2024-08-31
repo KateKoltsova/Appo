@@ -12,7 +12,11 @@ class RegisterController extends Controller
     {
         $params = $request->validated();
         $role = Role::client()->first();
-        $role->users()->create($params);
+        $user = $role->users()->create($params);
+        $user->syncRoles([]);
+        $user->assignRole($role->name);
+        $user->role_id = $role->id;
+        $user->save();
         return response()->json(['message' => 'Successfully Created'], 201);
     }
 }

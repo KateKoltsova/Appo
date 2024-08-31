@@ -68,6 +68,7 @@ class Kernel extends HttpKernel
         'scopes' => \Laravel\Passport\Http\Middleware\CheckScopes::class,
         'scope' => \Laravel\Passport\Http\Middleware\CheckForAnyScope::class,
         'owner' => \App\Http\Middleware\ProfileOwner::class,
-        'sessionTz' => \App\Http\Middleware\SessionTz::class
+        'sessionTz' => \App\Http\Middleware\SessionTz::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
     ];
 }

@@ -2,17 +2,17 @@
 
 namespace App\Policies;
 
-use App\Models\Schedule;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class SchedulePolicy
+class OrderPolicy
 {
     // deny
     private const MESSAGE = 'You don\'t have permissions to make this action!';
     private const DENY_CODE = 403;
 
-    private const INSTANCE = 'schedules.%s-';
+    private const INSTANCE = 'orders.%s-';
 
     private function checkPermission($user, $permission)
     {

@@ -15,7 +15,8 @@ class ServiceController extends Controller
     private $path = 'images/services';
 
     public function __construct(
-        private ImageService $imageService,)
+        private ImageService $imageService
+    )
     {
     }
 
@@ -24,13 +25,18 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::get(['id', 'title', 'description', 'image_url', 'category']);
-        $categories = $services->pluck('category')->unique();
-        return response()->json(['data' => [
-            'categories' => array_values($categories->toArray()),
-            'services' => $services->toArray()
-        ]
-        ]);
+        // TODO: Refactor response to services into categories
+        try {
+            $services = Service::get(['id', 'title', 'description', 'image_url', 'category']);
+            $categories = $services->pluck('category')->unique();
+            return response()->json(['data' => [
+                'categories' => array_values($categories->toArray()),
+                'services' => $services->toArray()
+            ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
+        }
     }
 
     /**
@@ -47,6 +53,7 @@ class ServiceController extends Controller
     public function store(ServiceCreateRequest $request)
     {
         try {
+            $this->authorize('create', Service::class);
             $params = $request->validated();
 
             if (isset($params['image'])) {
@@ -65,10 +72,9 @@ class ServiceController extends Controller
 
             $service->image_url = $imageUrl['data']['url'] ?? null;
             $service->save();
-
             return response()->json(['message' => 'Service successfully created'], 201);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -94,6 +100,7 @@ class ServiceController extends Controller
     public function update(ServiceUpdateRequest $request, Service $service)
     {
         try {
+            $this->authorize('update', Service::class);
             $params = $request->validated();
 
             if (isset($params['image'])) {
@@ -106,19 +113,16 @@ class ServiceController extends Controller
                 $imageUrl = $this->imageService->upload($params['image']);
                 $service->image_url = $imageUrl['data']['url'];
                 $service->save();
-
                 unset($params['image']);
             }
 
             $service->update($params);
-
             if (!$service) {
                 throw new Exception('Error creating service', 422);
             }
-
-            return response()->json(['message' => 'Service successfully updated'], 200);
+            return response()->json(['message' => 'Service successfully updated']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -128,18 +132,16 @@ class ServiceController extends Controller
     public function destroy(int $id)
     {
         try {
+            $this->authorize('delete', Service::class);
             $service = Service::where('id', $id)->first();
-
             if (!is_null($service->image_url)) {
                 $this->imageService->path = $this->path;
                 $this->imageService->delete($service->image_url);
             }
-
             $service->delete();
-
-            return response()->json(['message' => 'Service successfully deleted'], 200);
+            return response()->json(['message' => 'Service successfully deleted']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 400);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 }

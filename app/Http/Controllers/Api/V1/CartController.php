@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\CartAddRequest;
+use App\Models\Cart;
+use App\Models\Order;
 use App\Services\Api\CartService;
 use Exception;
 
 class CartController extends Controller
 {
     public function __construct(
-        private CartService $cartService,
+        private CartService $cartService
     )
     {
     }
@@ -21,7 +23,12 @@ class CartController extends Controller
      */
     public function index(string $user)
     {
-        return response()->json($this->cartService->getList($user));
+        try {
+            $this->authorize('view', [Cart::class, $user]);
+            return response()->json($this->cartService->getList($user));
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
+        }
     }
 
     /**
@@ -38,11 +45,12 @@ class CartController extends Controller
     public function store(CartAddRequest $request, string $user)
     {
         try {
+            $this->authorize('create', [Cart::class, $user]);
             $params = $request->validated();
             $response = $this->cartService->add($params, $user);
             return response()->json($response);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
 
     }
@@ -77,12 +85,11 @@ class CartController extends Controller
     public function destroy(string $user, string $cart)
     {
         try {
+            $this->authorize('delete', [Cart::class, $user]);
             $this->cartService->delete($user, $cart);
-
             return response()->json(['message' => 'Cart item successfully deleted']);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -91,13 +98,13 @@ class CartController extends Controller
      */
     public function checkout(string $user)
     {
+        // TODO: move blocking schedules to getPayButton
         try {
+            $this->authorize('update', [Cart::class, $user]);
             $response = $this->cartService->checkout($user);
-
             return response()->json($response);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -107,12 +114,10 @@ class CartController extends Controller
     public function getPayButton(OrderCreateRequest $request, string $user)
     {
         try {
+            $this->authorize('create', [Order::class, $user]);
             $params = $request->validated();
-
             $response = $this->cartService->getPayButton($params, $user);
-
             return response()->json($response);
-
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode());
         }

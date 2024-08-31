@@ -2,17 +2,17 @@
 
 namespace App\Policies;
 
-use App\Models\Schedule;
+use App\Models\Cart;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class SchedulePolicy
+class CartPolicy
 {
     // deny
     private const MESSAGE = 'You don\'t have permissions to make this action!';
     private const DENY_CODE = 403;
 
-    private const INSTANCE = 'schedules.%s-';
+    private const INSTANCE = 'carts.%s-';
 
     private function checkPermission($user, $permission)
     {

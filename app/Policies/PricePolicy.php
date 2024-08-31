@@ -37,7 +37,7 @@ class PricePolicy
      */
     public function view(User $user, int $id)
     {
-        return $this->checkId($user, $id,'read');
+        return $this->checkId($user, $id, 'read');
     }
 
     /**
@@ -45,22 +45,22 @@ class PricePolicy
      */
     public function create(User $user, int $id)
     {
-        return $this->checkId($user, $id,'create');
+        return $this->checkId($user, $id, 'create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user,  int $id)
+    public function update(User $user, int $id)
     {
-        return $this->checkId($user, $id,'update');
+        return $this->checkId($user, $id, 'update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user,  int $id)
+    public function delete(User $user, int $id)
     {
-        return $this->checkId($user, $id,'delete');
+        return $this->checkId($user, $id, 'delete');
     }
 }

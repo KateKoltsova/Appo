@@ -3,13 +3,22 @@
 namespace App\Providers;
 
 use App\Models\Appointment;
+use App\Models\Cart;
+use App\Models\Gallery;
+use App\Models\Order;
 use App\Models\Price;
 use App\Models\Schedule;
+use App\Models\Service;
 use App\Models\User;
 use App\Policies\AppointmentPolicy;
+use App\Policies\CartPolicy;
+use App\Policies\GalleryPolicy;
+use App\Policies\OrderPolicy;
 use App\Policies\PricePolicy;
 use App\Policies\SchedulePolicy;
+use App\Policies\ServicePolicy;
 use App\Policies\UserPolicy;
+
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Passport\Passport;
@@ -22,10 +31,14 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        User::class => UserPolicy::class,
-        Schedule::class => SchedulePolicy::class,
+        Appointment::class => AppointmentPolicy::class,
+        Cart::class => CartPolicy::class,
+        Gallery::class => GalleryPolicy::class,
+        Order::class => OrderPolicy::class,
         Price::class => PricePolicy::class,
-        Appointment::class => AppointmentPolicy::class
+        Schedule::class => SchedulePolicy::class,
+        Service::class => ServicePolicy::class,
+        User::class => UserPolicy::class
     ];
 
     protected $scopes = [

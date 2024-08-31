@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Appointment;
 use App\Models\Price;
 use App\Models\Schedule;
 use App\Models\User;
+use App\Policies\AppointmentPolicy;
 use App\Policies\PricePolicy;
 use App\Policies\SchedulePolicy;
 use App\Policies\UserPolicy;
@@ -22,7 +24,8 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         User::class => UserPolicy::class,
         Schedule::class => SchedulePolicy::class,
-        Price::class => PricePolicy::class
+        Price::class => PricePolicy::class,
+        Appointment::class => AppointmentPolicy::class
     ];
 
     protected $scopes = [

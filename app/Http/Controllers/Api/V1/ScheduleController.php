@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleCreateRequest;
 use App\Http\Requests\ScheduleUpdateRequest;
+use App\Models\Schedule;
 use App\Services\Api\ScheduleService;
 use Exception;
 use Illuminate\Http\Request;
@@ -22,19 +23,26 @@ class ScheduleController extends Controller
      */
     public function index(Request $request, string $user)
     {
-        $filters['date'] = $request->input('filter.date');
-
-        return response()->json($this->scheduleService->getList($filters, $user));
+        try {
+            $this->authorize('view', [Schedule::class, $user]);
+            $filters['date'] = $request->input('filter.date');
+            return response()->json($this->scheduleService->getList($filters, $user));
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
+        }
     }
 
     public function getAllAvailable(Request $request)
     {
-        $filters['master_id'] = $request->input('filter.master_id');
-        $filters['date'] = $request->input('filter.date');
-        $filters['category'] = $request->input('filter.category');
-        $filters['service_id'] = $request->input('filter.service_id');
-
-        return response()->json($this->scheduleService->getAvailable($filters));
+        try {
+            $filters['master_id'] = $request->input('filter.master_id');
+            $filters['date'] = $request->input('filter.date');
+            $filters['category'] = $request->input('filter.category');
+            $filters['service_id'] = $request->input('filter.service_id');
+            return response()->json($this->scheduleService->getAvailable($filters));
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
+        }
     }
 
     /**
@@ -51,14 +59,12 @@ class ScheduleController extends Controller
     public function store(ScheduleCreateRequest $request, string $user)
     {
         try {
+            $this->authorize('create', [Schedule::class, $user]);
             $params = $request->validated();
-
             $response = $this->scheduleService->create($params, $user);
-
             return response()->json($response);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -68,12 +74,11 @@ class ScheduleController extends Controller
     public function show(string $user, string $schedule)
     {
         try {
+            $this->authorize('view', [Schedule::class, $user]);
             $response = $this->scheduleService->getById($user, $schedule);
-
             return response()->json($response);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -91,13 +96,12 @@ class ScheduleController extends Controller
     public function update(ScheduleUpdateRequest $request, string $user, string $schedule)
     {
         try {
+            $this->authorize('update', [Schedule::class, $user]);
             $params = $request->validated();
             $response = $this->scheduleService->update($params, $user, $schedule);
-
             return response()->json($response);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -107,24 +111,22 @@ class ScheduleController extends Controller
     public function destroy(string $user, string $schedule)
     {
         try {
+            $this->authorize('delete', [Schedule::class, $user]);
             $this->scheduleService->delete($user, $schedule);
-
             return response()->json(['message' => 'Schedule successfully deleted']);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
     public function destroyAppointment(string $user, string $schedule)
     {
         try {
+            $this->authorize('update', [Schedule::class, $user]);
             $this->scheduleService->cancelAppointment($user, $schedule);
-
             return response()->json(['message' => 'Appointment on this schedule successfully deleted']);
-
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 }

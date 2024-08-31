@@ -23,7 +23,7 @@ class UserController extends Controller
         try {
             return response()->json($this->userService->getRolesList());
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -37,7 +37,7 @@ class UserController extends Controller
             $filters['role_id'] = $request->input('filter.role_id');
             return response()->json($this->userService->getList($filters));
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -67,7 +67,7 @@ class UserController extends Controller
             $response = $this->userService->getById($id);
             return response()->json($response);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -90,7 +90,7 @@ class UserController extends Controller
             $response = $this->userService->update($params, $id);
             return response()->json($response);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -104,7 +104,7 @@ class UserController extends Controller
             $this->userService->delete($id);
             return response()->json(['message' => 'User successfully deleted']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -117,7 +117,7 @@ class UserController extends Controller
             $this->userService->loadAvatar($params['image'], $user);
             return response()->json(['message' => 'User avatar successfully loaded']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 
@@ -129,7 +129,7 @@ class UserController extends Controller
             $this->userService->deleteAvatar($user);
             return response()->json(['message' => 'User avatar successfully deleted']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 }

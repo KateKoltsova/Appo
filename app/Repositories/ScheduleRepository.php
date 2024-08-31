@@ -60,7 +60,7 @@ class ScheduleRepository
                     ]);
             }
             ])
-            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
+//            ->where('date_time', '>', now()->setTimezone('Europe/Kiev'))
             ->where('master_id', $userId)
             ->where('schedules.id', $scheduleId)
             ->first();

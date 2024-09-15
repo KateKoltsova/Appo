@@ -9,16 +9,39 @@ Welcome to the Appo Beauty API – your key to the world of beauty and care!
 
 Our API provides opportunities for managing beauty services and easy appointment.
 
-### **Key features:** ###
+## **Key features:**
 
-- *Master registration:* Sign up and showcase your services to users.
-- *Schedule management:* Masters can efficiently manage their working hours.
-- *Service prices:* Masters can set prices for their services.
-- *View available services:* Clients can easily find and choose suitable services.
-- *Client appointments:* Clients can conveniently appointment for master services.
-- *Service payments:* Multiple online-payment options available for a convenient payment experience.
+### **As client:**
 
-### **Some useful links:** ###
+- ***Register*** and ***manage*** your account.
+- Easily ***find*** services and masters, and make ***appointment*** to suitable date-time.
+- ***Pay*** your appointment ***fully*** or ***partially***.
+
+### **As master:**
+
+- ***Register*** by admin and ***manage*** your account.
+- Manage yours working ***schedules*** and ***appointments***.
+- Set ***prices*** for preset service categories and receive ***payments***.
+- Sure, you have all opportunities as client.
+
+### **Selected for development:**
+
+- Authorization with social networks.
+- Self register as master.
+- Order details.
+- Types of master accounts with preset services and custom.
+- Easily transfer work schedules from previous month and different ways to create it.
+- Masters rating.
+- Email and push notifications.
+- Chat with master.
+- Registered as salon
+
+## **Technologies:**
+
+- **API**: PHP & Laravel, Heroku, AWS, Sendgrid, LiqPay, Swagger
+- **View**: Vue.js & Vite
+
+## **Some useful links:**
 
 - [The API repository](https://github.com/KateKoltsova/Appo)
 

@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "heroku-postbuild": "npm install --force --production=false && npm run build"
     },
     "devDependencies": {
         "@popperjs/core": "^2.11.6",
@@ -17,5 +18,8 @@
         "@vitejs/plugin-vue": "^3.2.0",
         "vue": "^3.4.38",
         "vue-router": "^4.4.4"
+    },
+    "engines": {
+        "node": "18.x"
     }
 }

@@ -55,6 +55,9 @@ return [
         ],
         'diff_between_services' => [
             'minutes' => 60
+        ],
+        'cart_limit' => [
+            'items' => 3
         ]
     ]
 ];

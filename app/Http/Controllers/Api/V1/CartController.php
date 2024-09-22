@@ -40,7 +40,7 @@ class CartController extends Controller
             'schedules.status',
             'schedules.blocked_until',
             'schedules.blocked_by',
-            'prices.price'
+            'prices.price',
         ])
             ->join('services', 'carts.service_id', '=', 'services.id')
             ->join('schedules', 'carts.schedule_id', '=', 'schedules.id')
@@ -50,7 +50,15 @@ class CartController extends Controller
             ->get();
 
         $cartCollection = new CartCollection($cart);
-        $totalSum = TotalService::total($cartCollection);
+
+        $appointmentSchedules = Schedule::whereIn('id', function ($query) use ($user) {
+            $query->select('schedule_id')
+                ->from('appointments')
+                ->where('client_id', $user);
+        })->get();
+
+        $totalSum = TotalService::total($cartCollection, $appointmentSchedules);
+
         $response = ['data' => []];
         $response['data']['items'] = $cartCollection;
         $response['data']['totalSum'] = $totalSum['totalSum'];
@@ -71,42 +79,67 @@ class CartController extends Controller
      */
     public function store(CartAddRequest $request, string $user)
     {
-        $params = $request->validated();
-        $params['client_id'] = $user;
+        try {
 
-        $addingSchedule = Schedule::findOrFail($params['schedule_id']);
+            $params = $request->validated();
+            $params['client_id'] = $user;
 
-        $schedules = Schedule::whereIn('id', function ($query) use ($user) {
-            $query->select('schedule_id')
-                ->from('carts')
-                ->where('client_id', $user);
-        })->get();
+            $addingSchedule = Schedule::findOrFail($params['schedule_id']);
 
-        $validSchedule = ScheduleService::scheduleValidation($schedules, $user, $addingSchedule);
+            $schedules = Schedule::whereIn('id', function ($query) use ($user) {
+                $query->select('schedule_id')
+                    ->from('carts')
+                    ->where('client_id', $user);
+            })->get();
 
-        if (!$validSchedule) {
-            return response()->json(['message' => 'Invalid schedule'], 400);
-        }
+            $appointmentSchedules = Schedule::whereIn('id', function ($query) use ($user) {
+                $query->select('schedule_id')
+                    ->from('appointments')
+                    ->where('client_id', $user);
+            })->get();
 
-        $master = $addingSchedule->master()->first();
+            $validSchedule = ScheduleService::scheduleValidation($schedules, $user, $appointmentSchedules, $addingSchedule);
 
-        if (!$master->prices()->whereId($params['price_id'])->first()) {
-            return response()->json(['message' => 'This master does not provide such a service'], 400);
-        }
+            if (!$validSchedule) {
+                throw new Exception('Invalid schedule');
+            }
 
-        $cart = Cart::create($params);
+            $master = $addingSchedule->master()->first();
 
-        if ($cart) {
-            return $this->index($user);
-        } else {
-            return response()->json(['message' => 'Bad request'], 400);
+            if (!$master->prices()->whereId($params['price_id'])->first()) {
+                throw new Exception('This master does not provide such a service');
+            }
+
+            DB::beginTransaction();
+
+            $cart = Cart::create($params);
+
+            if (!$cart) {
+                throw new Exception('Bad request');
+            }
+
+            $carts = $this->index($user);
+
+            if ($carts->original['data']['totalCount'] > config('constants.db.cart_limit.items')) {
+                throw new Exception('You can\'t add more cart items');
+            }
+
+            DB::commit();
+
+            return $carts;
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public
+    function show(string $id)
     {
         //
     }
@@ -114,7 +147,8 @@ class CartController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public
+    function edit(string $id)
     {
         //
     }
@@ -122,7 +156,8 @@ class CartController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(string $id)
+    public
+    function update(string $id)
     {
         //
     }
@@ -130,7 +165,8 @@ class CartController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $user, string $cart)
+    public
+    function destroy(string $user, string $cart)
     {
         $cartItem = Cart::where('id', $cart)->where('client_id', $user)->first();
 
@@ -151,12 +187,13 @@ class CartController extends Controller
     /**
      * Get way to pay and blocked specified resource by user
      */
-    public function checkout(string $user)
+    public
+    function checkout(string $user)
     {
         try {
             $cart = $this->index($user)->original['data'];
 
-            if (empty($cart)) {
+            if (empty($cart['items'])) {
                 throw new Exception('Cart is empty');
             }
 
@@ -168,13 +205,19 @@ class CartController extends Controller
                     ->where('client_id', $user);
             })->get();
 
-            $validSchedule = ScheduleService::scheduleValidation($schedules, $user);
+            $appointmentSchedules = Schedule::whereIn('id', function ($query) use ($user) {
+                $query->select('schedule_id')
+                    ->from('appointments')
+                    ->where('client_id', $user);
+            })->get();
+
+            $validSchedule = ScheduleService::scheduleValidation($schedules, $user, $appointmentSchedules);
 
             if (!$validSchedule) {
                 throw new Exception('Invalid schedule');
             }
 
-            $schedules->each(function ($schedule) use ($user){
+            $schedules->each(function ($schedule) use ($user) {
                 $this->blockModel->block(config('constants.db.blocked.minutes'), $user, $schedule);
             });
 
@@ -201,7 +244,8 @@ class CartController extends Controller
     /**
      * Create order and get payment button with link and data for pay order
      */
-    public function getPayButton(OrderCreateRequest $request, string $user)
+    public
+    function getPayButton(OrderCreateRequest $request, string $user)
     {
         try {
             $params = $request->validated();
@@ -209,7 +253,7 @@ class CartController extends Controller
 
             $carts = $this->index($userId)->original['data'];
 
-            if (is_null($carts)) {
+            if (empty($carts['items'])) {
                 throw new Exception('Cart is empty');
             }
 
@@ -221,12 +265,17 @@ class CartController extends Controller
                     ->where('client_id', $userId);
             })->get();
 
-            $validSchedule = ScheduleService::scheduleValidation($schedules, $userId);
+            $appointmentSchedules = Schedule::whereIn('id', function ($query) use ($user) {
+                $query->select('schedule_id')
+                    ->from('appointments')
+                    ->where('client_id', $user);
+            })->get();
+
+            $validSchedule = ScheduleService::scheduleValidation($schedules, $userId, $appointmentSchedules);
 
             if (!$validSchedule) {
                 throw new Exception('Invalid schedule');
             }
-
 
             foreach ($schedules as $schedule) {
                 if (is_null($schedule->blocked_by) ||
@@ -238,7 +287,7 @@ class CartController extends Controller
                 $expired_at = Carbon::createFromDate($schedule->blocked_until, 'Europe/Kiev')->setTimezone('UTC');
             }
 
-            $total = TotalService::total($carts['items'], $params['payment']);
+            $total = TotalService::total($carts['items'], $appointmentSchedules, $params['payment']);
 
             if (is_null($total)) {
                 throw new Exception('Total sum error');
@@ -247,7 +296,7 @@ class CartController extends Controller
             $orderParams = [
                 'user_id' => $userId,
                 'total' => $total['totalSum'],
-                'payment' => $params['payment']
+                'payment' => $params['payment'],
             ];
             $order = Order::create($orderParams);
 

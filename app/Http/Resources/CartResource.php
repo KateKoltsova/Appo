@@ -30,8 +30,20 @@ class CartResource extends JsonResource
             'status' => $this->status
         ];
 
-        if (!ScheduleService::isAvailable($this->resource, $this->user()->first()->id)) {
+        $userId = $this->user()->first()->id;
+        $thisSchedule = $this->resource;
+
+        $appointments = $this->user()->first()->appointments()->get();
+
+        $appointmentSchedulesValidation = $appointments->every(function ($appointment) use ($userId, $thisSchedule) {
+            $schedule = $appointment->schedule()->first();
+            return ScheduleService::isValidDateTime($thisSchedule, $schedule);
+        });
+
+        if (!ScheduleService::isAvailable($thisSchedule, $userId)) {
             $cart['message'] = 'Schedule already unavailable';
+        } elseif (!$appointmentSchedulesValidation) {
+            $cart['message'] = 'You can\'t make appointment to that date time';
         }
 
         return $cart;

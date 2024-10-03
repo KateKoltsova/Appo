@@ -28,7 +28,7 @@ import {createRouter, createWebHistory} from 'vue-router';
 const routes = [
     {
         path: "/login",
-        component: () => import("../components/pages/LoginPage.vue"),
+        component: () => import("../pages/LoginPage.vue"),
     },
     // {
     //     path: "/register",
@@ -48,7 +48,7 @@ const routes = [
         children: [
             {
                 path: "",
-                component: () => import("../components/pages/UserPage.vue"),
+                component: () => import("../pages/UserProfile.vue"),
             },
     //         {
     //             path: "appointments",

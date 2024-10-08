@@ -1,27 +1,28 @@
 {
   "resources/js/app.js": {
-    "file": "assets/app.ccb8f526.js",
+    "file": "assets/app.50c87d8e.js",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
       "resources/js/pages/LoginPage.vue",
-      "resources/js/pages/UserProfile.vue"
+      "resources/js/pages/UserProfile.vue",
+      "resources/js/pages/BookingPage.vue"
     ],
     "css": [
-      "assets/app.fe97c7fd.css"
+      "assets/app.75242b62.css"
     ]
   },
   "resources/js/pages/LoginPage.vue": {
-    "file": "assets/LoginPage.11d897c0.js",
+    "file": "assets/LoginPage.18ea7788.js",
     "src": "resources/js/pages/LoginPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_LoadingSpinner.f87b9d35.js"
+      "_LoadingSpinner.3b2823d8.js"
     ]
   },
-  "_LoadingSpinner.f87b9d35.js": {
-    "file": "assets/LoadingSpinner.f87b9d35.js",
+  "_LoadingSpinner.3b2823d8.js": {
+    "file": "assets/LoadingSpinner.3b2823d8.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -30,28 +31,44 @@
     ]
   },
   "resources/js/pages/UserProfile.vue": {
-    "file": "assets/UserProfile.b96a8328.js",
+    "file": "assets/UserProfile.b7697fec.js",
     "src": "resources/js/pages/UserProfile.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_LoadingSpinner.f87b9d35.js"
+      "_LoadingSpinner.3b2823d8.js"
     ],
     "css": [
       "assets/UserProfile.f59e1caa.css"
     ]
   },
-  "LoadingSpinner.css": {
-    "file": "assets/LoadingSpinner.2b1dfff9.css",
-    "src": "LoadingSpinner.css"
-  },
-  "resources/js/app.css": {
-    "file": "assets/app.fe97c7fd.css",
-    "src": "resources/js/app.css"
+  "resources/js/pages/BookingPage.vue": {
+    "file": "assets/BookingPage.0df5782b.js",
+    "src": "resources/js/pages/BookingPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_LoadingSpinner.3b2823d8.js"
+    ],
+    "css": [
+      "assets/BookingPage.13a55297.css"
+    ]
   },
   "resources/js/pages/UserProfile.css": {
     "file": "assets/UserProfile.f59e1caa.css",
     "src": "resources/js/pages/UserProfile.css"
+  },
+  "resources/js/pages/BookingPage.css": {
+    "file": "assets/BookingPage.13a55297.css",
+    "src": "resources/js/pages/BookingPage.css"
+  },
+  "resources/js/app.css": {
+    "file": "assets/app.75242b62.css",
+    "src": "resources/js/app.css"
+  },
+  "LoadingSpinner.css": {
+    "file": "assets/LoadingSpinner.2b1dfff9.css",
+    "src": "LoadingSpinner.css"
   },
   "resources/sass/app.scss": {
     "file": "assets/app.59ae0e18.css",

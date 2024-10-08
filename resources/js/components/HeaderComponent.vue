@@ -1,11 +1,20 @@
 <script setup>
-import {onMounted, onUnmounted, ref, watchEffect} from 'vue';
+import {onMounted, onUnmounted, ref, watch, watchEffect} from 'vue';
 import { useRouter } from 'vue-router';
+import {useAuthWatcher, isAuthenticated} from '../localstorage';
 
 const token = ref('');
 const userId = ref('');
 const router = useRouter();
 const iconClass = ref('fa-solid fa-right-to-bracket');
+
+useAuthWatcher();
+
+watch(isAuthenticated, (newVal) => {
+    iconClass.value = newVal
+        ? 'fa-regular fa-circle-user'
+        : 'fa-solid fa-right-to-bracket';
+});
 
 const checkUser = () => {
     token.value = localStorage.getItem('accessToken');
@@ -13,7 +22,7 @@ const checkUser = () => {
 };
 
 const handleClick = () => {
-    if (token.value && userId.value) {
+    if (isAuthenticated.value) {
         router.push('/profile');
     } else {
         router.push('/login');
@@ -31,20 +40,20 @@ const handleStorageChange = () => {
     }
 };
 
-watchEffect(() => {
-    iconClass.value = token.value && userId.value
-        ? 'fa-regular fa-circle-user'
-        : 'fa-solid fa-right-to-bracket';
-});
+// watchEffect(() => {
+//     iconClass.value = token.value && userId.value
+//         ? 'fa-regular fa-circle-user'
+//         : 'fa-solid fa-right-to-bracket';
+// });
 
-onMounted(() => {
-    checkUser();
-    window.addEventListener('storage', handleStorageChange);
-});
-
-onUnmounted(() => {
-    window.removeEventListener('storage', handleStorageChange);
-});
+// onMounted(() => {
+//     checkUser();
+//     window.addEventListener('storage', handleStorageChange);
+// });
+//
+// onUnmounted(() => {
+//     window.removeEventListener('storage', handleStorageChange);
+// });
 </script>
 
 <template>

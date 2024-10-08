@@ -13,7 +13,7 @@ export const getSchedules = async (selectedDate = null) => {
         }
       };
     }
-    
+
     return await apiClient({
       url: urls.schedules.availableSchedules.url,
       method: "GET",

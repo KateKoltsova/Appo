@@ -1,5 +1,7 @@
-import {onMounted, onBeforeUnmount} from 'vue';
+import {onMounted, onBeforeUnmount, ref} from 'vue';
 import {useRouter} from 'vue-router';
+
+export const isAuthenticated = ref(false);
 
 export function useAuthWatcher() {
     const router = useRouter();
@@ -15,7 +17,10 @@ export function useAuthWatcher() {
         // Проверка на отсутствие значения или его изменение
         if (!userId || !accessToken || userId !== lastUserId || accessToken !== lastAccessToken) {
             localStorage.clear();
+            isAuthenticated.value = false;
             router.push('/login');
+        } else {
+            isAuthenticated.value = true;
         }
     };
 

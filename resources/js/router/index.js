@@ -94,10 +94,10 @@ const routes = [
     //     path: "/services",
     //     component: ServicesPage,
     // },
-    // {
-    //     path: "/availableSchedules",
-    //     component: AvailableSchedulesPage,
-    // },
+    {
+        path: "/booking",
+        component: () => import("../pages/BookingPage.vue"),
+    },
     // {
     //     path: '/:pathMatch(.*)*',
     //     component: NotFoundPage

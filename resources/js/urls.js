@@ -57,11 +57,11 @@ const urls = {
     //     all: (userId) => `${v1}/${users}/${userId}/${prices}`,
     //     byId: (userId, priceId) => `${v1}/${users}/${userId}/${prices}/${priceId}`,
     // },
-    // schedules: {
-    //     availableSchedules: `${v1}/${schedules}`,
+    schedules: {
+        availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false}
     //     all: (userId) => `${v1}/${users}/${userId}/${schedules}`,
     //     byId: (userId, scheduleId) => `${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
-    // },
+    },
     // appointments: {
     //     all: (userId) => `${v1}/${users}/${userId}/${appointments}`,
     //     byId: (userId, appointmentId) => `${v1}/${users}/${userId}/${appointments}/${appointmentId}`,

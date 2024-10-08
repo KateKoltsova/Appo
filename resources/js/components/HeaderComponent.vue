@@ -20,6 +20,10 @@ const handleClick = () => {
     }
 };
 
+const handleBookingClick = () => {
+    router.push('/booking');
+};
+
 const handleStorageChange = () => {
     checkUser();
     if (!token.value || !userId.value) {
@@ -49,6 +53,9 @@ onUnmounted(() => {
             <div class="user-actions">
                 <button @click="handleClick">
                     <i :class="iconClass"></i>
+                </button>
+                <button @click="handleBookingClick" class="booking-button">
+                    Booking
                 </button>
             </div>
         </nav>
@@ -87,5 +94,19 @@ onUnmounted(() => {
 
 .user-actions button:hover {
     color: #ddd;
+}
+
+.booking-button {
+    margin-left: 20px;
+    padding: 10px 20px;
+    background-color: #28a745;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.booking-button:hover {
+    background-color: #218838;
 }
 </style>

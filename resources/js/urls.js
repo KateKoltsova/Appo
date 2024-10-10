@@ -29,18 +29,18 @@ const button = "button";
 
 const urls = {
     auth: {
-        register: {url: `${api}/${register}`, auth: false},
-        login: {url: `${api}/${login}`, auth: false},
-        refresh: {url: `${api}/${refresh}`, auth: false},
-        logout: {url: `${api}/${logout}`, auth: false},
-        logoutAll: {url: `${api}/${logoutAll}`, auth: false},
-        forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},
-        resetPassword: {url: `${api}/${resetPassword}`, auth: false},
-        changePassword: {url: `${api}/${changePassword}`, auth: false},
+        register: { url: `${api}/${register}`, auth: false },
+        login: { url: `${api}/${login}`, auth: false },
+        refresh: { url: `${api}/${refresh}`, auth: false },
+        logout: { url: `${api}/${logout}`, auth: false },
+        logoutAll: { url: `${api}/${logoutAll}`, auth: false },
+        forgotPassword: { url: `${api}/${forgotPassword}`, auth: false },
+        resetPassword: { url: `${api}/${resetPassword}`, auth: false },
+        changePassword: { url: `${api}/${changePassword}`, auth: false },
     },
     users: {
-        all: {url: `${api}/${v1}/${users}`, auth: true},
-        byId: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true}
+        all: { url: `${api}/${v1}/${users}`, auth: true },
+        byId: { url: (id) => `${api}/${v1}/${users}/${id}`, auth: true }
     },
     // avatar: {
     //     byUserId: (userId) => `${v1}/${users}/${userId}/${avatar}`,
@@ -49,27 +49,27 @@ const urls = {
     //     all: (userId) => `${v1}/${users}/${userId}/${gallery}`,
     //     byId: (userId, galleryId) => `${v1}/${users}/${userId}/${gallery}/${galleryId}`,
     // },
-    // services: {
-    //     all: `${v1}/${services}`,
-    //     byId: (id) => `${v1}/${services}/${id}`,
-    // },
+    services: {
+        all: { url: `${api}/${v1}/${services}`, auth: false },
+        //     byId: (id) => `${v1}/${services}/${id}`,
+    },
     // prices: {
     //     all: (userId) => `${v1}/${users}/${userId}/${prices}`,
     //     byId: (userId, priceId) => `${v1}/${users}/${userId}/${prices}/${priceId}`,
     // },
     schedules: {
-        availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false}
-    //     all: (userId) => `${v1}/${users}/${userId}/${schedules}`,
-    //     byId: (userId, scheduleId) => `${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
+        availableSchedules: { url: `${api}/${v1}/${schedules}`, auth: false }
+        //     all: (userId) => `${v1}/${users}/${userId}/${schedules}`,
+        //     byId: (userId, scheduleId) => `${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
     // appointments: {
     //     all: (userId) => `${v1}/${users}/${userId}/${appointments}`,
     //     byId: (userId, appointmentId) => `${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
     // },
     carts: {
-        add: {url: (id) => `${api}/${v1}/${users}/${id}/${carts}`, auth: true}
-    //     all: (userId) => `${v1}/${users}/${userId}/${carts}`,
-    //     byId: (userId, cartId) => `${v1}/${users}/${userId}/${carts}/${cartId}`,
+        add: { url: (id) => `${api}/${v1}/${users}/${id}/${carts}`, auth: true }
+        //     all: (userId) => `${v1}/${users}/${userId}/${carts}`,
+        //     byId: (userId, cartId) => `${v1}/${users}/${userId}/${carts}/${cartId}`,
     },
     // checkout: {
     //     all: (userId) => `${v1}/${users}/${userId}/${checkout}`,
@@ -79,4 +79,4 @@ const urls = {
     // },
 };
 
-export {urls};
+export { urls };

@@ -1,12 +1,16 @@
 <script setup>
-import {ref} from "vue";
+import { ref } from "vue";
 import DateCarousel from "../components/DateCarousel.vue";
-import {getSchedules} from "../services/ScheduleService.js";
+import { getSchedules } from "../services/ScheduleService.js";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
+import { AvailableScheduleModel } from "../models/AvailableScheduleModel.js";
+import { add } from "../services/CartService.js";
 
 const isLoading = ref(false);
-const schedules = ref([]);
-const masters = ref([]);
+
+const availableSchedules = ref([]);
+const avSchedules = ref([]);
+
 const selectedService = ref({});
 const selectedPrice = ref({});
 
@@ -15,10 +19,25 @@ const handleDateSelection = async (selectedDate) => {
     isLoading.value = true;
     const response = await getSchedules(selectedDate);
     if (response.status == 200) {
-        const data = await response.data.data;
-        masters.value = data;
+      const data = await response.data.data;
+      avSchedules.value = data.flatMap((master) => {
+        return master.schedules.map((schedule) => {
+          return Object.assign({}, AvailableScheduleModel, {
+            schedule_id: schedule.schedule_id,
+            date_time: schedule.date_time,
+            status: schedule.status,
+            master_id: master.master_id,
+            master_firstname: master.master_firstname,
+            master_lastname: master.master_lastname,
+            prices: master.prices,
+          });
+        });
+      });
+      availableSchedules.value = avSchedules.value.sort((a, b) => {
+        return new Date(a.date_time) - new Date(b.date_time);
+      });
     } else {
-        console.error('Ошибка получения доступного расписания', error);
+      console.error('Ошибка получения доступного расписания', error);
     }
   } catch (error) {
     console.error("Ошибка получения расписаний:", error);
@@ -35,17 +54,38 @@ const formatTime = (dateTime) => {
 };
 
 // Функция для обновления цены
-const updatePrice = (masterId) => {
-  const selected = selectedService.value[masterId];
-  const master = masters.value.find((m) => m.master_id === masterId);
-  const priceInfo = master.prices.find((price) => price.title === selected);
-  selectedPrice.value[masterId] = priceInfo ? priceInfo.price : undefined;
+const showPrice = (scheduleId) => {
+  const selected = selectedService.value[scheduleId];
+  const schedule = availableSchedules.value.find((s) => s.schedule_id === scheduleId);
+  const priceInfo = schedule.prices.find((price) => price.price_id === selected);
+  selectedPrice.value[scheduleId] = priceInfo ? priceInfo : undefined;
 };
 
 // Функция для добавления в корзину
-const addToCart = (masterId) => {
-  console.log(
-    `Добавлено в корзину: Мастер ID ${masterId}, Услуга ${selectedService.value[masterId]}`
+const addToCart = (scheduleId) => {
+  const serviceId = selectedPrice.value[scheduleId].service_id;
+  const priceId = selectedPrice.value[scheduleId].price;
+
+  let item = {
+    schedule_id: scheduleId,
+    service_id: serviceId,
+    price_id: priceId
+  };
+  const userId = localStorage.getItem('userId');
+  if (userId != null) {
+    add(userId);
+  } else {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const isItemInCart = cart.some(cartItem => cartItem.schedule_id === item.schedule_id);
+    if (!isItemInCart) {
+      cart.push(item);
+      localStorage.setItem('cart', JSON.stringify(cart));
+    } else {
+        console.log('Это время уже добавлено в корзину');
+    }
+  }
+
+  console.log(`Добавлено в корзину: Расписание ID ${scheduleId}, Услуга ID ${serviceId}, Цена ID ${priceId}`
   );
 };
 </script>
@@ -54,45 +94,32 @@ const addToCart = (masterId) => {
   <div>
     <DateCarousel @dateSelection="handleDateSelection" />
     <LoadingSpinner :isLoading="isLoading" />
-    <div v-if="masters.length">
-      <div v-for="master in masters" :key="master.master_id">
-        <div
-          v-for="schedule in master.schedules"
-          :key="schedule.schedule_id"
-          class="card"
-        >
-          <div class="card-container">
-            <div class="card-header">
-              <div class="master-info">
-                <h2 class="first-name">{{ master.master_firstname }}</h2>
-                <h3 class="last-name">{{ master.master_lastname }}</h3>
-              </div>
-              <div class="schedule">
-                <span class="time">{{ schedule.date_time }}</span>
-              </div>
+    <div v-if="availableSchedules.length">
+      <div v-for="schedule in availableSchedules" :key="schedule.schedule_id" class="card">
+        <div class="card-container">
+          <div class="card-header">
+            <div class="master-info">
+              <h2 class="first-name">{{ schedule.master_firstname }}</h2>
+              <h3 class="last-name">{{ schedule.master_lastname }}</h3>
             </div>
-            <div class="service-selection">
-              <label for="services">Выберите услугу:</label>
-              <select
-                v-model="selectedService[master.master_id]"
-                @change="updatePrice(master.master_id)"
-              >
-                <option disabled value="">-- Выберите услугу --</option>
-                <option
-                  v-for="price in master.prices"
-                  :key="price.price_id"
-                  :value="price.title"
-                >
-                  {{ price.title }}
-                </option>
-              </select>
-              <span v-if="selectedPrice[master.master_id] !== undefined">
-                {{ selectedPrice[master.master_id] }} грн.
-              </span>
-              <button @click="addToCart(master.master_id)">
-                Добавить в корзину
-              </button>
+            <div class="schedule">
+              <span class="time">{{ schedule.date_time }}</span>
             </div>
+          </div>
+          <div class="service-selection">
+            <label for="services">Выберите услугу:</label>
+            <select v-model="selectedService[schedule.schedule_id]" @change="showPrice(schedule.schedule_id)">
+              <option disabled value="">-- Выберите услугу --</option>
+              <option v-for="price in schedule.prices" :key="price.price_id" :value="price.price_id">
+                {{ price.title }}
+              </option>
+            </select>
+            <span v-if="selectedPrice[schedule.schedule_id] !== undefined">
+              {{ selectedPrice[schedule.schedule_id].price }} грн.
+            </span>
+            <button @click="addToCart(schedule.schedule_id)">
+              Добавить в корзину
+            </button>
           </div>
         </div>
       </div>

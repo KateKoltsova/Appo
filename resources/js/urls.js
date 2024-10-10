@@ -66,10 +66,11 @@ const urls = {
     //     all: (userId) => `${v1}/${users}/${userId}/${appointments}`,
     //     byId: (userId, appointmentId) => `${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
     // },
-    // carts: {
+    carts: {
+        add: {url: (id) => `${api}/${v1}/${users}/${id}/${carts}`, auth: true}
     //     all: (userId) => `${v1}/${users}/${userId}/${carts}`,
     //     byId: (userId, cartId) => `${v1}/${users}/${userId}/${carts}/${cartId}`,
-    // },
+    },
     // checkout: {
     //     all: (userId) => `${v1}/${users}/${userId}/${checkout}`,
     // },

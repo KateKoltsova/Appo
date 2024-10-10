@@ -23,14 +23,26 @@ class ServiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // TODO: Refactor response to services into categories
         try {
-            $services = Service::get(['id', 'title', 'description', 'image_url', 'category']);
-            $categories = $services->pluck('category')->unique();
+            $categories = Service::select('category')->distinct()->get();
+            $filters['category'] = $request->input('filter.category');
+            $services = Service::select([
+                'id',
+                'title',
+                'description',
+                'image_url',
+                'category'
+                ])
+                ->when($filters['category'], function ($query) use ($filters) {
+                    $query->whereIn('category', $filters['category']);
+                })
+                ->get();
+            // $categories = $services->pluck('category')->unique();
             return response()->json(['data' => [
-                'categories' => array_values($categories->toArray()),
+                'categories' => array_column($categories->toArray(), 'category'),
                 'services' => $services->toArray()
             ]
             ]);

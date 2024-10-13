@@ -21,7 +21,7 @@ const selectedCategories = ref([]);
 const selectedService = ref(null);
 
 const isModalOpen = ref(false);
-const currentMasterId = ref(null);
+const selectedMaster = ref(null);
 
 onMounted(async () => {
     getServices();
@@ -144,13 +144,13 @@ const addToStorage = (item) => {
 }
 
 const handleAvatarClick = (masterId) => {
-    currentMasterId.value = masterId;
+    selectedMaster.value = masterId;
     isModalOpen.value = true;
 };
 
 const closeModal = () => {
     isModalOpen.value = false;
-    currentMasterId.value = null;
+    selectedMaster.value = null;
 };
 </script>
 
@@ -237,7 +237,7 @@ const closeModal = () => {
                     <button @click="addToCart(schedule)">Добавить в корзину</button>
                     <ProfileModal
                         v-if="isModalOpen"
-                        :masterId="currentMasterId"
+                        :masterId="selectedMaster"
                         @close="closeModal"
                     />
                 </div>

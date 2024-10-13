@@ -43,39 +43,39 @@ const urls = {
         byId: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true}
     },
     // avatar: {
-    //     byUserId: (userId) => `${v1}/${users}/${userId}/${avatar}`,
+    //     byUserId: (userId) => `${api}/${v1}/${users}/${userId}/${avatar}`,
     // },
     // gallery: {
-    //     all: (userId) => `${v1}/${users}/${userId}/${gallery}`,
-    //     byId: (userId, galleryId) => `${v1}/${users}/${userId}/${gallery}/${galleryId}`,
+    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${gallery}`,
+    //     byId: (userId, galleryId) => `${api}/${v1}/${users}/${userId}/${gallery}/${galleryId}`,
     // },
     services: {
         all: {url: `${api}/${v1}/${services}`, auth: false},
-        //     byId: (id) => `${v1}/${services}/${id}`,
+        //     byId: (id) => `${api}/${v1}/${services}/${id}`,
     },
     // prices: {
-    //     all: (userId) => `${v1}/${users}/${userId}/${prices}`,
-    //     byId: (userId, priceId) => `${v1}/${users}/${userId}/${prices}/${priceId}`,
+    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${prices}`,
+    //     byId: (userId, priceId) => `${api}/${v1}/${users}/${userId}/${prices}/${priceId}`,
     // },
     schedules: {
         availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false}
-        //     all: (userId) => `${v1}/${users}/${userId}/${schedules}`,
-        //     byId: (userId, scheduleId) => `${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
+        //     all: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`,
+        //     byId: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
     // appointments: {
-    //     all: (userId) => `${v1}/${users}/${userId}/${appointments}`,
-    //     byId: (userId, appointmentId) => `${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
+    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${appointments}`,
+    //     byId: (userId, appointmentId) => `${api}/${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
     // },
     carts: {
         add: {url: (id) => `${api}/${v1}/${users}/${id}/${carts}`, auth: true},
-        all: {url: (userId) => `${v1}/${users}/${userId}/${carts}`, auth: true},
-        delete: {url: (userId, cartId) => `${v1}/${users}/${userId}/${carts}/${cartId}`, auth: true},
+        all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${carts}`, auth: true},
+        delete: {url: ({userId, itemId}) => `${api}/${v1}/${users}/${userId}/${carts}/${itemId}`, auth: true},
     },
     // checkout: {
-    //     all: (userId) => `${v1}/${users}/${userId}/${checkout}`,
+    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${checkout}`,
     // },
     // payButton: {
-    //     all: (userId) => `${v1}/${users}/${userId}/${button}`,
+    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${button}`,
     // },
 };
 

@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, onUnmounted, ref, watch, watchEffect} from 'vue';
-import { useRouter } from 'vue-router';
+import {useRouter} from 'vue-router';
 import {useAuthWatcher, isAuthenticated} from '../localstorage';
 
 const token = ref('');

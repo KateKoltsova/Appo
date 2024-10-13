@@ -60,7 +60,7 @@ const login = async () => {
             </div>
             <button type="submit">Войти</button>
         </form>
-        <LoadingSpinner :isLoading="isLoading" />
+        <LoadingSpinner :isLoading="isLoading"/>
     </div>
 </template>
 

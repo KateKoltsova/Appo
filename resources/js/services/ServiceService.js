@@ -1,5 +1,5 @@
 import apiClient from "../apiClient";
-import { urls } from "../urls";
+import {urls} from "../urls";
 
 export const getAll = async (selectedCategories = null) => {
     try {

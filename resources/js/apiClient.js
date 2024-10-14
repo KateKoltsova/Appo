@@ -2,6 +2,7 @@ import axios from 'axios';
 import {urls} from './urls.js';
 
 const apiClient = axios.create({
+    baseURL: `${window.location.origin}`,
     headers: {
         'Content-Type': 'application/json',
     },

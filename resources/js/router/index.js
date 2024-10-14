@@ -80,16 +80,16 @@ const routes = [
     //         }
         ]
     },
-    // {
-    //     path: "/cart",
-    //     component: CartPage,
-    //     children: [
-    //         {
-    //             path: "checkout",
-    //             component: CheckoutPage,
-    //         }
-    //     ],
-    // },
+    {
+        path: "/cart",
+        // component: CartPage,
+        children: [
+            {
+                path: "checkout",
+                component: () => import("../pages/CheckoutPage.vue")
+            }
+        ],
+    },
     // {
     //     path: "/services",
     //     component: ServicesPage,

@@ -54,6 +54,13 @@ const handleCartClick = async () => {
     }
 };
 
+const handleCheckoutClick = async () => {
+    isLoading.value = true;
+    isCartModalOpen.value = false;
+    router.push("/cart/checkout");
+    isLoading.value = false;
+};
+
 const getCartItems = async () => {
     try {
         isLoading.value = true;
@@ -69,13 +76,15 @@ const getCartItems = async () => {
 
 const removeItem = async (itemId) => {
     try {
+        isLoading.value = true;
         const userId = localStorage.getItem("userId");
         await remove(userId, itemId);
-        cart.value.items = cart.value.items.filter(item => item.id !== itemId);
+        cart.value.items = cart.value.items.filter((item) => item.id !== itemId);
         checkErrorItems();
     } catch (error) {
-        console.error('Ошибка удаления элемента:', error);
+        console.error("Ошибка удаления элемента:", error);
     }
+    isLoading.value = false;
 };
 
 const checkErrorItems = () => {
@@ -84,6 +93,7 @@ const checkErrorItems = () => {
 </script>
 
 <template>
+    <LoadingSpinner :isLoading="isLoading" />
     <header class="site-header">
         <nav>
             <div class="user-actions">
@@ -102,8 +112,6 @@ const checkErrorItems = () => {
     <div v-if="isCartModalOpen" class="cart-modal">
         <div class="cart-modal-content">
             <h2>Корзина</h2>
-            <LoadingSpinner :isLoading="isLoading"/>
-
             <ul>
                 <li v-for="item in cart.items" :key="item.id">
                     <div class="cart-item-card" :class="{'error-item': item.message}">
@@ -126,7 +134,11 @@ const checkErrorItems = () => {
                 <p>Итоговая сумма: {{ cart.totalSum }} ГРН</p>
             </div>
 
-            <button class="checkout-button" :disabled="hasErrorItems">
+            <button
+                class="checkout-button"
+                :disabled="hasErrorItems"
+                @click="handleCheckoutClick"
+            >
                 Оформить заказ
             </button>
         </div>

@@ -71,12 +71,12 @@ const urls = {
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${carts}`, auth: true},
         delete: {url: ({userId, itemId}) => `${api}/${v1}/${users}/${userId}/${carts}/${itemId}`, auth: true},
     },
-    // checkout: {
-    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${checkout}`,
-    // },
-    // payButton: {
-    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${button}`,
-    // },
+    checkout: {
+        all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${checkout}`, auth:true},
+    },
+    payButton: {
+        all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${button}`, auth:true},
+    },
 };
 
 export {urls};

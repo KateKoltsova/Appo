@@ -119,7 +119,7 @@ class CartController extends Controller
             $response = $this->cartService->getPayButton($params, $user);
             return response()->json($response);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?? 500);
         }
     }
 }

@@ -205,9 +205,10 @@ class CartService
             ];
             $order = Order::create($orderParams);
 
+            $schedulesChecked->load('user');
             $description = 'Pay for beauty services:';
             foreach ($schedulesChecked as $item) {
-                $description .= ", \n" . $item->date_time . '-' . $item->user()->first_name . $item->user()->last_name;
+                $description .= ", \n" . $item->date_time . '-' . $item->user->firstname . $item->user->lastname;
             }
 
             $resultUrl = $params['result_url'];

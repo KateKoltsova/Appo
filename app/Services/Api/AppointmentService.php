@@ -50,7 +50,7 @@ class AppointmentService
 
             $order->update([
                 'payment_status' => $decodedData['status'],
-                'description' => $decodedData['err_description'],
+                'description' => $decodedData,
             ]);
 
             if ($order->payment_status != 'success') {

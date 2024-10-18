@@ -6,7 +6,9 @@ import {useAuthWatcher} from '../localstorage';
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {UserModel} from "../models/UserModel.js";
 import UserForm from "../components/UserForm.vue";
+import UserAppointments from "../components/UserAppointments.vue";
 
+const activeTab = ref("profile");
 const user = ref({...UserModel});
 const editedUser = reactive({...UserModel});
 const isLoading = ref(false);
@@ -34,6 +36,10 @@ onMounted(async () => {
     }
     isLoading.value = false;
 });
+
+const selectTab = (tab) => {
+    activeTab.value = tab;
+};
 
 const assignUserData = (data) => {
     Object.assign(user.value, data);
@@ -73,14 +79,73 @@ const editUser = async () => {
 </script>
 
 <template>
-    <div>
-        <LoadingSpinner :isLoading="isLoading"/>
-        <h2>Hello, user {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
-        <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser"/>
+    <div class="profile-container">
+        <LoadingSpinner :isLoading="isLoading" />
+        <div class="profile-card">
+            <nav class="side-tabs">
+                <ul>
+                    <li :class="{ active: activeTab === 'profile' }" @click="selectTab('profile')">
+                        Профиль
+                    </li>
+                    <li :class="{ active: activeTab === 'appointments' }" @click="selectTab('appointments')">
+                        Записи
+                    </li>
+                </ul>
+            </nav>
+            <div class="tab-content">
+                <div v-if="activeTab === 'profile'">
+                    <h2>Hello, user {{ user.id }} {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
+                    <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser" />
+                </div>
+
+                <div v-if="activeTab === 'appointments'">
+                    <h2>Ваши записи</h2>
+                    <UserAppointments :userId="user?.id" />
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
+.profile-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
 
+.profile-card {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: white;
+    width: 80%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.side-tabs {
+    width: 200px;
+    margin-right: 20px;
+}
+
+.side-tabs ul {
+    list-style: none;
+    padding: 0;
+}
+
+.side-tabs li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+.side-tabs li.active {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.tab-content {
+    flex: 1;
+}
 </style>
-

@@ -1,7 +1,8 @@
 <script setup>
-import {ref, onMounted, watch} from "vue";
+import {ref, onMounted, watch, nextTick} from "vue";
 import {useRoute} from "vue-router";
 import {checkout, payButton} from "../services/CartService";
+import {paymentProcess} from "../services/AppointmentService";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 
 const isLoading = ref(false);
@@ -12,6 +13,7 @@ const orderData = ref({
 });
 const paymentType = ref('full');
 const paymentButton = ref('');
+const orderId = ref(null);
 const userId = localStorage.getItem("userId");
 const route = useRoute();
 
@@ -36,6 +38,15 @@ const generatePaymentButton = async (paymentType) => {
         isLoading.value = true;
         const response = await payButton(userId, paymentType);
         paymentButton.value = response.data.data.html_button;
+        orderId.value = response.data.data.order_id;
+
+        await nextTick(() => {
+            const formElement = document.querySelector('form[action="https://www.liqpay.ua/api/3/checkout"]');
+            if (formElement) {
+                formElement.removeEventListener('submit', handlePaymentSubmit);
+                formElement.addEventListener('submit', handlePaymentSubmit);
+            }
+        });
     } catch (error) {
         console.error("Ошибка при генерации кнопки оплаты:", error);
     }
@@ -45,6 +56,26 @@ const generatePaymentButton = async (paymentType) => {
 watch(paymentType, (newPaymentType) => {
     generatePaymentButton(newPaymentType);
 });
+
+const handlePaymentSubmit = async (event) => {
+    event.preventDefault();
+    try {
+        const response = await sendUserAppointmentsRequest();
+        if (response.status === 200) {
+            event.target.submit();
+        }        
+    } catch (error) {
+        console.error('Ошибка при получении записей пользователя', error);
+    }
+};
+
+const sendUserAppointmentsRequest = async () => {
+    try {
+        return await paymentProcess(userId, orderId.value);
+    } catch (error) {
+        console.error('Ошибка при получении записей пользователя', error);
+    }
+};
 </script>
 
 <template>

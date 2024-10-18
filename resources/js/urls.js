@@ -62,10 +62,11 @@ const urls = {
         //     all: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`,
         //     byId: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
-    // appointments: {
-    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${appointments}`,
-    //     byId: (userId, appointmentId) => `${api}/${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
-    // },
+    appointments: {
+        all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${appointments}`, auth: true},
+        create: {url: (userId) => `${api}/${v1}/${users}/${userId}/${appointments}`, auth: true},
+        // byId: (userId, appointmentId) => `${api}/${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
+    },
     carts: {
         add: {url: (id) => `${api}/${v1}/${users}/${id}/${carts}`, auth: true},
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${carts}`, auth: true},

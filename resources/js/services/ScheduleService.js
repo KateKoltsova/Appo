@@ -2,7 +2,7 @@ import apiClient from "../apiClient";
 import {urls} from "../urls";
 
 // Получение доступного расписания
-export const getSchedules = async (
+export const getAvailableSchedules = async (
     selectedDate = null,
     selectedCategories = null,
     selectedService = null
@@ -44,4 +44,16 @@ const formatDate = (date) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+};
+
+export const getSchedules = async (userId) => {
+    try {
+        return await apiClient({
+            url: urls.schedules.all.url(userId),
+            method: "GET",
+        });
+    } catch (error) {
+        console.error("Ошибка получения доступного расписания", error);
+        throw error;
+    }
 };

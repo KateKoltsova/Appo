@@ -1,7 +1,7 @@
 <script setup>
 import {ref, watch, onMounted} from "vue";
 import DateCarousel from "../components/DateCarousel.vue";
-import {getSchedules} from "../services/ScheduleService.js";
+import {getAvailableSchedules} from "../services/ScheduleService.js";
 import {getAll} from "../services/ServiceService.js";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {AvailableScheduleModel} from "../models/AvailableScheduleModel.js";
@@ -67,7 +67,7 @@ const handleDateSelection = async (date) => {
     selectedDate.value = date;
     try {
         isLoading.value = true;
-        const response = await getSchedules(
+        const response = await getAvailableSchedules(
             selectedDate.value,
             selectedCategories.value,
             selectedService.value

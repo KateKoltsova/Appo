@@ -58,8 +58,8 @@ const urls = {
     //     byId: (userId, priceId) => `${api}/${v1}/${users}/${userId}/${prices}/${priceId}`,
     // },
     schedules: {
-        availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false}
-        //     all: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`,
+        availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false},
+        all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`, auth: true},
         //     byId: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
     appointments: {

@@ -7,6 +7,8 @@ import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {UserModel} from "../models/UserModel.js";
 import UserForm from "../components/UserForm.vue";
 import UserAppointments from "../components/UserAppointments.vue";
+import ScheduleCalendar from "../components/ScheduleCalendar.vue";
+import DayScheduleCard from "../components/DayScheduleCard.vue";
 
 const activeTab = ref("profile");
 const user = ref({...UserModel});
@@ -90,6 +92,9 @@ const editUser = async () => {
                     <li :class="{ active: activeTab === 'appointments' }" @click="selectTab('appointments')">
                         Записи
                     </li>
+                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'schedules' }" @click="selectTab('schedules')">
+                        Расписание
+                    </li>
                 </ul>
             </nav>
             <div class="tab-content">
@@ -101,6 +106,10 @@ const editUser = async () => {
                 <div v-if="activeTab === 'appointments'">
                     <h2>Ваши записи</h2>
                     <UserAppointments :userId="user?.id" />
+                </div>
+                <div v-if="activeTab === 'schedules'">
+                    <h2>Ваше расписание</h2>
+                    <ScheduleCalendar />
                 </div>
             </div>
         </div>

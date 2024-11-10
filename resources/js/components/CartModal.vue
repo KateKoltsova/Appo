@@ -26,7 +26,7 @@ watch(
 const handleCheckoutClick = async () => {
     isLoading.value = true;
     props.isCartModalOpen = false;
-    router.push("/cart/checkout");
+    await router.push("/cart/checkout");
     isLoading.value = false;
 };
 

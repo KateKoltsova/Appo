@@ -1,10 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { fetchDaySchedule, addDaySchedule, removeDaySchedule } from '../services/ScheduleService.js';
-import ScheduleAppointmentDetails from './ScheduleAppointmentDetails.vue';
+import {ref, onMounted} from "vue";
+import {fetchDaySchedule, addDaySchedule, removeDaySchedule} from "../services/ScheduleService.js";
+import ScheduleAppointmentDetails from "./ScheduleAppointmentDetails.vue";
 
 const props = defineProps(['day', 'userId']);
 const schedules = ref([]);
+
+watch(() => props.day, (newDay) => {
+    if (newDay) {
+        fetchSchedules();
+    }
+});
 
 const fetchSchedules = async () => {
     const response = await fetchDaySchedule(props.userId, props.day.date);
@@ -44,8 +50,7 @@ onMounted(fetchSchedules);
                 </span>
                 <button @click="removeSchedule(schedule.id)">❌</button>
 
-                <!-- Подробности записи клиента -->
-                <ScheduleAppointmentDetails v-if="schedule.showDetails" :appointment="schedule.appointment" />
+                <ScheduleAppointmentDetails v-if="schedule.showDetails" :appointment="schedule.appointment"/>
             </div>
         </div>
     </div>

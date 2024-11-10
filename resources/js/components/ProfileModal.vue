@@ -14,7 +14,6 @@ const masterDetails = ref(null);
 watch(
     () => props.masterId,
     async (newMasterId) => {
-        console.log("Обновленный masterId:", newMasterId);
         if (newMasterId) {
             await getMasterInfo(newMasterId);
         }
@@ -23,10 +22,8 @@ watch(
 
 const getMasterInfo = async (masterId) => {
     try {
-        console.log("Запрос на мастер с ID:", masterId);
         const response = await fetchUserById(masterId);
         if (response.status === 200) {
-            console.log("Данные мастера получены:", response.data);
             masterDetails.value = response.data.data;
         }
     } catch (error) {

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getUserAppointments } from "../services/AppointmentService";
+import LoadingSpinner from "./LoadingSpinner.vue";
 
 const userAppointments = ref([]);
 const isLoading = ref(false);
@@ -13,7 +14,7 @@ const props = defineProps({
 });
 
 onMounted(async () => {
-    fetchUserAppointments(props.userId);
+    await fetchUserAppointments(props.userId);
 });
 
 const fetchUserAppointments = async (userId) => {

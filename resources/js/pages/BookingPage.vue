@@ -124,10 +124,6 @@ const addToCart = async (schedule) => {
     } else {
         addToStorage(item);
     }
-
-    console.log(
-        `Добавлено в корзину: Расписание ID ${item.schedule_id}, Услуга ID ${item.service_id}, Цена ID ${item.price_id}`
-    );
 };
 
 const addToStorage = (item) => {

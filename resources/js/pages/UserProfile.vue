@@ -10,6 +10,7 @@ import UserAppointments from "../components/UserAppointments.vue";
 import ScheduleCalendar from "../components/ScheduleCalendar.vue";
 import DayScheduleCard from "../components/DayScheduleCard.vue";
 
+// const selectedDate = ref(null);
 const activeTab = ref("profile");
 const user = ref({...UserModel});
 const editedUser = reactive({...UserModel});
@@ -82,7 +83,7 @@ const editUser = async () => {
 
 <template>
     <div class="profile-container">
-        <LoadingSpinner :isLoading="isLoading" />
+        <LoadingSpinner :isLoading="isLoading"/>
         <div class="profile-card">
             <nav class="side-tabs">
                 <ul>
@@ -92,7 +93,8 @@ const editUser = async () => {
                     <li :class="{ active: activeTab === 'appointments' }" @click="selectTab('appointments')">
                         Записи
                     </li>
-                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'schedules' }" @click="selectTab('schedules')">
+                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'schedules' }"
+                        @click="selectTab('schedules')">
                         Расписание
                     </li>
                 </ul>
@@ -100,16 +102,16 @@ const editUser = async () => {
             <div class="tab-content">
                 <div v-if="activeTab === 'profile'">
                     <h2>Hello, user {{ user.id }} {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
-                    <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser" />
+                    <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser"/>
                 </div>
 
                 <div v-if="activeTab === 'appointments'">
                     <h2>Ваши записи</h2>
-                    <UserAppointments :userId="user?.id" />
+                    <UserAppointments :userId="user?.id"/>
                 </div>
                 <div v-if="activeTab === 'schedules'">
                     <h2>Ваше расписание</h2>
-                    <ScheduleCalendar />
+                    <ScheduleCalendar :userId="user?.id"/>
                 </div>
             </div>
         </div>

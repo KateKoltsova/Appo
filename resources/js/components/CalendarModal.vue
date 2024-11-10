@@ -96,7 +96,6 @@ watch(
 
 const selectDay = (day) => {
     if (day >= today) {
-        // props.selectedDate.value = new Date(day.value);
         emit("dateSelected", day);
         emit("close");
     }

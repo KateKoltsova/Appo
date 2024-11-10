@@ -46,14 +46,30 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
-export const getSchedules = async (userId) => {
+export const fetchDaySchedule = async (userId, selectedDate = null,) => {
     try {
+        let params = {
+            filter: {
+                date: [],
+            },
+        };
+        if (selectedDate) {
+            const date = formatDate(selectedDate);
+            params.filter.date.push(date);
+        }
         return await apiClient({
             url: urls.schedules.all.url(userId),
             method: "GET",
+            params: params,
         });
     } catch (error) {
-        console.error("Ошибка получения доступного расписания", error);
-        throw error;
+        console.error("Ошибка получения графика", error);
     }
-};
+}
+export const addDaySchedule = () => {
+    console.log('addDaySchedule')
+}
+
+export const removeDaySchedule = () => {
+    console.log('removeDaySchedule')
+}

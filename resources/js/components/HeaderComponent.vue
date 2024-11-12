@@ -54,7 +54,7 @@ const handleCartClick = async () => {
 </script>
 
 <template>
-    <LoadingSpinner :isLoading="isLoading" />
+    <LoadingSpinner :isLoading="isLoading"/>
     <header class="site-header">
         <nav>
             <div class="user-actions">
@@ -70,7 +70,7 @@ const handleCartClick = async () => {
             </div>
         </nav>
     </header>
-    <CartModal :isCartModalOpen="isCartModalOpen" />
+    <CartModal :isCartModalOpen="isCartModalOpen"/>
 </template>
 
 <style scoped>

@@ -9,7 +9,7 @@ const isLoading = ref(false);
 const orderData = ref({
     items: [],
     totalCount: 0,
-    totalSum: { full: 0, prepayment: 0 }
+    totalSum: {full: 0, prepayment: 0}
 });
 const paymentType = ref('full');
 const paymentButton = ref('');
@@ -63,7 +63,7 @@ const handlePaymentSubmit = async (event) => {
         const response = await sendUserAppointmentsRequest();
         if (response.status === 200) {
             event.target.submit();
-        }        
+        }
     } catch (error) {
         console.error('Ошибка при получении записей пользователя', error);
     }

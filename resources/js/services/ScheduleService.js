@@ -73,6 +73,23 @@ export const fetchDaySchedule = async (userId, selectedDate = null) => {
     }
 }
 
+export const addDaySchedule = async (userId, dateTime) => {
+    try {
+        const parameter = formatDate(dateTime).concat(" ", formatTime(dateTime));
+
+        let data = {
+            date_time: parameter,
+        };
+        return await apiClient({
+            url: urls.schedules.create.url(userId),
+            method: "POST",
+            data: data,
+        });
+    } catch (error) {
+        console.error("Ошибка создания графика", error);
+    }
+}
+
 export const updateDaySchedule = async (userId, scheduleId, dateTime) => {
     try {
         const parameter = formatDate(dateTime).concat(" ", formatTime(dateTime));
@@ -90,22 +107,24 @@ export const updateDaySchedule = async (userId, scheduleId, dateTime) => {
     }
 }
 
-export const addDaySchedule = () => {
-    console.log('addDaySchedule')
-}
-
-export const removeDaySchedule = () => {
-    console.log('removeDaySchedule')
+export const removeDaySchedule = async (userId, scheduleId) => {
+    try {
+        return await apiClient({
+            url: urls.schedules.delete.url(userId, scheduleId),
+            method: "DELETE",
+        });
+    } catch (error) {
+        console.error("Ошибка удаления графика", error);
+    }
 }
 
 export const removeDayScheduleAppointment = async (userId, scheduleId) => {
     try {
-      return await apiClient({
-        url: urls.schedules.cancelAppointment.url(userId, scheduleId),
-        method: "DELETE",
-      });
+        return await apiClient({
+            url: urls.schedules.cancelAppointment.url(userId, scheduleId),
+            method: "DELETE",
+        });
     } catch (error) {
-      console.error("Ошибка отмены записи", error);
+        console.error("Ошибка отмены записи", error);
     }
-  };
-  
+};

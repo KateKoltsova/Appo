@@ -1,6 +1,12 @@
 <script setup>
 import {ref, onMounted, computed} from "vue";
-import {fetchDaySchedule, updateDaySchedule, removeDaySchedule, removeDayScheduleAppointment} from "../services/ScheduleService.js";
+import {
+    fetchDaySchedule,
+    addDaySchedule,
+    updateDaySchedule,
+    removeDaySchedule,
+    removeDayScheduleAppointment
+} from "../services/ScheduleService.js";
 import LoadingSpinner from "./LoadingSpinner.vue";
 
 const userSchedules = ref([]);
@@ -12,6 +18,7 @@ const today = new Date();
 const currentMonth = ref(today.getMonth());
 const currentYear = ref(today.getFullYear());
 
+const isCreateModalVisible = ref(false);
 const isEditModalVisible = ref(false);
 const scheduleToEdit = ref(null);
 const newTime = ref(new Date());
@@ -28,7 +35,7 @@ const props = defineProps({
 
 onMounted(async () => {
     selectedDate.value = today;
-    await fetchUserSchedules(props.userId);
+    await fetchUserSchedules(props.userId, selectedDate.value);
 });
 
 const fetchUserSchedules = async (userId, date = null) => {
@@ -45,6 +52,27 @@ const fetchUserSchedules = async (userId, date = null) => {
     } catch (error) {
         console.error("Ошибка получения графика", error);
     } finally {
+        isLoading.value = false;
+    }
+};
+
+const createSchedule = async () => {
+    try {
+        if (newTime.value) {
+            isLoading.value = true;
+            const createdDate = selectedDate;
+            const [hours, minutes] = newTime.value.split(":").map(Number);
+            createdDate.value.setHours(hours, minutes, 0, 0);
+
+            const response = await addDaySchedule(props.userId, createdDate.value);
+            if (response.status === 200) {
+                await fetchUserSchedules(props.userId, selectedDate.value);
+            }
+        }
+    } catch (error) {
+        console.error("Ошибка добавления графика", error);
+    } finally {
+        closeCreateModal();
         isLoading.value = false;
     }
 };
@@ -99,6 +127,14 @@ const deleteAppointment = async (userId, scheduleId) => {
     }
 };
 
+const openCreateModal = () => {
+    isCreateModalVisible.value = true;
+};
+
+const closeCreateModal = () => {
+    isCreateModalVisible.value = false;
+};
+
 const openEditModal = (schedule) => {
     scheduleToEdit.value = schedule;
     const scheduleDateTime = new Date(schedule.date_time.replace(" ", "T"));
@@ -150,35 +186,39 @@ const selectDay = async (day) => {
 </script>
 
 <template>
-    <LoadingSpinner :isLoading="isLoading" />
+    <LoadingSpinner :isLoading="isLoading"/>
     <div class="calendar-container">
         <!-- Календарь -->
         <div class="calendar-grid">
             <div v-for="day in monthDays" :key="day" class="calendar-day"
-                :class="{
+                 :class="{
                     selected: selectedDate && day && day.toDateString() === selectedDate.toDateString(),
                     disabled: day && day < today.setHours(0, 0, 0, 0),
                 }"
-                @click="day && selectDay(day)">
+                 @click="day && selectDay(day)">
                 <span>{{ day ? day.getDate() : '' }}</span>
             </div>
         </div>
 
         <!-- Карточка расписания для выбранного дня -->
         <div v-if="selectedDate" class="day-schedule-card">
+            <button @click="openCreateModal()">Добавить время работы</button>
             <h3>Расписание на {{ selectedDate.toLocaleDateString() }}</h3>
             <div v-for="schedule in selectedDaySchedules" :key="schedule.schedule_id" class="schedule-card"
-                :class="{
+                 :class="{
                     available: schedule.status === 'available',
                     unavailable: schedule.status === 'unavailable',
                 }">
                 <p>Время: {{ schedule.date_time }}</p>
                 <p>Статус: {{ schedule.status }}</p>
-                <span v-if="schedule.status === 'unavailable'" @click="openContextMenu(schedule)" class="info-icon">ℹ️</span>
-                <div v-if="contextMenuVisible && scheduleWithInfo?.schedule_id === schedule.schedule_id" class="context-menu">
+                <span v-if="schedule.status === 'unavailable'" @click="openContextMenu(schedule)"
+                      class="info-icon">ℹ️</span>
+                <div v-if="contextMenuVisible && scheduleWithInfo?.schedule_id === schedule.schedule_id"
+                     class="context-menu">
                     <button class="close-btn" @click="closeContextMenu()">×</button>
                     <h3>Информация о записи</h3>
-                    <p><strong>Клиент:</strong>{{ scheduleWithInfo.appointment.firstname }} {{ scheduleWithInfo.appointment.lastname }}</p>
+                    <p><strong>Клиент:</strong>{{ scheduleWithInfo.appointment.firstname }}
+                        {{ scheduleWithInfo.appointment.lastname }}</p>
                     <p><strong>Телефон:</strong>{{ scheduleWithInfo.appointment.phone_number }}</p>
                     <p><strong>Услуга:</strong>{{ scheduleWithInfo.appointment.title }}</p>
                     <p><strong>Сумма:</strong>{{ scheduleWithInfo.appointment.sum }} грн</p>
@@ -187,14 +227,23 @@ const selectDay = async (day) => {
                     <button @click="closeContextMenu()">Закрыть</button>
                 </div>
                 <button @click="openEditModal(schedule)">Редактировать</button>
-                <!-- <button @click="deleteSchedule(props.userId, schedule.schedule_id)">Удалить</button> -->
+                <button @click="deleteSchedule(props.userId, schedule.schedule_id)">Удалить</button>
+            </div>
+        </div>
+
+        <div v-if="isCreateModalVisible" class="modal">
+            <div class="modal-content">
+                <h3>Добавить время работы для {{ selectedDate.toLocaleDateString() }}</h3>
+                <input v-model="newTime" type="time" placeholder="Введите новое время"/>
+                <button @click="createSchedule()">Сохранить</button>
+                <button @click="closeCreateModal()">Отмена</button>
             </div>
         </div>
 
         <div v-if="isEditModalVisible" class="modal">
             <div class="modal-content">
                 <h3>Редактировать время для {{ new Date(scheduleToEdit.date_time).toLocaleDateString() }}</h3>
-                <input v-model="newTime" type="time" placeholder="Введите новое время" />
+                <input v-model="newTime" type="time" placeholder="Введите новое время"/>
                 <button @click="editSchedule()">Сохранить</button>
                 <button @click="closeEditModal()">Отмена</button>
             </div>

@@ -54,7 +54,7 @@ export const checkout = async (userId) => {
 export const payButton = async (userId, payment = 'full') => {
     try {
         let params = {
-            result_url: `${window.location.origin}${router.resolve({ path: '/booking' }).href}`,
+            result_url: `${window.location.origin}${router.resolve({path: '/booking'}).href}`,
             payment: payment
         };
         return await apiClient({

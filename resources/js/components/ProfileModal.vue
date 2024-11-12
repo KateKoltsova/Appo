@@ -39,14 +39,14 @@ const getMasterInfo = async (masterId) => {
             <div v-if="masterDetails">
                 <h2>{{ masterDetails.firstname }} {{ masterDetails.lastname }}</h2>
                 <img :src="masterDetails.image_url" alt="Master Profile"/>
-                 <p>{{ masterDetails }}</p>
-<!--                 <div class="gallery">-->
-<!--                  <img-->
-<!--                    v-for="image in masterDetails.gallery"-->
-<!--                    :src="image"-->
-<!--                    :key="image"-->
-<!--                  />-->
-<!--                </div>-->
+                <p>{{ masterDetails }}</p>
+                <!--                 <div class="gallery">-->
+                <!--                  <img-->
+                <!--                    v-for="image in masterDetails.gallery"-->
+                <!--                    :src="image"-->
+                <!--                    :key="image"-->
+                <!--                  />-->
+                <!--                </div>-->
             </div>
             <div v-else>
                 <p>Загрузка данных...</p>

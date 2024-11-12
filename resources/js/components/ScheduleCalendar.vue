@@ -101,7 +101,8 @@ const deleteAppointment = async (userId, scheduleId) => {
 
 const openEditModal = (schedule) => {
     scheduleToEdit.value = schedule;
-    newTime.value = schedule.date_time;
+    const scheduleDateTime = new Date(schedule.date_time.replace(" ", "T"));
+    newTime.value = `${scheduleDateTime.getHours()}:${scheduleDateTime.getMinutes()}`;
     isEditModalVisible.value = true;
 };
 

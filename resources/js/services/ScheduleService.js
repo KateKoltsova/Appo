@@ -46,7 +46,13 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
-export const fetchDaySchedule = async (userId, selectedDate = null,) => {
+const formatTime = (date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    return `${hours}:${minutes}:00`;
+};
+
+export const fetchDaySchedule = async (userId, selectedDate = null) => {
     try {
         let params = {
             filter: {
@@ -66,6 +72,24 @@ export const fetchDaySchedule = async (userId, selectedDate = null,) => {
         console.error("Ошибка получения графика", error);
     }
 }
+
+export const updateDaySchedule = async (userId, scheduleId, dateTime) => {
+    try {
+        const parameter = formatDate(dateTime).concat(" ", formatTime(dateTime));
+
+        let data = {
+            date_time: parameter,
+        };
+        return await apiClient({
+            url: urls.schedules.edit.url(userId, scheduleId),
+            method: "PATCH",
+            data: data,
+        });
+    } catch (error) {
+        console.error("Ошибка редактирования графика", error);
+    }
+}
+
 export const addDaySchedule = () => {
     console.log('addDaySchedule')
 }

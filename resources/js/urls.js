@@ -60,6 +60,7 @@ const urls = {
     schedules: {
         availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false},
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`, auth: true},
+        edit: {url: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`, auth: true},
         //     byId: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
     appointments: {

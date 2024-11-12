@@ -41,8 +41,9 @@ const login = async () => {
         }
     } catch (error) {
         console.error('Ошибка сети:', error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 </script>
 

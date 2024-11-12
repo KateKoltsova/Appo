@@ -24,7 +24,7 @@ const isModalOpen = ref(false);
 const selectedMaster = ref(null);
 
 onMounted(async () => {
-    getServices();
+    await getServices();
 });
 
 const getServices = async () => {
@@ -40,8 +40,9 @@ const getServices = async () => {
         }
     } catch (error) {
         console.error("Ошибка получения услуг:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 const removeCategory = (category) => {
@@ -96,8 +97,9 @@ const handleDateSelection = async (date) => {
         }
     } catch (error) {
         console.error("Ошибка получения расписаний:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 // Функция для форматирования времени
@@ -110,19 +112,26 @@ const formatTime = (dateTime) => {
 
 // Функция для добавления в корзину
 const addToCart = async (schedule) => {
-    let item = {
-        schedule_id: schedule.schedule_id,
-        service_id: schedule.prices.service_id,
-        price_id: schedule.prices.price_id,
-    };
-    const userId = localStorage.getItem("userId");
-    if (userId != null) {
-        const response = await add(userId, JSON.stringify(item));
-        if (response.status !== 200) {
+    try {
+        isLoading.value = true;
+        let item = {
+            schedule_id: schedule.schedule_id,
+            service_id: schedule.prices.service_id,
+            price_id: schedule.prices.price_id,
+        };
+        const userId = localStorage.getItem("userId");
+        if (userId != null) {
+            const response = await add(userId, JSON.stringify(item));
+            if (response.status !== 200) {
+                addToStorage(item);
+            }
+        } else {
             addToStorage(item);
         }
-    } else {
-        addToStorage(item);
+    } catch (error) {
+        console.error("Ошибка получения расписаний:", error);
+    } finally {
+        isLoading.value = false;
     }
 };
 

@@ -26,8 +26,9 @@ const fetchUserAppointments = async (userId) => {
         }
     } catch (error) {
         console.error("Ошибка получения записей:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 }
 </script>
 

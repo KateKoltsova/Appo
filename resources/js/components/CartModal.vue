@@ -25,10 +25,17 @@ watch(
 );
 
 const handleCheckoutClick = async () => {
-    isLoading.value = true;
-    props.isCartModalOpen = false;
-    await router.push("/cart/checkout");
-    isLoading.value = false;
+    try {
+        isLoading.value = true;
+        isLoading.value = true;
+        props.isCartModalOpen = false;
+        isLoading.value = false;
+        await router.push("/cart/checkout");
+    } catch (error) {
+        console.error("Ошибка получения данных корзины:", error);
+    } finally {
+        isLoading.value = false;
+    }
 };
 
 const getCartItems = async () => {
@@ -39,8 +46,9 @@ const getCartItems = async () => {
         checkErrorItems();
     } catch (error) {
         console.error("Ошибка получения данных корзины:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 const removeItem = async (itemId) => {
@@ -52,8 +60,9 @@ const removeItem = async (itemId) => {
         checkErrorItems();
     } catch (error) {
         console.error("Ошибка удаления элемента:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 const checkErrorItems = () => {

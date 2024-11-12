@@ -13,9 +13,6 @@ const router = useRouter();
             <HeaderComponent/>
         </header>
         <div class="content">
-            <div>
-                <h1>Hello from Vue Component!</h1>
-            </div>
             <router-view/>
         </div>
         <footer>

@@ -29,8 +29,9 @@ const loadOrderData = async () => {
         orderData.value = response.data.data;
     } catch (error) {
         console.error("Ошибка загрузки данных о заказе:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 const generatePaymentButton = async (paymentType) => {
@@ -49,8 +50,9 @@ const generatePaymentButton = async (paymentType) => {
         });
     } catch (error) {
         console.error("Ошибка при генерации кнопки оплаты:", error);
+    } finally {
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 watch(paymentType, (newPaymentType) => {
@@ -60,20 +62,26 @@ watch(paymentType, (newPaymentType) => {
 const handlePaymentSubmit = async (event) => {
     event.preventDefault();
     try {
+        isLoading.value = true;
         const response = await sendUserAppointmentsRequest();
         if (response.status === 200) {
             event.target.submit();
         }
     } catch (error) {
         console.error('Ошибка при получении записей пользователя', error);
+    } finally {
+        isLoading.value = false;
     }
 };
 
 const sendUserAppointmentsRequest = async () => {
     try {
+        isLoading.value = true;
         return await paymentProcess(userId, orderId.value);
     } catch (error) {
         console.error('Ошибка при получении записей пользователя', error);
+    } finally {
+        isLoading.value = false;
     }
 };
 </script>

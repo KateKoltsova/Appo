@@ -97,3 +97,15 @@ export const addDaySchedule = () => {
 export const removeDaySchedule = () => {
     console.log('removeDaySchedule')
 }
+
+export const removeDayScheduleAppointment = async (userId, scheduleId) => {
+    try {
+      return await apiClient({
+        url: urls.schedules.cancelAppointment.url(userId, scheduleId),
+        method: "DELETE",
+      });
+    } catch (error) {
+      console.error("Ошибка отмены записи", error);
+    }
+  };
+  

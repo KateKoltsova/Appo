@@ -1,3 +1,5 @@
+import { cancelAppointment } from "./services/ScheduleService";
+
 const api = "api";
 const v1 = "v1";
 
@@ -61,6 +63,7 @@ const urls = {
         availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false},
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`, auth: true},
         edit: {url: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`, auth: true},
+        cancelAppointment: {url: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}/appointment`, auth: true}
         //     byId: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
     appointments: {

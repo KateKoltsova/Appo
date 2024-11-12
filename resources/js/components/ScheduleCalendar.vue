@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, computed} from "vue";
-import {fetchDaySchedule, updateDaySchedule, removeDaySchedule} from "../services/ScheduleService.js";
+import {fetchDaySchedule, updateDaySchedule, removeDaySchedule, removeDayScheduleAppointment} from "../services/ScheduleService.js";
 import LoadingSpinner from "./LoadingSpinner.vue";
 
 const userSchedules = ref([]);
@@ -9,18 +9,22 @@ const selectedDaySchedules = ref([]);
 const selectedDate = ref(new Date());
 const today = new Date();
 
+const currentMonth = ref(today.getMonth());
+const currentYear = ref(today.getFullYear());
+
+const isEditModalVisible = ref(false);
+const scheduleToEdit = ref(null);
+const newTime = ref(new Date());
+
+const contextMenuVisible = ref(false);
+const scheduleWithInfo = ref(null);
+
 const props = defineProps({
     userId: {
         type: [Number, String],
         required: true,
     }
 });
-const currentMonth = ref(today.getMonth());
-const currentYear = ref(today.getFullYear());
-
-const isModalVisible = ref(false);
-const scheduleToEdit = ref(null);
-const newTime = ref(new Date());
 
 onMounted(async () => {
     selectedDate.value = today;
@@ -61,7 +65,7 @@ const editSchedule = async () => {
     } catch (error) {
         console.error("Ошибка редактирования графика", error);
     } finally {
-        closeModal();
+        closeEditModal();
         isLoading.value = false;
     }
 };
@@ -80,15 +84,40 @@ const deleteSchedule = async (userId, scheduleId) => {
     }
 };
 
+const deleteAppointment = async (userId, scheduleId) => {
+    try {
+        isLoading.value = true;
+        const response = await removeDayScheduleAppointment(userId, scheduleId);
+        if (response.status === 200) {
+            await fetchUserSchedules(props.userId, selectedDate.value);
+            closeContextMenu();
+        }
+    } catch (error) {
+        console.error("Ошибка удаления записи", error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 const openEditModal = (schedule) => {
     scheduleToEdit.value = schedule;
     newTime.value = schedule.date_time;
-    isModalVisible.value = true;
+    isEditModalVisible.value = true;
 };
 
-const closeModal = () => {
-    isModalVisible.value = false;
+const closeEditModal = () => {
+    isEditModalVisible.value = false;
     scheduleToEdit.value = null;
+};
+
+const openContextMenu = (schedule) => {
+    scheduleWithInfo.value = schedule;
+    contextMenuVisible.value = true;
+};
+
+const closeContextMenu = () => {
+    contextMenuVisible.value = false;
+    scheduleWithInfo.value = null;
 };
 
 // Массив дней месяца для отображения в календаре
@@ -144,19 +173,29 @@ const selectDay = async (day) => {
                 }">
                 <p>Время: {{ schedule.date_time }}</p>
                 <p>Статус: {{ schedule.status }}</p>
+                <span v-if="schedule.status === 'unavailable'" @click="openContextMenu(schedule)" class="info-icon">ℹ️</span>
+                <div v-if="contextMenuVisible && scheduleWithInfo?.schedule_id === schedule.schedule_id" class="context-menu">
+                    <button class="close-btn" @click="closeContextMenu()">×</button>
+                    <h3>Информация о записи</h3>
+                    <p><strong>Клиент:</strong>{{ scheduleWithInfo.appointment.firstname }} {{ scheduleWithInfo.appointment.lastname }}</p>
+                    <p><strong>Телефон:</strong>{{ scheduleWithInfo.appointment.phone_number }}</p>
+                    <p><strong>Услуга:</strong>{{ scheduleWithInfo.appointment.title }}</p>
+                    <p><strong>Сумма:</strong>{{ scheduleWithInfo.appointment.sum }} грн</p>
+                    <p><strong>Оплачено:</strong>{{ scheduleWithInfo.appointment.paid_sum }} грн</p>
+                    <button @click="deleteAppointment(props.userId, scheduleWithInfo.schedule_id)">Удалить</button>
+                    <button @click="closeContextMenu()">Закрыть</button>
+                </div>
                 <button @click="openEditModal(schedule)">Редактировать</button>
                 <!-- <button @click="deleteSchedule(props.userId, schedule.schedule_id)">Удалить</button> -->
             </div>
         </div>
 
-        <div v-if="isModalVisible" class="modal">
+        <div v-if="isEditModalVisible" class="modal">
             <div class="modal-content">
-                <h3>
-                    Редактировать время для {{ new Date(scheduleToEdit.date_time).toLocaleDateString() }}
-                </h3>
+                <h3>Редактировать время для {{ new Date(scheduleToEdit.date_time).toLocaleDateString() }}</h3>
                 <input v-model="newTime" type="time" placeholder="Введите новое время" />
                 <button @click="editSchedule()">Сохранить</button>
-                <button @click="closeModal()">Отмена</button>
+                <button @click="closeEditModal()">Отмена</button>
             </div>
         </div>
     </div>
@@ -212,13 +251,11 @@ const selectDay = async (day) => {
 
 .schedule-card.available {
     background-color: #d4edda;
-    /* Светло-зеленый для доступного */
     border-color: #c3e6cb;
 }
 
 .schedule-card.unavailable {
     background-color: #f8d7da;
-    /* Светло-красный для недоступного */
     border-color: #f5c6cb;
 }
 
@@ -279,5 +316,43 @@ const selectDay = async (day) => {
 
 .modal-content button:last-of-type {
     background-color: #ddd;
+}
+
+.info-icon {
+    cursor: pointer;
+    font-size: 1.2em;
+    margin-left: 10px;
+}
+
+.context-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    max-width: 250px;
+}
+
+.context-menu p {
+    margin: 5px 0;
+}
+
+.context-menu button {
+    margin-top: 10px;
+    padding: 5px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.context-menu button:last-of-type {
+    background-color: #ddd;
+    color: #333;
 }
 </style>

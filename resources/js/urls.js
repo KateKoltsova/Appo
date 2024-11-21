@@ -32,11 +32,11 @@ const urls = {
         register: {url: `${api}/${register}`, auth: false},
         login: {url: `${api}/${login}`, auth: false},
         refresh: {url: `${api}/${refresh}`, auth: false},
-        logout: {url: `${api}/${logout}`, auth: false},
-        logoutAll: {url: `${api}/${logoutAll}`, auth: false},
+        logout: {url: `${api}/${logout}`, auth: true},
+        logoutAll: {url: `${api}/${logoutAll}`, auth: true},
         forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},
         resetPassword: {url: `${api}/${resetPassword}`, auth: false},
-        changePassword: {url: `${api}/${changePassword}`, auth: false},
+        changePassword: {url: `${api}/${changePassword}`, auth: true},
     },
     users: {
         all: {url: `${api}/${v1}/${users}`, auth: true},
@@ -53,10 +53,12 @@ const urls = {
         all: {url: `${api}/${v1}/${services}`, auth: false},
         //     byId: (id) => `${api}/${v1}/${services}/${id}`,
     },
-    // prices: {
-    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${prices}`,
-    //     byId: (userId, priceId) => `${api}/${v1}/${users}/${userId}/${prices}/${priceId}`,
-    // },
+    prices: {
+        all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${prices}`, auth: true},
+        create: {url: (userId) => `${api}/${v1}/${users}/${userId}/${prices}`, auth: true},
+        edit: {url: (userId, priceId) => `${api}/${v1}/${users}/${userId}/${prices}/${priceId}`, auth: true},
+        delete: {url: (userId, priceId) => `${api}/${v1}/${users}/${userId}/${prices}/${priceId}`, auth: true},
+    },
     schedules: {
         availableSchedules: {url: `${api}/${v1}/${schedules}`, auth: false},
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${schedules}`, auth: true},
@@ -64,12 +66,11 @@ const urls = {
         edit: {url: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`, auth: true},
         cancelAppointment: {url: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}/appointment`, auth: true},
         delete: {url: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`, auth: true},
-        //     byId: (userId, scheduleId) => `${api}/${v1}/${users}/${userId}/${schedules}/${scheduleId}`,
     },
     appointments: {
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${appointments}`, auth: true},
         create: {url: (userId) => `${api}/${v1}/${users}/${userId}/${appointments}`, auth: true},
-        // byId: (userId, appointmentId) => `${api}/${v1}/${users}/${userId}/${appointments}/${appointmentId}`,
+        delete: {url: (userId, appointmentId) => `${api}/${v1}/${users}/${userId}/${appointments}/${appointmentId}`, auth: true},
     },
     carts: {
         add: {url: (id) => `${api}/${v1}/${users}/${id}/${carts}`, auth: true},

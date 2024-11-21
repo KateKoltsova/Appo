@@ -1,6 +1,7 @@
 import apiClient from "../apiClient";
 import {urls} from "../urls";
 
+// Получение записей пользователя
 export const getUserAppointments = async (userId) => {
     try {
         return await apiClient({
@@ -13,6 +14,20 @@ export const getUserAppointments = async (userId) => {
     }
 };
 
+// Отмена записи
+export const cancelAppointment = async (userId, appointmentId) => {
+    try {
+        return await apiClient({
+            url: urls.appointments.delete.url(userId, appointmentId),
+            method: "POST",
+        });
+    } catch (error) {
+        console.error('Ошибка отмены записи', error);
+        throw error;
+    }
+};
+
+// Запись на услугу
 export const paymentProcess = async (userId, orderId) => {
     try {
         let data = {

@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {fetchUserById, updateUser} from "../services/UserService.js";
+import {fetchUserById, updateUser, logout, logoutAll} from "../services/UserService.js";
 import {useAuthWatcher} from '../localstorage';
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {UserModel} from "../models/UserModel.js";
@@ -9,6 +9,7 @@ import UserForm from "../components/UserForm.vue";
 import UserAppointments from "../components/UserAppointments.vue";
 import ScheduleCalendar from "../components/ScheduleCalendar.vue";
 import DayScheduleCard from "../components/DayScheduleCard.vue";
+import PriceListComponent from "../components/PriceListComponent.vue";
 
 // const selectedDate = ref(null);
 const activeTab = ref("profile");
@@ -79,6 +80,34 @@ const editUser = async () => {
     }
     isLoading.value = false;
 };
+
+const userLogout = async () => {
+    try {
+        const response = await logout();
+        if (response.status === 200) {
+            localStorage.clear();
+        } else {
+            console.error('Ошибка логаута пользователя');
+        }
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+    }
+    isLoading.value = false;
+}
+
+const userLogoutAll = async () => {
+    try {
+        const response = await logoutAll();
+        if (response.status === 200) {
+            localStorage.clear();
+        } else {
+            console.error('Ошибка полного логаута пользователя');
+        }
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+    }
+    isLoading.value = false;
+}
 </script>
 
 <template>
@@ -97,11 +126,17 @@ const editUser = async () => {
                         @click="selectTab('schedules')">
                         Расписание
                     </li>
+                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'prices' }"
+                        @click="selectTab('prices')">
+                        Цены
+                    </li>
                 </ul>
             </nav>
             <div class="tab-content">
                 <div v-if="activeTab === 'profile'">
                     <h2>Hello, user {{ user.id }} {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
+                    <button @click="userLogout()">Выйти</button>
+                    <button @click="userLogoutAll()">Выйти со всех устройств</button>
                     <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser"/>
                 </div>
 
@@ -112,6 +147,10 @@ const editUser = async () => {
                 <div v-if="activeTab === 'schedules'">
                     <h2>Ваше расписание</h2>
                     <ScheduleCalendar :userId="user?.id"/>
+                </div>
+                <div v-if="activeTab === 'prices'">
+                    <h2>Ваши цены</h2>
+                    <PriceListComponent :userId="user?.id"/>
                 </div>
             </div>
         </div>

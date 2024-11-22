@@ -85,7 +85,6 @@ export const logoutAll = async () => {
     }
 }
 
-
 // Загрузка аватарки
 export const uploadAvatar = async (userId, image) => {
     try {
@@ -96,10 +95,81 @@ export const uploadAvatar = async (userId, image) => {
             url: urls.users.uploadAvatar.url(userId),
             method: "POST",
             data: data,
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: {'Content-Type': 'multipart/form-data'}
         });
     } catch (error) {
         console.error('Ошибка загрузки аватарки', error);
+        throw error;
+    }
+};
+
+// Удаление аватарки
+export const removeAvatar = async (userId) => {
+    try {
+        return await apiClient({
+            url: urls.users.deleteAvatar.url(userId),
+            method: "DELETE",
+        });
+    } catch (error) {
+        console.error('Ошибка удаления аватарки', error);
+        throw error;
+    }
+};
+
+// Получение галереи
+export const fetchGallery = async (userId) => {
+    try {
+        return await apiClient({
+            url: urls.users.galleryList.url(userId),
+            method: "GET",
+        });
+    } catch (error) {
+        console.error('Ошибка получения галереи', error);
+        throw error;
+    }
+};
+
+// Получение галереи по ID
+export const fetchGalleryById = async (userId, galleryId) => {
+    try {
+        return await apiClient({
+            url: urls.users.galleryById.url(userId, galleryId),
+            method: "GET",
+        });
+    } catch (error) {
+        console.error('Ошибка получения галереи', error);
+        throw error;
+    }
+};
+
+// Добавление картинки галереи
+export const uploadGallery = async (userId, images) => {
+    try {
+        let data = {
+            images: {},
+        }
+        data.images = Array.from(images);
+        return await apiClient({
+            url: urls.users.galleryAdd.url(userId),
+            method: "POST",
+            data: data,
+            headers: {'Content-Type': 'multipart/form-data'}
+        });
+    } catch (error) {
+        console.error('Ошибка добавления картинки галереи', error);
+        throw error;
+    }
+};
+
+// Удаление картинки галереи
+export const removeGallery = async (userId, galleryId) => {
+    try {
+        return await apiClient({
+            url: urls.users.galleryDelete.url(userId, galleryId),
+            method: "DELETE",
+        });
+    } catch (error) {
+        console.error('Ошибка удаления картинки галереи', error);
         throw error;
     }
 };

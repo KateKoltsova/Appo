@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {fetchUserById, uploadAvatar, updateUser, logout, logoutAll} from "../services/UserService.js";
+import {fetchUserById, updateUser, removeUser, uploadAvatar, logout, logoutAll} from "../services/UserService.js";
 import {useAuthWatcher} from '../localstorage';
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {UserModel} from "../models/UserModel.js";
@@ -159,6 +159,23 @@ const editUser = async () => {
     isLoading.value = false;
 };
 
+
+const deleteUser = async () => {
+    try {
+        isLoading.value = true;
+        const response = await removeUser(userId);
+        if (response.status === 200) {
+            localStorage.clear();
+        } else {
+            console.error('Ошибка удаления пользователя');
+        }
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
 const userLogout = async () => {
     try {
         isLoading.value = true;
@@ -217,6 +234,7 @@ const userLogoutAll = async () => {
             <div class="tab-content">
                 <div v-if="activeTab === 'profile'">
                     <h2>Hello, user {{ user.id }} {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
+                    <button @click="deleteUser()">Удалить профиль</button>
                     <button @click="userLogout()">Выйти</button>
                     <button @click="userLogoutAll()">Выйти со всех устройств</button>
                     

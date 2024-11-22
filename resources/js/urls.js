@@ -14,7 +14,7 @@ const changePassword = "password/change";
 // User profile
 const users = "users";
 const avatar = "avatar";
-const gallery = "galleries";
+const galleries = "galleries";
 
 // Client-Master data
 const appointments = "appointments";
@@ -29,27 +29,28 @@ const button = "button";
 
 const urls = {
     auth: {
-        register: {url: `${api}/${register}`, auth: false},
+        // register: {url: `${api}/${register}`, auth: false},
         login: {url: `${api}/${login}`, auth: false},
-        refresh: {url: `${api}/${refresh}`, auth: false},
+        // refresh: {url: `${api}/${refresh}`, auth: false},
         logout: {url: `${api}/${logout}`, auth: true},
         logoutAll: {url: `${api}/${logoutAll}`, auth: true},
-        forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},
-        resetPassword: {url: `${api}/${resetPassword}`, auth: false},
-        changePassword: {url: `${api}/${changePassword}`, auth: true},
+        // forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},
+        // resetPassword: {url: `${api}/${resetPassword}`, auth: false},
+        // changePassword: {url: `${api}/${changePassword}`, auth: true},
     },
     users: {
-        all: {url: `${api}/${v1}/${users}`, auth: true},
         byId: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true},
+        edit: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true},
+        delete: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true},
         uploadAvatar: {url: (userId) => `${api}/${v1}/${users}/${userId}/${avatar}`, auth: true},
+        deleteAvatar: {url: (userId) => `${api}/${v1}/${users}/${userId}/${avatar}`, auth: true},
+        galleryList: {url: (userId) => `${api}/${v1}/${users}/${userId}/${galleries}`, auth: true},
+        galleryById: {url: (userId, galleryId) => `${api}/${v1}/${users}/${userId}/${galleries}/${galleryId}`, auth: true},
+        galleryAdd: {url: (userId) => `${api}/${v1}/${users}/${userId}/${galleries}`, auth: true},
+        galleryDelete: {url: (userId, galleryId) => `${api}/${v1}/${users}/${userId}/${galleries}/${galleryId}`, auth: true}
     },
-    // gallery: {
-    //     all: (userId) => `${api}/${v1}/${users}/${userId}/${gallery}`,
-    //     byId: (userId, galleryId) => `${api}/${v1}/${users}/${userId}/${gallery}/${galleryId}`,
-    // },
     services: {
         all: {url: `${api}/${v1}/${services}`, auth: false},
-        //     byId: (id) => `${api}/${v1}/${services}/${id}`,
     },
     prices: {
         all: {url: (userId) => `${api}/${v1}/${users}/${userId}/${prices}`, auth: true},

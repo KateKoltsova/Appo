@@ -14,34 +14,29 @@ export const fetchUserById = async (userId) => {
     }
 };
 
-// Загрузка аватарки
-export const uploadAvatar = async (userId, image) => {
-    try {
-        let data = {
-            image: image,
-        }
-        return await apiClient({
-            url: urls.users.uploadAvatar.url(userId),
-            method: "POST",
-            data: data,
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-    } catch (error) {
-        console.error('Ошибка загрузки аватарки', error);
-        throw error;
-    }
-};
-
 // Обновление данных пользователя
 export const updateUser = async (userId, updatedFields) => {
     try {
         return await apiClient({
-            url: urls.users.byId.url(userId),
+            url: urls.users.edit.url(userId),
             method: "PATCH",
             data: updatedFields,
         });
     } catch (error) {
         console.error('Ошибка обновления данных пользователя', error);
+        throw error;
+    }
+};
+
+// Удаление данных пользователя
+export const removeUser = async (userId) => {
+    try {
+        return await apiClient({
+            url: urls.users.delete.url(userId),
+            method: "DELETE",
+        });
+    } catch (error) {
+        console.error('Ошибка удаления пользователя', error);
         throw error;
     }
 };
@@ -89,3 +84,22 @@ export const logoutAll = async () => {
         throw error;
     }
 }
+
+
+// Загрузка аватарки
+export const uploadAvatar = async (userId, image) => {
+    try {
+        let data = {
+            image: image,
+        }
+        return await apiClient({
+            url: urls.users.uploadAvatar.url(userId),
+            method: "POST",
+            data: data,
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    } catch (error) {
+        console.error('Ошибка загрузки аватарки', error);
+        throw error;
+    }
+};

@@ -14,6 +14,24 @@ export const fetchUserById = async (userId) => {
     }
 };
 
+// Загрузка аватарки
+export const uploadAvatar = async (userId, image) => {
+    try {
+        let data = {
+            image: image,
+        }
+        return await apiClient({
+            url: urls.users.uploadAvatar.url(userId),
+            method: "POST",
+            data: data,
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    } catch (error) {
+        console.error('Ошибка загрузки аватарки', error);
+        throw error;
+    }
+};
+
 // Обновление данных пользователя
 export const updateUser = async (userId, updatedFields) => {
     try {

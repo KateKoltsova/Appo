@@ -40,11 +40,9 @@ const urls = {
     },
     users: {
         all: {url: `${api}/${v1}/${users}`, auth: true},
-        byId: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true}
+        byId: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true},
+        uploadAvatar: {url: (userId) => `${api}/${v1}/${users}/${userId}/${avatar}`, auth: true},
     },
-    // avatar: {
-    //     byUserId: (userId) => `${api}/${v1}/${users}/${userId}/${avatar}`,
-    // },
     // gallery: {
     //     all: (userId) => `${api}/${v1}/${users}/${userId}/${gallery}`,
     //     byId: (userId, galleryId) => `${api}/${v1}/${users}/${userId}/${gallery}/${galleryId}`,

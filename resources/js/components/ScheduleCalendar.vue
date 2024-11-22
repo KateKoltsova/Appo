@@ -12,7 +12,7 @@ import LoadingSpinner from "./LoadingSpinner.vue";
 const userSchedules = ref([]);
 const isLoading = ref(false);
 const selectedDaySchedules = ref([]);
-const selectedDate = ref(new Date());
+const selectedDate = ref();
 const today = new Date();
 
 const currentMonth = ref(today.getMonth());
@@ -34,19 +34,17 @@ const props = defineProps({
 });
 
 onMounted(async () => {
-    selectedDate.value = today;
-    await fetchUserSchedules(props.userId, selectedDate.value);
+    await fetchUserSchedules(props.userId);
 });
 
 const fetchUserSchedules = async (userId, date = null) => {
     try {
         isLoading.value = true;
-        if (date != null) {
-            selectedDate.value = new Date(date);
-        }
         const response = await fetchDaySchedule(userId, selectedDate.value);
         if (response.status === 200) {
-            userSchedules.value = response.data.data;
+            if (date == null) {
+                userSchedules.value = response.data.data;
+            }
             selectedDaySchedules.value = date ? response.data.data : [];
         }
     } catch (error) {
@@ -183,6 +181,28 @@ const selectDay = async (day) => {
         await fetchUserSchedules(props.userId, day);
     }
 };
+
+const hasScheduleForDay = (day) => {
+    if (!day) return false;
+    const dayYear = day.getFullYear();
+    const dayMonth = day.getMonth();
+    const dayDate = day.getDate();
+
+    // Перебираем все расписания
+    for (let schedule of userSchedules.value) {
+        const dayPart = schedule.date_time.split(' ')[0];
+        const [scheduleYear, scheduleMonth, scheduleDay] = dayPart.split('-').map(Number);
+
+        if (
+            scheduleYear === dayYear &&
+            scheduleMonth - 1 === dayMonth &&
+            scheduleDay === dayDate
+        ) {
+            return true;
+        }
+    }
+    return false;
+};
 </script>
 
 <template>
@@ -194,7 +214,8 @@ const selectDay = async (day) => {
                  :class="{
                     selected: selectedDate && day && day.toDateString() === selectedDate.toDateString(),
                     disabled: day && day < today.setHours(0, 0, 0, 0),
-                }"
+                    hasSchedule: day && hasScheduleForDay(day)
+                 }"
                  @click="day && selectDay(day)">
                 <span>{{ day ? day.getDate() : '' }}</span>
             </div>
@@ -404,5 +425,11 @@ const selectDay = async (day) => {
 .context-menu button:last-of-type {
     background-color: #ddd;
     color: #333;
+}
+
+.calendar-day.hasSchedule {
+    background-color: #a4f9a4; /* Светло-зеленый */
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
 }
 </style>

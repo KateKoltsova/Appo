@@ -1,74 +1,97 @@
 {
+  "storage/app/public/APPO_BEAUTY_logo.png": {
+    "file": "assets/APPO_BEAUTY_logo.c67bb0fb.png",
+    "src": "storage/app/public/APPO_BEAUTY_logo.png"
+  },
   "resources/js/app.js": {
-    "file": "assets/app.50c87d8e.js",
+    "file": "assets/app.9d8f16e3.js",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
       "resources/js/pages/LoginPage.vue",
       "resources/js/pages/UserProfile.vue",
+      "resources/js/pages/CheckoutPage.vue",
       "resources/js/pages/BookingPage.vue"
     ],
     "css": [
-      "assets/app.75242b62.css"
+      "assets/app.c683ef19.css"
+    ],
+    "assets": [
+      "assets/APPO_BEAUTY_logo.c67bb0fb.png"
     ]
   },
   "resources/js/pages/LoginPage.vue": {
-    "file": "assets/LoginPage.18ea7788.js",
+    "file": "assets/LoginPage.7e736e20.js",
     "src": "resources/js/pages/LoginPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/app.js",
-      "_LoadingSpinner.3b2823d8.js"
-    ]
-  },
-  "_LoadingSpinner.3b2823d8.js": {
-    "file": "assets/LoadingSpinner.3b2823d8.js",
-    "imports": [
       "resources/js/app.js"
-    ],
-    "css": [
-      "assets/LoadingSpinner.2b1dfff9.css"
     ]
   },
   "resources/js/pages/UserProfile.vue": {
-    "file": "assets/UserProfile.b7697fec.js",
+    "file": "assets/UserProfile.de1b8780.js",
     "src": "resources/js/pages/UserProfile.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_LoadingSpinner.3b2823d8.js"
+      "_ServiceService.838e700c.js",
+      "_AppointmentService.cd301a20.js"
     ],
     "css": [
-      "assets/UserProfile.f59e1caa.css"
+      "assets/UserProfile.4272d26f.css"
+    ]
+  },
+  "_ServiceService.838e700c.js": {
+    "file": "assets/ServiceService.838e700c.js",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_AppointmentService.cd301a20.js": {
+    "file": "assets/AppointmentService.cd301a20.js",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/pages/CheckoutPage.vue": {
+    "file": "assets/CheckoutPage.52ee3eeb.js",
+    "src": "resources/js/pages/CheckoutPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppointmentService.cd301a20.js"
+    ],
+    "css": [
+      "assets/CheckoutPage.4f5fd22e.css"
     ]
   },
   "resources/js/pages/BookingPage.vue": {
-    "file": "assets/BookingPage.0df5782b.js",
+    "file": "assets/BookingPage.0cc2408c.js",
     "src": "resources/js/pages/BookingPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_LoadingSpinner.3b2823d8.js"
+      "_ServiceService.838e700c.js"
     ],
     "css": [
-      "assets/BookingPage.13a55297.css"
+      "assets/BookingPage.8035f6ef.css"
     ]
   },
-  "resources/js/pages/UserProfile.css": {
-    "file": "assets/UserProfile.f59e1caa.css",
-    "src": "resources/js/pages/UserProfile.css"
-  },
-  "resources/js/pages/BookingPage.css": {
-    "file": "assets/BookingPage.13a55297.css",
-    "src": "resources/js/pages/BookingPage.css"
-  },
   "resources/js/app.css": {
-    "file": "assets/app.75242b62.css",
+    "file": "assets/app.c683ef19.css",
     "src": "resources/js/app.css"
   },
-  "LoadingSpinner.css": {
-    "file": "assets/LoadingSpinner.2b1dfff9.css",
-    "src": "LoadingSpinner.css"
+  "resources/js/pages/CheckoutPage.css": {
+    "file": "assets/CheckoutPage.4f5fd22e.css",
+    "src": "resources/js/pages/CheckoutPage.css"
+  },
+  "resources/js/pages/BookingPage.css": {
+    "file": "assets/BookingPage.8035f6ef.css",
+    "src": "resources/js/pages/BookingPage.css"
+  },
+  "resources/js/pages/UserProfile.css": {
+    "file": "assets/UserProfile.4272d26f.css",
+    "src": "resources/js/pages/UserProfile.css"
   },
   "resources/sass/app.scss": {
     "file": "assets/app.59ae0e18.css",

@@ -1,4 +1,4 @@
-<p align="center"><a href="https://appobeauty-6ecbc596ee8d.herokuapp.com/api/documentation" target="_blank"><img src="storage/images/APPO BEAUTY logo.png" width="400" alt="Appo Beauty Logo"></a></p>
+<p align="center"><a href="https://appobeauty-6ecbc596ee8d.herokuapp.com/api/documentation" target="_blank"><img src="storage/images/APPO_BEAUTY_logo.png" width="400" alt="Appo Beauty Logo"></a></p>
 
 <p align="center">
 </p>

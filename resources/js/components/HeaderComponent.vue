@@ -40,13 +40,6 @@ const handleBookingClick = () => {
     router.push('/booking');
 };
 
-const handleStorageChange = () => {
-    checkUser();
-    if (!token.value || !userId.value) {
-        window.location.reload();
-    }
-};
-
 const handleCartClick = async () => {
     isCartModalOpen.value = !isCartModalOpen.value;
 
@@ -57,8 +50,12 @@ const handleCartClick = async () => {
     <LoadingSpinner :isLoading="isLoading"/>
     <header class="site-header">
         <nav>
+            <div class="logo">
+                <img src="../../../storage/images/APPO_BEAUTY_logo.png" alt="Логотип" />
+            </div>
+
             <div class="user-actions">
-                <button @click="handleClick">
+                <button @click="handleClick" class="icon-class">
                     <i :class="iconClass"></i>
                 </button>
                 <button @click="handleBookingClick" class="booking-button">
@@ -76,48 +73,35 @@ const handleCartClick = async () => {
 <style scoped>
 .site-header {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
     padding: 10px 20px;
-    background-color: #6c757d;
-    color: #fff;
+    background-color: #02333e;
+    border-bottom: 1px solid #ccc;
 }
 
-.nav-links {
-    list-style: none;
+.site-header nav {
     display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
 }
 
-.nav-links li {
-    margin-right: 20px;
+.logo img {
+    height: 100px;
+    width: auto;
+}
+
+.user-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .user-actions button {
     background: none;
     border: none;
-    color: #fff;
-    font-size: 20px;
     cursor: pointer;
-}
-
-.user-actions button i {
-    font-size: 70px;
-}
-
-.user-actions button:hover {
-    color: #ddd;
-}
-
-.booking-button {
-    margin-left: 20px;
-    padding: 10px 20px;
-    background-color: #28a745;
-    border-radius: 5px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-.booking-button:hover {
-    background-color: #218838;
+    font-size: 28px;
+    color: #ddd0d1;
 }
 </style>

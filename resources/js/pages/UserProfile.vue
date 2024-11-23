@@ -326,18 +326,20 @@ const prevImage = () => {
                     <li :class="{ active: activeTab === 'appointments' }" @click="selectTab('appointments')">
                         Записи
                     </li>
-                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'schedules' }"
+                    <template v-if="user.role === 'master'">
+                    <li :class="{ active: activeTab === 'schedules' }"
                         @click="selectTab('schedules')">
                         Расписание
                     </li>
-                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'prices' }"
+                    <li :class="{ active: activeTab === 'prices' }"
                         @click="selectTab('prices')">
                         Цены
                     </li>
-                    <li v-if="user.role === 'master'" :class="{ active: activeTab === 'gallery' }"
+                    <li :class="{ active: activeTab === 'gallery' }"
                         @click="selectTab('gallery')">
                         Галерея
                     </li>
+                    </template>
                 </ul>
             </nav>
             <div class="tab-content">

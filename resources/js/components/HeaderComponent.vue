@@ -1,7 +1,7 @@
 <script setup>
 import {ref, watch} from 'vue';
 import {useRouter} from 'vue-router';
-import {useAuthWatcher, isAuthenticated} from '../localstorage';
+import {isAuthenticated} from '../localstorage';
 import LoadingSpinner from "./LoadingSpinner.vue";
 import CartModal from "./CartModal.vue";
 
@@ -12,8 +12,6 @@ const iconClass = ref('fa-solid fa-right-to-bracket');
 
 const isLoading = ref(false);
 const isCartModalOpen = ref(false);
-
-useAuthWatcher();
 
 watch(isAuthenticated, (newVal) => {
     iconClass.value = newVal
@@ -59,7 +57,7 @@ const handleCartClick = async () => {
                     <i :class="iconClass"></i>
                 </button>
                 <button @click="handleBookingClick" class="booking-button">
-                    Booking
+                    <i class="fa-solid fa-calendar-days"></i>
                 </button>
                 <button @click="handleCartClick" class="cart-button">
                     <i class="fa-solid fa-cart-shopping"></i>
@@ -93,7 +91,7 @@ const handleCartClick = async () => {
 
 .user-actions {
     display: flex;
-    gap: 10px;
+    gap: 50px;
     align-items: center;
 }
 
@@ -101,7 +99,7 @@ const handleCartClick = async () => {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 28px;
+    font-size: 44px;
     color: #ddd0d1;
 }
 </style>

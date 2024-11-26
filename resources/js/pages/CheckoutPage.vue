@@ -4,6 +4,7 @@ import {useRoute} from "vue-router";
 import {checkout, payButton} from "../services/CartService";
 import {paymentProcess} from "../services/AppointmentService";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
+import {useAuthWatcher} from "../localstorage.js";
 
 const isLoading = ref(false);
 const orderData = ref({
@@ -16,6 +17,7 @@ const paymentButton = ref('');
 const orderId = ref(null);
 const userId = localStorage.getItem("userId");
 const route = useRoute();
+useAuthWatcher();
 
 onMounted(async () => {
     await loadOrderData();

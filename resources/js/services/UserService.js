@@ -44,7 +44,6 @@ export const removeUser = async (userId) => {
 // Смена пароля
 export const changePassword = async (old_password, new_password) => {
     try {
-
         let data = {
             old_password: old_password,
             new_password: new_password
@@ -55,7 +54,42 @@ export const changePassword = async (old_password, new_password) => {
             data: data,
         });
     } catch (error) {
-        console.error("Ошибка смены пароля", error);
+        throw new Error(error.response.data.message);
+    }
+}
+
+// Генерация ссылки для сброса пароля
+export const forgotPassword = async (email) => {
+    try {
+        let data = {
+            email: email,
+            url: window.location.origin + "/reset-password"
+        };
+        return await apiClient({
+            url: urls.auth.forgotPassword.url,
+            method: "POST",
+            data: data,
+        });
+    } catch (error) {
+        throw new Error(error.response.data.message);
+    }
+}
+
+// Сброс пароля
+export const resetPassword = async (email, token, password) => {
+    try {
+        let data = {
+            email: email,
+            token: token,
+            password: password
+        };
+        return await apiClient({
+            url: urls.auth.resetPassword.url,
+            method: "POST",
+            data: data,
+        });
+    } catch (error) {
+        throw new Error(error.response.data.message);
     }
 }
 

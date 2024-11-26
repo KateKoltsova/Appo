@@ -7,6 +7,7 @@ import {
     removeUser,
     logout,
     logoutAll,
+    changePassword,
     uploadAvatar,
     removeAvatar,
     fetchGallery,
@@ -29,6 +30,12 @@ import 'vue-advanced-cropper/dist/style.css';
 const activeTab = ref("profile");
 const user = ref({...UserModel});
 const userId = localStorage.getItem('userId');
+const showPasswordModal = ref(false);
+const passwordForm = ref({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+});
 const avatar = ref(null);
 const showModal = ref(false);
 const cropperData = reactive({
@@ -227,6 +234,37 @@ const userLogoutAll = async () => {
     }
 }
 
+const openPasswordModal = () => {
+    showPasswordModal.value = true;
+};
+
+const closePasswordModal = () => {
+    showPasswordModal.value = false;
+    passwordForm.value = {oldPassword: '', newPassword: '', confirmPassword: ''};
+};
+
+const updatePassword = async () => {
+    if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+        alert('Новый пароль и его подтверждение не совпадают!');
+        return;
+    }
+
+    isLoading.value = true;
+    try {
+        const response = await changePassword(passwordForm.value.oldPassword, passwordForm.value.newPassword);
+        if (response.status === 200) {
+            closePasswordModal();
+            alert('Пароль успешно изменен!');
+            localStorage.clear();
+        }
+    } catch (error) {
+        alert(error);
+        console.error("Ошибка сети:", error);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
 const fetchUserGallery = async () => {
     isLoading.value = true;
     try {
@@ -327,33 +365,62 @@ const prevImage = () => {
                         Записи
                     </li>
                     <template v-if="user.role === 'master'">
-                    <li :class="{ active: activeTab === 'schedules' }"
-                        @click="selectTab('schedules')">
-                        Расписание
-                    </li>
-                    <li :class="{ active: activeTab === 'prices' }"
-                        @click="selectTab('prices')">
-                        Цены
-                    </li>
-                    <li :class="{ active: activeTab === 'gallery' }"
-                        @click="selectTab('gallery')">
-                        Галерея
-                    </li>
+                        <li :class="{ active: activeTab === 'schedules' }"
+                            @click="selectTab('schedules')">
+                            Расписание
+                        </li>
+                        <li :class="{ active: activeTab === 'prices' }"
+                            @click="selectTab('prices')">
+                            Цены
+                        </li>
+                        <li :class="{ active: activeTab === 'gallery' }"
+                            @click="selectTab('gallery')">
+                            Галерея
+                        </li>
                     </template>
                 </ul>
             </nav>
             <div class="tab-content">
                 <div v-if="activeTab === 'profile'">
                     <h2>Hello, user {{ user.id }} {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
-                    <button @click="deleteUser()">Удалить профиль</button>
-                    <button @click="userLogout()">Выйти</button>
-                    <button @click="userLogoutAll()">Выйти со всех устройств</button>
+
+                    <button @click="openPasswordModal">Изменить пароль</button>
+                    <div v-if="showPasswordModal" class="password-overlay" @click.self="closePasswordModal">
+                        <div class="password-content">
+                            <h3>Изменение пароля</h3>
+                            <form @submit.prevent="updatePassword">
+                                <div>
+                                    <label for="old-password">Старый пароль:</label>
+                                    <input id="old-password" v-model="passwordForm.oldPassword" type="password"
+                                           required/>
+                                </div>
+                                <div>
+                                    <label for="new-password">Новый пароль:</label>
+                                    <input id="new-password" v-model="passwordForm.newPassword" type="password"
+                                           required/>
+                                </div>
+                                <div>
+                                    <label for="confirm-password">Повторите новый пароль:</label>
+                                    <input id="confirm-password" v-model="passwordForm.confirmPassword" type="password"
+                                           required/>
+                                </div>
+
+                                <div class="password-actions">
+                                    <button type="submit">Сохранить</button>
+                                    <button type="button" @click="closePasswordModal">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <button @click="deleteUser">Удалить профиль</button>
+                    <button @click="userLogout">Выйти</button>
+                    <button @click="userLogoutAll">Выйти со всех устройств</button>
 
                     <div class="avatar-container" @click="openModal">
                         <img v-if="user.image_url" :src="user.image_url" alt="User Avatar" class="avatar"/>
                         <div v-else class="avatar-placeholder">+</div>
                     </div>
-
                     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
                         <div class="modal-content">
                             <h3>Редактирование аватарки</h3>
@@ -457,6 +524,33 @@ const prevImage = () => {
 
 .tab-content {
     flex: 1;
+}
+
+.password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.password-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.password-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 .modal-overlay {

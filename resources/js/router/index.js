@@ -27,62 +27,32 @@ import {createRouter, createWebHistory} from 'vue-router';
 
 const routes = [
     {
+        path: "/",
+        redirect: "/booking",
+    },
+    {
         path: "/login",
         component: () => import("../pages/LoginPage.vue"),
+    },
+    {
+        path: "/reset-password/:token",
+        component: () => import("../pages/ResetPasswordPage.vue"),
     },
     // {
     //     path: "/register",
     //     component: RegisterPage,
     // },
-    // {
-    //     path: "/forgot-password",
-    //     component: ForgotPasswordPage,
-    // },
-    // {
-    //     path: "/reset-password",
-    //     component: ResetPasswordPage,
-    // },
     {
         path: "/profile",
-        // component: PersonalAccount,
         children: [
             {
                 path: "",
                 component: () => import("../pages/UserProfile.vue"),
-            },
-    //         {
-    //             path: "appointments",
-    //             component: AppointmentsPage,
-    //         },
-    //         {
-    //             path: "schedules",
-    //             component: SchedulesPage,
-    //             children: [
-    //                 {
-    //                     path: ":id",
-    //                     component: ScheduleDetailsPage,
-    //                 }
-    //             ],
-    //         },
-    //         {
-    //             path: "prices",
-    //             component: PricesPage,
-    //         },
-    //         {
-    //             path: "gallery",
-    //             component: GalleryPage,
-    //             children: [
-    //                 {
-    //                     path: ":id",
-    //                     component: GalleryPage,
-    //                 },
-    //             ],
-    //         }
+            }
         ]
     },
     {
         path: "/cart",
-        // component: CartPage,
         children: [
             {
                 path: "checkout",
@@ -90,10 +60,6 @@ const routes = [
             }
         ],
     },
-    // {
-    //     path: "/services",
-    //     component: ServicesPage,
-    // },
     {
         path: "/booking",
         component: () => import("../pages/BookingPage.vue"),

@@ -34,9 +34,9 @@ const urls = {
         // refresh: {url: `${api}/${refresh}`, auth: false},
         logout: {url: `${api}/${logout}`, auth: true},
         logoutAll: {url: `${api}/${logoutAll}`, auth: true},
-        // forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},
-        // resetPassword: {url: `${api}/${resetPassword}`, auth: false},
-        // changePassword: {url: `${api}/${changePassword}`, auth: true},
+        forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},
+        resetPassword: {url: `${api}/${resetPassword}`, auth: false},
+        changePassword: {url: `${api}/${changePassword}`, auth: true},
     },
     users: {
         byId: {url: (id) => `${api}/${v1}/${users}/${id}`, auth: true},

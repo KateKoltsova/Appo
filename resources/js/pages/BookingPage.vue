@@ -7,6 +7,7 @@ import LoadingSpinner from "../components/LoadingSpinner.vue";
 import {AvailableScheduleModel} from "../models/AvailableScheduleModel.js";
 import {add} from "../services/CartService.js";
 import ProfileModal from "../components/ProfileModal.vue";
+import {useAuthWatcher} from "../localstorage.js";
 
 const isLoading = ref(false);
 
@@ -22,6 +23,7 @@ const selectedService = ref(null);
 
 const isModalOpen = ref(false);
 const selectedMaster = ref(null);
+useAuthWatcher();
 
 onMounted(async () => {
     await getServices();

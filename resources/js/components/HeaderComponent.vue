@@ -9,7 +9,7 @@ const token = ref('');
 const userId = ref('');
 const router = useRouter();
 const iconClass = ref('fa-solid fa-right-to-bracket');
-
+const isDropdownOpen = ref(false);
 const isLoading = ref(false);
 const isCartModalOpen = ref(false);
 
@@ -27,10 +27,21 @@ const checkUser = () => {
 const handleClick = () => {
     isCartModalOpen.value = false;
     if (isAuthenticated.value) {
-        router.push('/profile');
+        isDropdownOpen.value = !isDropdownOpen.value;
     } else {
         router.push('/login');
     }
+};
+
+const handleProfileClick = () => {
+    isDropdownOpen.value = false;
+    router.push('/profile');
+};
+
+const handleLogoutClick = () => {
+    isDropdownOpen.value = false;
+    localStorage.clear();
+    router.push('/login');
 };
 
 const handleBookingClick = () => {
@@ -49,13 +60,22 @@ const handleCartClick = async () => {
     <header class="site-header">
         <nav>
             <div class="logo">
-                <img src="../../../storage/images/APPO_BEAUTY_logo.png" alt="Логотип" />
+                <button @click="handleBookingClick" class="logo-button">
+                    <img src="../../../storage/images/APPO_BEAUTY_logo.png" alt="Логотип" />
+                </button>
             </div>
 
             <div class="user-actions">
-                <button @click="handleClick" class="icon-class">
-                    <i :class="iconClass"></i>
-                </button>
+                <div class="user-menu-wrapper">
+                    <button @click="handleClick" class="icon-class">
+                        <i :class="iconClass"></i>
+                    </button>
+                    <ul v-if="isDropdownOpen" class="dropdown-menu">
+                        <li @click="handleProfileClick">Профиль</li>
+                        <li @click="handleLogoutClick">Выйти</li>
+                    </ul>
+                </div>
+
                 <button @click="handleBookingClick" class="booking-button">
                     <i class="fa-solid fa-calendar-days"></i>
                 </button>
@@ -70,9 +90,9 @@ const handleCartClick = async () => {
 
 <style scoped>
 .site-header {
+    height: 130px;
     display: flex;
     align-items: center;
-    padding: 10px 20px;
     background-color: #02333e;
     border-bottom: 1px solid #ccc;
 }
@@ -85,8 +105,16 @@ const handleCartClick = async () => {
 }
 
 .logo img {
-    height: 100px;
+    margin: -10px;
+    height: 120px;
     width: auto;
+}
+
+.logo-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
 }
 
 .user-actions {
@@ -101,5 +129,37 @@ const handleCartClick = async () => {
     cursor: pointer;
     font-size: 44px;
     color: #ddd0d1;
+}
+
+.user-menu-wrapper {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    display: inherit;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    border-radius: 4px;
+    z-index: 10;
+    text-align: right;
+    width: 150px;
+}
+
+.dropdown-menu li {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu li:hover {
+    background-color: #f5f5f5;
 }
 </style>

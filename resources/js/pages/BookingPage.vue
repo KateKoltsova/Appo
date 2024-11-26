@@ -17,6 +17,7 @@ const apiServices = ref([]);
 const apiSchedules = ref([]);
 const availableSchedules = ref([]);
 
+const isFilterOpen = ref(false);
 const selectedDate = ref(null);
 const selectedCategories = ref([]);
 const selectedService = ref(null);
@@ -47,6 +48,15 @@ const getServices = async () => {
     }
 };
 
+const toggleFilter = () => {
+    isFilterOpen.value = !isFilterOpen.value;
+};
+
+const resetFilter = () => {
+    selectedCategories.value = [];
+    selectedService.value = null;
+};
+
 const removeCategory = (category) => {
     selectedCategories.value = selectedCategories.value.filter(
         (c) => c !== category
@@ -54,6 +64,7 @@ const removeCategory = (category) => {
 };
 
 watch(selectedCategories, (newValue, oldValue) => {
+    selectedService.value = null;
     if (newValue !== oldValue && selectedDate.value) {
         getServices();
         handleDateSelection(selectedDate.value);
@@ -67,6 +78,7 @@ watch(selectedService, (newValue, oldValue) => {
 });
 
 const handleDateSelection = async (date) => {
+    availableSchedules.value = [];
     selectedDate.value = date;
     try {
         isLoading.value = true;
@@ -166,48 +178,54 @@ const closeModal = () => {
         <DateCarousel @dateSelection="handleDateSelection"/>
 
         <div class="selected-categories">
-      <span
-          v-for="category in selectedCategories"
-          :key="category"
-          class="category-card"
-      >
-        {{ category }}
-        <button @click="removeCategory(category)" class="remove-button">
-          ✖
-        </button>
-      </span>
+            <button @click="toggleFilter" class="filter-icon">
+                <i class="fa fa-filter"></i>
+            </button>
+            <span
+                v-for="category in selectedCategories"
+                :key="category"
+                class="category-card"
+            >
+                {{ category }}
+                <button @click="removeCategory(category)" class="remove-button">
+                  ✖
+                </button>
+            </span>
         </div>
 
-        <div class="category-list">
-            <h3>Выберите категории услуг:</h3>
-            <div class="checkbox-list">
-                <label
-                    v-for="category in apiCategories"
-                    :key="category"
-                    class="checkbox-label"
-                >
-                    <input
-                        type="checkbox"
-                        v-model="selectedCategories"
-                        :value="category"
-                        @change=""
-                    />
-                    {{ category }}
-                </label>
+        <div v-if="isFilterOpen" class="filter-modal">
+            <button @click="resetFilter">Сбросить фильтр</button>
+            <div class="category-list">
+                <h3>Выберите категории услуг:</h3>
+                <div class="checkbox-list">
+                    <label
+                        v-for="category in apiCategories"
+                        :key="category"
+                        class="checkbox-label"
+                    >
+                        <input
+                            type="checkbox"
+                            v-model="selectedCategories"
+                            :value="category"
+                            @change=""
+                        />
+                        {{ category }}
+                    </label>
+                </div>
             </div>
-        </div>
 
-        <div class="service-list">
-            <h3>Выберите услугу:</h3>
-            <div class="radio-list">
-                <label
-                    v-for="service in apiServices"
-                    :key="service.id"
-                    class="radio-label"
-                >
-                    <input type="radio" v-model="selectedService" :value="service.id"/>
-                    {{ service.title }}
-                </label>
+            <div class="service-list">
+                <h3>Выберите услугу:</h3>
+                <div class="radio-list">
+                    <label
+                        v-for="service in apiServices"
+                        :key="service.id"
+                        class="radio-label"
+                    >
+                        <input type="radio" v-model="selectedService" :value="service.id"/>
+                        {{ service.title }}
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -241,7 +259,10 @@ const closeModal = () => {
                         </div>
                     </div>
                     <span v-if="selectedService"> {{ schedule.prices.price }} грн. </span>
-                    <button @click="addToCart(schedule)">Добавить в корзину</button>
+                    <button @click="addToCart(schedule)"
+                            :disabled="!selectedService"
+                            :class="{ 'disabled-button': !selectedService }">Добавить в корзину
+                    </button>
                     <ProfileModal
                         v-if="isModalOpen"
                         :masterId="selectedMaster"
@@ -288,7 +309,7 @@ const closeModal = () => {
 
 .checkbox-list,
 .radio-list {
-    max-height: 20px;
+    max-height: 150px;
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -306,6 +327,35 @@ const closeModal = () => {
 .checkbox-label:hover,
 .radio-label:hover {
     background-color: #f1f1f1;
+}
+
+.filter-icon {
+    font-size: 24px;
+    cursor: pointer;
+    position: sticky;
+    top: 10px;
+    right: 10px;
+    background-color: #02333e;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    z-index: 100;
+}
+
+.filter-modal {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #fff;
+    width: 300px;
+    height: 100%;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .card-container {
@@ -356,5 +406,26 @@ const closeModal = () => {
 
 .service-selection {
     margin-top: 15px;
+}
+
+button.disabled-button {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
 }
 </style>

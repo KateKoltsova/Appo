@@ -115,10 +115,10 @@ const checkErrorItems = () => {
 <style scoped>
 .cart-modal {
     position: fixed;
-    top: 0;
+    top: 120px;
     right: 0;
     width: 50%;
-    height: 100%;
+    max-height: 90%;
     background-color: #fff;
     z-index: 1000;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);

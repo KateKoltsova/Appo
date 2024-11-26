@@ -245,6 +245,7 @@ const closeModal = () => {
 }
 
 .year-picker {
+    font-size: 24px;
     position: relative;
     display: flex;
     flex-direction: column;

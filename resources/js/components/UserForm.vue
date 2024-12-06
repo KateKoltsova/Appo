@@ -9,10 +9,14 @@ const onSave = () => {
     emit('onSave');
 };
 
+const cancel = () => {
+    emit('cancelSave');
+};
+
 </script>
 
 <template>
-    <form @submit.prevent="onSave" :class="{ 'disabled': isLoading }">
+    <form @submit.prevent="onSave" @cancel.prevent="onSave" :class="{ 'disabled': isLoading }">
         <div>
             <label for="firstname">FirstName:</label>
             <input type="text" id="firstname" v-model="editedUser.firstname"/>
@@ -38,6 +42,7 @@ const onSave = () => {
             <input type="tel" id="phone_number" v-model="editedUser.phone_number"/>
         </div>
 
+        <button @click="cancel" :disabled="isLoading">Cancel</button>
         <button type="submit" :disabled="isLoading">Save</button>
     </form>
 </template>

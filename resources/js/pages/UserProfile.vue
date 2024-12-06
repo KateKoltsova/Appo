@@ -30,6 +30,8 @@ import 'vue-advanced-cropper/dist/style.css';
 const activeTab = ref("profile");
 const user = ref({...UserModel});
 const userId = localStorage.getItem('userId');
+const menuOpen = ref(false);
+const openEditForm = ref(false);
 const showPasswordModal = ref(false);
 const passwordForm = ref({
     oldPassword: '',
@@ -85,6 +87,10 @@ const assignUserData = (data) => {
     Object.assign(user.value, data);
     Object.assign(editedUser, data);
     localStorage.setItem('user', JSON.stringify(data));
+};
+
+const toggleMenu = () => {
+    menuOpen.value = !menuOpen.value;
 };
 
 const openModal = () => {
@@ -154,6 +160,15 @@ const saveCroppedImage = async () => {
     }
 };
 
+const openEditProfile = () => {
+    menuOpen.value = false;
+    openEditForm.value = true;
+};
+
+const closeEditProfile = () => {
+    openEditForm.value = false;
+};
+
 const editUser = async () => {
     isLoading.value = true;
     const userId = localStorage.getItem('userId');
@@ -180,14 +195,19 @@ const editUser = async () => {
         }
     } catch (error) {
         console.error('Ошибка сети:', error);
+    } finally {
+        openEditForm.value = false;
+        isLoading.value = false;
     }
-    isLoading.value = false;
 };
 
 const deleteUser = async () => {
     try {
         const confirmed = confirm('Вы уверены, что хотите удалить свой профиль? Это действие нельзя отменить!');
-        if (!confirmed) return;
+        if (!confirmed) {
+            menuOpen.value = false;
+            return;
+        }
         isLoading.value = true;
         const response = await removeUser(userId);
         if (response.status === 200) {
@@ -235,6 +255,7 @@ const userLogoutAll = async () => {
 }
 
 const openPasswordModal = () => {
+    menuOpen.value = false;
     showPasswordModal.value = true;
 };
 
@@ -384,7 +405,24 @@ const prevImage = () => {
                 <div v-if="activeTab === 'profile'">
                     <h2>Hello, user {{ user.id }} {{ editedUser?.firstname }} {{ editedUser?.lastname }}</h2>
 
-                    <button @click="openPasswordModal">Изменить пароль</button>
+                    <div class="profile-actions">
+                        <button @click="toggleMenu" class="edit-button">
+                            <i class="fa-solid fa-pencil-alt"></i>
+                        </button>
+
+                        <div v-if="menuOpen" class="dropdown-user-menu">
+                            <button @click="openEditProfile">Редактировать профиль</button>
+                            <button @click="openPasswordModal">Изменить пароль</button>
+                            <hr class="separator">
+                            <button @click="userLogout">Выйти</button>
+                            <button @click="userLogoutAll">Выйти со всех устройств</button>
+                            <hr class="separator">
+                            <button @click="deleteUser" class="delete-user-button">
+                                Удалить профиль
+                            </button>
+                        </div>
+                    </div>
+
                     <div v-if="showPasswordModal" class="password-overlay" @click.self="closePasswordModal">
                         <div class="password-content">
                             <h3>Изменение пароля</h3>
@@ -413,10 +451,6 @@ const prevImage = () => {
                         </div>
                     </div>
 
-                    <button @click="deleteUser">Удалить профиль</button>
-                    <button @click="userLogout">Выйти</button>
-                    <button @click="userLogoutAll">Выйти со всех устройств</button>
-
                     <div class="avatar-container" @click="openModal">
                         <img v-if="user.image_url" :src="user.image_url" alt="User Avatar" class="avatar"/>
                         <div v-else class="avatar-placeholder">+</div>
@@ -436,7 +470,34 @@ const prevImage = () => {
                         </div>
                     </div>
 
-                    <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser"/>
+                    <div v-if="openEditForm">
+                        <UserForm :editedUser="editedUser" :isLoading="isLoading" @onSave="editUser"
+                                  @cancelSave="closeEditProfile"/>
+                    </div>
+
+                    <div v-else class="user-info">
+                        <div class="user-info-item">
+                            <span class="label">Имя: </span>
+                            <span class="value">{{ editedUser.firstname }}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="label">Фамилия: </span>
+                            <span class="value">{{ editedUser.lastname }}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="label">Email: </span>
+                            <span class="value">{{ editedUser.email }}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="label">Дата рождения: </span>
+                            <span class="value">{{ editedUser.birthdate }}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="label">Телефон: </span>
+                            <span class="value">{{ editedUser.phone_number }}</span>
+                        </div>
+                    </div>
+
                 </div>
                 <div v-if="activeTab === 'appointments'">
                     <h2>Ваши записи</h2>
@@ -653,5 +714,62 @@ const prevImage = () => {
 
 .delete-button:hover {
     background-color: darkred;
+}
+
+.profile-actions {
+    position: relative;
+}
+
+.edit-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #333;
+}
+
+.dropdown-user-menu {
+    top: 100%;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    border-radius: 4px;
+    z-index: 10;
+    width: 200px;
+    display: inherit;
+}
+
+.dropdown-user-menu button {
+    padding: 10px 15px;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-user-menu button:hover {
+    background-color: #f0f0f0;
+}
+
+.separator {
+    border-top: 2px solid #4a5568;
+    margin: 10px 0;
+}
+
+.delete-user-button {
+    color: red !important;
+    border: 2px solid red !important;
+    background-color: white !important;
+}
+
+.delete-user-button:hover {
+    background-color: #f8d7da !important;
 }
 </style>

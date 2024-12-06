@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {urls} from './urls.js';
+import {refresh} from "./services/UserService.js";
 
 const apiClient = axios.create({
     baseURL: `${window.location.origin}`,
@@ -66,9 +67,26 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use((response) => {
     return response;
-}, (error) => {
+}, async (error) => {
     if (error.response && error.response.status === 401) {
-        if (error.response?.status === 401) {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+            throw error;
+        }
+        try {
+            const response = await refresh(refreshToken);
+            if (response.status === 200) {
+                const {access_token: accessToken, refresh_token: refreshToken, id: userId} = response.data.data;
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+                localStorage.setItem('userId', userId);
+                localStorage.removeItem('user');
+                error.config.headers['Authorization'] = `Bearer ${accessToken}`;
+                return apiClient.request(error.config);
+            } else {
+                throw error;
+            }
+        } catch(error) {
             console.error('Unauthorized, redirecting to login page...');
             localStorage.clear();
             window.location.href = '/login';

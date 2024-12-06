@@ -1,6 +1,55 @@
 import apiClient from "../apiClient";
 import {urls} from "../urls";
 
+// Регистрация пользователя
+export const register = async (formData) => {
+    try {
+        return await apiClient({
+            url: urls.auth.register.url,
+            method: "POST",
+            data: formData
+        });
+    } catch (error) {
+        console.error('Ошибка регистрации пользователя', error);
+        throw error;
+    }
+};
+
+// Логин пользователя
+export const login = async (email, password) => {
+    try {
+        let data = {
+            email: email,
+            password: password
+        }
+        return await apiClient({
+            url: urls.auth.login.url,
+            method: "POST",
+            data: data
+        });
+    } catch (error) {
+        console.error('Ошибка логина пользователя', error);
+        throw error;
+    }
+};
+
+// Рефреш токенов
+export const refresh = async (refreshToken) => {
+    try {
+        let data = {
+            refresh_token: refreshToken,
+        }
+        return await apiClient({
+            url: urls.auth.refresh.url,
+            method: "POST",
+            data: data
+        });
+    } catch (error) {
+        console.error('Ошибка рефреша пользователя', error);
+        throw error;
+    }
+};
+
 // Получение данных пользователя
 export const fetchUserById = async (userId) => {
     try {

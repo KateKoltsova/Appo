@@ -1,10 +1,8 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {urls} from '../urls.js';
-import apiClient from "../apiClient.js";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
-import {forgotPassword} from "../services/UserService.js";
+import {login, forgotPassword} from "../services/UserService.js";
 
 const email = ref('');
 const password = ref('');
@@ -21,21 +19,16 @@ onMounted(async () => {
         await router.push('/profile');
     }
 });
-const login = async () => {
+
+const loginUser = async () => {
     try {
         isLoading.value = true;
-        const response = await apiClient({
-            url: urls.auth.login.url,
-            method: 'POST',
-            data: {
-                email: email.value,
-                password: password.value,
-            },
-        });
+        const response = await login(email.value, password,value);
 
         if (response.status === 200) {
-            const {access_token: accessToken, id: userId} = response.data.data;
+            const {access_token: accessToken, refresh_token: refreshToken, id: userId} = response.data.data;
             localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userId', userId);
 
             await router.push('/profile');
@@ -80,7 +73,7 @@ const toggleForgotPassword = () => {
         <h2 v-if="!isForgotPassword">Login</h2>
         <h2 v-else>Reset Password</h2>
 
-        <form v-if="!isForgotPassword" @submit.prevent="login" :class="{ 'disabled': isLoading }">
+        <form v-if="!isForgotPassword" @submit.prevent="loginUser" :class="{ 'disabled': isLoading }">
             <div>
                 <label for="email">Email:</label>
                 <input type="email" v-model="email" required/>

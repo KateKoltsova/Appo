@@ -29,9 +29,9 @@ const button = "button";
 
 const urls = {
     auth: {
-        // register: {url: `${api}/${register}`, auth: false},
+        register: {url: `${api}/${register}`, auth: false},
         login: {url: `${api}/${login}`, auth: false},
-        // refresh: {url: `${api}/${refresh}`, auth: false},
+        refresh: {url: `${api}/${refresh}`, auth: false},
         logout: {url: `${api}/${logout}`, auth: true},
         logoutAll: {url: `${api}/${logoutAll}`, auth: true},
         forgotPassword: {url: `${api}/${forgotPassword}`, auth: false},

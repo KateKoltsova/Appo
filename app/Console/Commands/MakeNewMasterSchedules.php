@@ -31,6 +31,7 @@ class MakeNewMasterSchedules extends Command
     {
         $currentDate = Carbon::now();
         $firstDayOfLastMonth = $currentDate->copy()->startOfMonth();
+        $firstDayOfNextMonth = $currentDate->copy()->addMonth()->startOfMonth();
         $lastDayOfLastMonth = $currentDate->copy()->endOfMonth();
 
         $schedulesLastMonth = Schedule::where('date_time', '>=', $firstDayOfLastMonth)
@@ -40,30 +41,18 @@ class MakeNewMasterSchedules extends Command
 
         foreach ($schedulesLastMonth as $schedule) {
             $scheduleDateOfLastMonth = Carbon::parse($schedule->date_time);
-            $weekday = $scheduleDateOfLastMonth->dayOfWeek;
-
-            $daysUntilNow = $scheduleDateOfLastMonth->day - 1;
-            $fullWeeks = intdiv($daysUntilNow, 7);
-
-            $firstDayOfNextMonth = $scheduleDateOfLastMonth->copy()->addMonth()->startOfMonth();
-
-            if ($firstDayOfNextMonth->dayOfWeek == $weekday) {
-                $firstWeekday = $firstDayOfNextMonth;
-            } else {
-                $firstWeekday = $firstDayOfNextMonth->copy()->next($weekday);
-            }
-
-            $newDate = $firstWeekday->copy()->addWeeks($fullWeeks);
-
-            $newDate = $newDate->setTime($scheduleDateOfLastMonth->hour, $scheduleDateOfLastMonth->minute, $scheduleDateOfLastMonth->second);
-            try {
-                Schedule::firstOrCreate([
-                    'master_id' => $schedule->master_id,
-                    'date_time' => $newDate,
-                    'status' => config('constants.db.status.available')
-                ]);
-            } catch (Exception $e) {
-                Log::error($e->getMessage());
+            $dateOfNextMonth = $firstDayOfNextMonth->clone()->nthOfMonth($scheduleDateOfLastMonth->weekOfMonth, $scheduleDateOfLastMonth->dayOfWeek);
+            if (!is_bool($dateOfNextMonth)) {
+                $newDate = $dateOfNextMonth->setTime($scheduleDateOfLastMonth->hour, $scheduleDateOfLastMonth->minute, $scheduleDateOfLastMonth->second);
+                try {
+                    Schedule::firstOrCreate([
+                        'master_id' => $schedule->master_id,
+                        'date_time' => $newDate,
+                        'status' => config('constants.db.status.available')
+                    ]);
+                } catch (Exception $e) {
+                    Log::error($e->getMessage());
+                }
             }
         }
     }

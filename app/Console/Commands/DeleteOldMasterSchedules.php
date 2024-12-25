@@ -31,7 +31,6 @@ class DeleteOldMasterSchedules extends Command
         $firstDayOfCurrentMonth = $currentDate->startOfMonth();
         $twoMonthsAgo = $firstDayOfCurrentMonth->subMonths(2);
 
-        $schedules = Schedule::where('date_time', '<', $twoMonthsAgo)->orderBy('date_time')->get();
-        $schedules->delete();
+        $schedules = Schedule::where('date_time', '<', $twoMonthsAgo)->delete();
     }
 }
